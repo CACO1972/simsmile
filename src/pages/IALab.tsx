@@ -44,9 +44,11 @@ export default function IALab() {
   const [smileB64, setSmileB64] = useState<string>("");
   const [metrics, setMetrics] = useState<SmileMetrics | null>(null);
   const [loading, setLoading] = useState(false);
-  const [whiten, setWhiten] = useState(0);     // 0..100
-  const [align, setAlign] = useState(0);       // -5..5 (px visual)
-  const [contrast, setContrast] = useState(100);// %
+  const [whiten, setWhiten] = useState(0);     // 0..150
+  const [align, setAlign] = useState(0);       // -15..15 (px visual)
+  const [contrast, setContrast] = useState(100);// 50..150%
+  const [brightness, setBrightness] = useState(100); // 50..150%
+  const [saturation, setSaturation] = useState(100); // 0..200%
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const onFile = (e: any, kind: "rest" | "smile") => {
@@ -235,13 +237,13 @@ export default function IALab() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium flex justify-between">
-                  <span>Blanqueamiento</span>
-                  <span className="text-primary">{whiten}%</span>
+                  <span>Blanqueamiento dental</span>
+                  <span className="text-primary font-mono">{whiten}%</span>
                 </label>
                 <input 
                   type="range" 
                   min={0} 
-                  max={100} 
+                  max={150} 
                   value={whiten} 
                   onChange={(e) => setWhiten(Number(e.target.value))} 
                   className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
@@ -250,15 +252,15 @@ export default function IALab() {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium flex justify-between">
-                  <span>Microalineación (demo)</span>
-                  <span className="text-primary">{align}px</span>
+                  <span>Brillo general</span>
+                  <span className="text-primary font-mono">{brightness}%</span>
                 </label>
                 <input 
                   type="range" 
-                  min={-5} 
-                  max={5} 
-                  value={align} 
-                  onChange={(e) => setAlign(Number(e.target.value))} 
+                  min={50} 
+                  max={150} 
+                  value={brightness} 
+                  onChange={(e) => setBrightness(Number(e.target.value))} 
                   className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                 />
               </div>
@@ -266,14 +268,44 @@ export default function IALab() {
               <div className="space-y-2">
                 <label className="text-sm font-medium flex justify-between">
                   <span>Contraste</span>
-                  <span className="text-primary">{contrast}%</span>
+                  <span className="text-primary font-mono">{contrast}%</span>
                 </label>
                 <input 
                   type="range" 
-                  min={80} 
-                  max={120} 
+                  min={50} 
+                  max={150} 
                   value={contrast} 
                   onChange={(e) => setContrast(Number(e.target.value))} 
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex justify-between">
+                  <span>Saturación</span>
+                  <span className="text-primary font-mono">{saturation}%</span>
+                </label>
+                <input 
+                  type="range" 
+                  min={0} 
+                  max={200} 
+                  value={saturation} 
+                  onChange={(e) => setSaturation(Number(e.target.value))} 
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex justify-between">
+                  <span>Alineación horizontal</span>
+                  <span className="text-primary font-mono">{align}px</span>
+                </label>
+                <input 
+                  type="range" 
+                  min={-15} 
+                  max={15} 
+                  value={align} 
+                  onChange={(e) => setAlign(Number(e.target.value))} 
                   className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                 />
               </div>
@@ -292,9 +324,9 @@ export default function IALab() {
                   alt="simulación"
                   className="w-full h-auto"
                   style={{
-                    filter: `brightness(${100 + whiten*0.2}%) contrast(${contrast}%)`,
+                    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) hue-rotate(${whiten * 0.1}deg)`,
                     transform: `translateX(${align}px)`,
-                    transition: 'all 0.2s ease-out'
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 />
               ) : (
