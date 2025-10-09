@@ -123,7 +123,8 @@ export function computeMetrics(params: {
   };
 }
 
-export function drawOverlay(
+// Overlay 1: Líneas Medias (Facial y Dental)
+export function drawMidlineOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
   lm: any[],
@@ -135,43 +136,89 @@ export function drawOverlay(
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
 
-  // Puntos clave
   const forehead = lm[10];
   const chin = lm[152];
   const nose = lm[1];
   const noseBridge = lm[168];
-  const browL = lm[70], browR = lm[300];
   const mouthL = lm[61], mouthR = lm[291];
   const upperLip = lm[13];
   
-  // === LÍNEA MEDIA FACIAL (Verde) ===
+  // Línea Media Facial (Verde)
   const facialCenterX = ((forehead.x + noseBridge.x + nose.x + chin.x) / 4) * w;
-  ctx.strokeStyle = "rgba(34,197,94,0.8)"; // green
-  ctx.lineWidth = 2;
-  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = "rgba(34,197,94,0.9)";
+  ctx.lineWidth = 3;
+  ctx.setLineDash([8, 8]);
   ctx.beginPath();
   ctx.moveTo(facialCenterX, forehead.y * h);
   ctx.lineTo(facialCenterX, chin.y * h);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // === LÍNEA MEDIA DENTAL (Naranja) ===
+  // Línea Media Dental (Naranja)
   const dentalCenterX = ((mouthL.x + mouthR.x) / 2) * w;
-  ctx.strokeStyle = "rgba(249,115,22,0.8)"; // orange
-  ctx.lineWidth = 2;
-  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = "rgba(249,115,22,0.9)";
+  ctx.lineWidth = 3;
+  ctx.setLineDash([8, 8]);
   ctx.beginPath();
-  ctx.moveTo(dentalCenterX, (nose.y - 0.02) * h);
-  ctx.lineTo(dentalCenterX, (upperLip.y + 0.05) * h);
+  ctx.moveTo(dentalCenterX, (nose.y - 0.03) * h);
+  ctx.lineTo(dentalCenterX, (upperLip.y + 0.08) * h);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // === TERCIOS FACIALES (Líneas horizontales azules) ===
+  // Panel de información
+  ctx.fillStyle = "rgba(0,0,0,0.75)";
+  ctx.fillRect(10, 10, 320, 110);
+  
+  ctx.font = "bold 14px system-ui";
+  ctx.fillStyle = "white";
+  ctx.fillText("📏 ANÁLISIS DE LÍNEAS MEDIAS", 20, 35);
+  
+  ctx.font = "12px system-ui";
+  ctx.fillStyle = "rgba(34,197,94,1)";
+  ctx.fillText("━ Línea Media Facial (verde)", 20, 55);
+  
+  ctx.fillStyle = "rgba(249,115,22,1)";
+  ctx.fillText("━ Línea Media Dental (naranja)", 20, 75);
+  
+  const statusColor = m.midlineCoincidence.status === "coincidente" ? "rgba(34,197,94,1)" :
+                      m.midlineCoincidence.status === "leve" ? "rgba(250,204,21,1)" :
+                      "rgba(239,68,68,1)";
+  ctx.fillStyle = statusColor;
+  ctx.fillText(`Coincidencia: ${m.midlineCoincidence.status} (${m.midlineCoincidence.deviation.toFixed(1)}mm)`, 20, 100);
+}
+
+// Overlay 2: Proporciones Faciales (Tercios)
+export function drawProportionsOverlay(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  lm: any[],
+  m: SmileMetrics
+) {
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
+
+  const forehead = lm[10];
+  const chin = lm[152];
+  const browL = lm[70], browR = lm[300];
+  const nose = lm[1];
+  
   const browY = ((browL.y + browR.y) / 2) * h;
   const noseBaseY = nose.y * h;
+  const foreheadY = forehead.y * h;
+  const chinY = chin.y * h;
   
-  ctx.strokeStyle = "rgba(59,130,246,0.6)"; // blue
-  ctx.lineWidth = 1.5;
+  // Líneas horizontales de tercios
+  ctx.strokeStyle = "rgba(59,130,246,0.8)";
+  ctx.lineWidth = 2.5;
+  
+  // Línea superior (frente)
+  ctx.beginPath();
+  ctx.moveTo(0, foreheadY);
+  ctx.lineTo(w, foreheadY);
+  ctx.stroke();
   
   // Línea de cejas
   ctx.beginPath();
@@ -184,66 +231,126 @@ export function drawOverlay(
   ctx.moveTo(0, noseBaseY);
   ctx.lineTo(w, noseBaseY);
   ctx.stroke();
+  
+  // Línea de mentón
+  ctx.beginPath();
+  ctx.moveTo(0, chinY);
+  ctx.lineTo(w, chinY);
+  ctx.stroke();
 
-  // === PUNTOS CLAVE ===
-  const keyPoints = [1, 10, 152, 168, 70, 300, 61, 291, 13, 14];
-  ctx.fillStyle = "rgba(0,200,255,0.9)";
-  keyPoints.forEach(i => {
+  // Etiquetas de tercios con fondo
+  const labelX = 15;
+  const labelPadding = 8;
+  
+  // Tercio superior
+  const upper1Y = (foreheadY + browY) / 2;
+  ctx.fillStyle = "rgba(59,130,246,0.9)";
+  ctx.fillRect(labelX - 5, upper1Y - 15, 160, 25);
+  ctx.fillStyle = "white";
+  ctx.font = "bold 12px system-ui";
+  ctx.fillText(`Superior: ${m.facialProportions.upperThird.toFixed(0)}%`, labelX, upper1Y);
+  
+  // Tercio medio
+  const middle1Y = (browY + noseBaseY) / 2;
+  ctx.fillStyle = "rgba(59,130,246,0.9)";
+  ctx.fillRect(labelX - 5, middle1Y - 15, 160, 25);
+  ctx.fillStyle = "white";
+  ctx.fillText(`Medio: ${m.facialProportions.middleThird.toFixed(0)}%`, labelX, middle1Y);
+  
+  // Tercio inferior
+  const lower1Y = (noseBaseY + chinY) / 2;
+  ctx.fillStyle = "rgba(59,130,246,0.9)";
+  ctx.fillRect(labelX - 5, lower1Y - 15, 160, 25);
+  ctx.fillStyle = "white";
+  ctx.fillText(`Inferior: ${m.facialProportions.lowerThird.toFixed(0)}%`, labelX, lower1Y);
+
+  // Panel de información
+  ctx.fillStyle = "rgba(0,0,0,0.75)";
+  ctx.fillRect(10, 10, 280, 85);
+  
+  ctx.font = "bold 14px system-ui";
+  ctx.fillStyle = "white";
+  ctx.fillText("📐 PROPORCIONES FACIALES", 20, 35);
+  
+  ctx.font = "12px system-ui";
+  ctx.fillText("Ideal: 33% - 33% - 33%", 20, 55);
+  
+  const balanceColor = m.facialProportions.isBalanced ? "rgba(34,197,94,1)" : "rgba(250,204,21,1)";
+  ctx.fillStyle = balanceColor;
+  ctx.fillText(m.facialProportions.isBalanced ? "✓ Equilibradas" : "⚠ Desbalanceadas", 20, 75);
+}
+
+// Overlay 3: Análisis de Sonrisa
+export function drawSmileOverlay(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  lm: any[],
+  m: SmileMetrics
+) {
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
+
+  const mouthL = lm[61], mouthR = lm[291];
+  const upperLip = lm[13], lowerLip = lm[14];
+  const nose = lm[1];
+  
+  // Puntos clave de la sonrisa
+  ctx.fillStyle = "rgba(236,72,153,0.9)";
+  [61, 291, 13, 14].forEach(i => {
     const p = lm[i];
     ctx.beginPath();
-    ctx.arc(p.x * w, p.y * h, 3, 0, Math.PI * 2);
+    ctx.arc(p.x * w, p.y * h, 5, 0, Math.PI * 2);
     ctx.fill();
   });
 
-  // === PANEL DE INFORMACIÓN ===
-  const panelX = 10;
-  const panelY = 10;
-  const lineHeight = 20;
+  // Línea de arco de sonrisa
+  ctx.strokeStyle = "rgba(236,72,153,0.8)";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(mouthL.x * w, mouthL.y * h);
+  ctx.quadraticCurveTo(
+    upperLip.x * w, upperLip.y * h,
+    mouthR.x * w, mouthR.y * h
+  );
+  ctx.stroke();
+
+  // Línea intercomisural
+  ctx.strokeStyle = "rgba(168,85,247,0.7)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(mouthL.x * w, mouthL.y * h);
+  ctx.lineTo(mouthR.x * w, mouthR.y * h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Panel de información
+  ctx.fillStyle = "rgba(0,0,0,0.75)";
+  ctx.fillRect(10, 10, 300, 120);
   
-  // Fondo semi-transparente
-  ctx.fillStyle = "rgba(0,0,0,0.7)";
-  ctx.fillRect(panelX - 5, panelY - 5, 280, 170);
-  
-  // Textos
-  ctx.font = "bold 13px system-ui";
+  ctx.font = "bold 14px system-ui";
   ctx.fillStyle = "white";
+  ctx.fillText("😊 ANÁLISIS DE SONRISA", 20, 35);
   
-  let currentY = panelY + 12;
-  
-  // Título
-  ctx.fillText("📊 ANÁLISIS FACIAL Y DENTAL", panelX, currentY);
-  currentY += lineHeight + 5;
-  
-  // Línea media dental
   ctx.font = "12px system-ui";
-  ctx.fillStyle = "rgba(249,115,22,1)";
-  ctx.fillText(`● Línea media dental: ${m.midline.mm.toFixed(1)}mm ${m.midline.side}`, panelX, currentY);
-  currentY += lineHeight;
   
-  // Línea media facial
-  ctx.fillStyle = "rgba(34,197,94,1)";
-  ctx.fillText(`● Línea media facial: ${m.facialMidline.side}`, panelX, currentY);
-  currentY += lineHeight;
+  const arcColor = m.smileArc === 'consonante' ? "rgba(34,197,94,1)" : 
+                   m.smileArc === 'plano' ? "rgba(250,204,21,1)" : "rgba(239,68,68,1)";
+  ctx.fillStyle = arcColor;
+  ctx.fillText(`Arco: ${m.smileArc}`, 20, 58);
   
-  // Coincidencia
-  const statusColor = m.midlineCoincidence.status === "coincidente" ? "rgba(34,197,94,1)" :
-                      m.midlineCoincidence.status === "leve" ? "rgba(250,204,21,1)" :
-                      m.midlineCoincidence.status === "moderada" ? "rgba(249,115,22,1)" :
-                      "rgba(239,68,68,1)";
-  ctx.fillStyle = statusColor;
-  ctx.fillText(`● Coincidencia: ${m.midlineCoincidence.status} (${m.midlineCoincidence.deviation.toFixed(1)}mm)`, panelX, currentY);
-  currentY += lineHeight + 5;
+  const gingColor = m.gingival.class === 'baja' ? "rgba(34,197,94,1)" : 
+                    m.gingival.class === 'media' ? "rgba(250,204,21,1)" : "rgba(239,68,68,1)";
+  ctx.fillStyle = gingColor;
+  ctx.fillText(`Exposición gingival: ${m.gingival.mm.toFixed(1)}mm (${m.gingival.class})`, 20, 78);
   
-  // Proporciones faciales
-  ctx.fillStyle = "rgba(59,130,246,1)";
-  ctx.fillText(`● Tercios: ${m.facialProportions.upperThird.toFixed(0)}% | ${m.facialProportions.middleThird.toFixed(0)}% | ${m.facialProportions.lowerThird.toFixed(0)}%`, panelX, currentY);
-  currentY += lineHeight;
-  
-  ctx.fillStyle = m.facialProportions.isBalanced ? "rgba(34,197,94,1)" : "rgba(250,204,21,1)";
-  ctx.fillText(`  ${m.facialProportions.isBalanced ? "✓ Equilibradas" : "⚠ Desbalanceadas"}`, panelX, currentY);
-  currentY += lineHeight + 5;
-  
-  // Arco y gingival
   ctx.fillStyle = "white";
-  ctx.fillText(`Arco: ${m.smileArc} | Ging: ${m.gingival.mm.toFixed(1)}mm (${m.gingival.class})`, panelX, currentY);
+  ctx.fillText(`Corredor bucal: ${Math.round(m.buccalRatio*100)}%`, 20, 98);
+  
+  const buccalColor = (m.buccalRatio >= 0.1 && m.buccalRatio <= 0.3) ? "rgba(34,197,94,1)" : "rgba(250,204,21,1)";
+  ctx.fillStyle = buccalColor;
+  ctx.fillText(m.buccalRatio >= 0.1 && m.buccalRatio <= 0.3 ? "✓ Ideal" : "⚠ Revisar", 180, 98);
 }

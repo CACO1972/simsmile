@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
-import { computeMetrics, drawOverlay, type SmileMetrics } from "@/lib/metrics";
+import { computeMetrics, drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
 
 // Carga dinámica de MediaPipe Tasks desde CDN (sin tocar package.json)
 async function loadFaceTask() {
@@ -46,7 +46,9 @@ export default function IALab() {
   const [loading, setLoading] = useState(false);
   const [simulatedB64, setSimulatedB64] = useState<string>("");
   const [simulating, setSimulating] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef1 = useRef<HTMLCanvasElement>(null);
+  const canvasRef2 = useRef<HTMLCanvasElement>(null);
+  const canvasRef3 = useRef<HTMLCanvasElement>(null);
 
   const onFile = (e: any, kind: "rest" | "smile") => {
     const f = e.target.files?.[0]; 
@@ -83,12 +85,17 @@ export default function IALab() {
       setMetrics(m);
       track({ name: "analyze_ok", data: { arc: m.smileArc, gingivalClass: m.gingival.class } });
 
-      // Pintar overlay
-      const canvas = canvasRef.current!;
-      canvas.width = smileImg.width;
-      canvas.height = smileImg.height;
-      const ctx = canvas.getContext("2d")!;
-      drawOverlay(ctx, smileImg, smileLm, m);
+      // Pintar overlays en 3 canvas separados
+      [canvasRef1, canvasRef2, canvasRef3].forEach((ref, idx) => {
+        const canvas = ref.current!;
+        canvas.width = smileImg.width;
+        canvas.height = smileImg.height;
+        const ctx = canvas.getContext("2d")!;
+        
+        if (idx === 0) drawMidlineOverlay(ctx, smileImg, smileLm, m);
+        else if (idx === 1) drawProportionsOverlay(ctx, smileImg, smileLm, m);
+        else drawSmileOverlay(ctx, smileImg, smileLm, m);
+      });
 
     } catch (e) {
       console.error(e);
@@ -203,23 +210,64 @@ export default function IALab() {
             </div>
 
             <div className="grid gap-4">
-              <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-                <canvas 
-                  ref={canvasRef} 
-                  className="w-full h-auto" 
-                  aria-label="overlay análisis"
-                />
-              </div>
-              
               {!metrics && (
-                <div className="text-muted-foreground text-sm text-center p-8">
+                <div className="text-muted-foreground text-sm text-center p-8 bg-muted/30 rounded-xl border border-border">
                   Sube fotos y presiona "Analizar" para ver resultados.
                 </div>
               )}
               
               {metrics && (
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                      <canvas 
+                        ref={canvasRef1} 
+                        className="w-full h-auto" 
+                        aria-label="análisis líneas medias"
+                      />
+                    </div>
+                    <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
+                      <p className="text-xs text-foreground">
+                        <strong>Líneas Medias:</strong> Compara la simetría facial (verde) con la dental (naranja). Una buena coincidencia es clave para una sonrisa armoniosa.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                      <canvas 
+                        ref={canvasRef2} 
+                        className="w-full h-auto" 
+                        aria-label="proporciones faciales"
+                      />
+                    </div>
+                    <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
+                      <p className="text-xs text-foreground">
+                        <strong>Proporciones Faciales:</strong> El rostro se divide en tres tercios idealmente iguales (33% cada uno). Esto indica balance y armonía facial.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                      <canvas 
+                        ref={canvasRef3} 
+                        className="w-full h-auto" 
+                        aria-label="análisis de sonrisa"
+                      />
+                    </div>
+                    <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
+                      <p className="text-xs text-foreground">
+                        <strong>Análisis de Sonrisa:</strong> Evalúa el arco de la sonrisa, exposición de encías y amplitud. Una sonrisa consonante y equilibrada es el ideal estético.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {metrics && (
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-lg text-foreground">Resultados del análisis</h3>
+                  <h3 className="font-semibold text-lg text-foreground">Resultados detallados</h3>
                   
                   <div className="p-3 bg-primary/10 rounded-lg border border-primary/30">
                     <h4 className="text-sm font-semibold mb-2 text-foreground">Líneas Medias</h4>
