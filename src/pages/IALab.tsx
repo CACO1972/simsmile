@@ -231,7 +231,7 @@ export default function IALab() {
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <span className="text-sm font-medium">Exposición gingival:</span>
                       <span className={`text-sm font-bold capitalize ${
-                        metrics.gingival.class === 'baja' ? 'text-green-600' : 
+                        metrics.gingival.class === 'ninguna' || metrics.gingival.class === 'baja' ? 'text-green-600' : 
                         metrics.gingival.class === 'media' ? 'text-yellow-600' : 'text-red-600'
                       }`}>
                         {metrics.gingival.class} ({metrics.gingival.mm.toFixed(1)} mm)
@@ -253,6 +253,36 @@ export default function IALab() {
                       }`}>
                         {Math.round(metrics.buccalRatio*100)}%
                       </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <h4 className="font-semibold text-sm text-foreground mb-3">Proporciones Faciales</h4>
+                    <div className="grid gap-2 text-xs">
+                      <div className="flex justify-between p-2 bg-muted/30 rounded">
+                        <span>Tercios Faciales:</span>
+                        <span className="font-mono">{metrics.facialRatios.faceHorizontal.upper}% : {metrics.facialRatios.faceHorizontal.middle}% : {metrics.facialRatios.faceHorizontal.lower}%</span>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted/30 rounded">
+                        <span>Aspecto Facial:</span>
+                        <span className="font-mono">1 : {metrics.facialRatios.faceAspect}</span>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted/30 rounded">
+                        <span>Aspecto Ojos:</span>
+                        <span className="font-mono">1 : {metrics.facialRatios.eyeAspect}</span>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted/30 rounded">
+                        <span>Nariz-Labios-Mentón:</span>
+                        <span className="font-mono">1 : {metrics.facialRatios.noseLipChin.toFixed(3)}</span>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted/30 rounded">
+                        <span>Proporción Áurea:</span>
+                        <span className={`font-mono ${
+                          metrics.facialRatios.noseLipChin > 1.5 && metrics.facialRatios.noseLipChin < 1.7 ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {metrics.facialRatios.noseLipChin > 1.5 && metrics.facialRatios.noseLipChin < 1.7 ? '✓' : '○'} 1.618
+                        </span>
+                      </div>
                     </div>
                   </div>
                   
