@@ -17,7 +17,7 @@ async function loadFaceTask() {
     },
     numFaces: 1,
     runningMode: "IMAGE",
-    outputFaceBlendshapes: true
+    outputFaceBlendshapes: false
   });
   return landmarker;
 }
