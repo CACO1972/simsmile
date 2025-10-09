@@ -44,11 +44,8 @@ export default function IALab() {
   const [smileB64, setSmileB64] = useState<string>("");
   const [metrics, setMetrics] = useState<SmileMetrics | null>(null);
   const [loading, setLoading] = useState(false);
-  const [whiten, setWhiten] = useState(0);     // 0..150
-  const [align, setAlign] = useState(0);       // -15..15 (px visual)
-  const [contrast, setContrast] = useState(100);// 50..150%
-  const [brightness, setBrightness] = useState(100); // 50..150%
-  const [saturation, setSaturation] = useState(100); // 0..200%
+  const [simulatedB64, setSimulatedB64] = useState<string>("");
+  const [simulating, setSimulating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const onFile = (e: any, kind: "rest" | "smile") => {
@@ -98,6 +95,35 @@ export default function IALab() {
       alert("Falló el análisis. Prueba con otra foto (frontal, buena luz).");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const simulateCorrections = async () => {
+    if (!smileB64 || !metrics) return alert("Primero analiza una foto de sonrisa.");
+    setSimulating(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/simulate-smile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ imageBase64: smileB64, metrics }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error en simulación');
+      }
+
+      const data = await response.json();
+      setSimulatedB64(data.simulatedImage);
+      track({ name: "simulation_success", data: { corrections: true } });
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : "Error al simular. Intenta de nuevo.");
+    } finally {
+      setSimulating(false);
     }
   };
 
@@ -197,146 +223,102 @@ export default function IALab() {
                   <div className="grid gap-2">
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <span className="text-sm font-medium">Arco de sonrisa:</span>
-                      <span className="text-sm font-bold text-primary capitalize">{metrics.smileArc}</span>
+                      <span className={`text-sm font-bold capitalize ${
+                        metrics.smileArc === 'consonante' ? 'text-green-600' : 
+                        metrics.smileArc === 'plano' ? 'text-yellow-600' : 'text-red-600'
+                      }`}>{metrics.smileArc}</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <span className="text-sm font-medium">Exposición gingival:</span>
-                      <span className="text-sm font-bold text-primary capitalize">
+                      <span className={`text-sm font-bold capitalize ${
+                        metrics.gingival.class === 'baja' ? 'text-green-600' : 
+                        metrics.gingival.class === 'media' ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
                         {metrics.gingival.class} ({metrics.gingival.mm.toFixed(1)} mm)
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-sm font-medium">Midline:</span>
-                      <span className="text-sm font-bold text-primary capitalize">
-                        {metrics.midline.mm.toFixed(1)} mm {metrics.midline.side}
+                      <span className="text-sm font-medium">Línea media dental:</span>
+                      <span className={`text-sm font-bold capitalize ${
+                        Math.abs(metrics.midline.mm) < 2 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {Math.abs(metrics.midline.mm) < 0.5 ? 'Centrada' : 
+                         `${metrics.midline.mm.toFixed(1)} mm ${metrics.midline.side}`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <span className="text-sm font-medium">Corredor bucal:</span>
-                      <span className="text-sm font-bold text-primary">
+                      <span className={`text-sm font-bold ${
+                        metrics.buccalRatio >= 0.1 && metrics.buccalRatio <= 0.3 ? 'text-green-600' : 'text-yellow-600'
+                      }`}>
                         {Math.round(metrics.buccalRatio*100)}%
                       </span>
                     </div>
                   </div>
+                  
+                  <Button 
+                    className="w-full mt-4" 
+                    onClick={simulateCorrections} 
+                    disabled={simulating}
+                    size="lg"
+                    variant="default"
+                  >
+                    {simulating ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Simulando correcciones...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Simular correcciones con IA
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/80 backdrop-blur-sm border-border shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-              Simulación Visual
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex justify-between">
-                  <span>Blanqueamiento dental</span>
-                  <span className="text-primary font-mono">{whiten}%</span>
-                </label>
-                <input 
-                  type="range" 
-                  min={0} 
-                  max={150} 
-                  value={whiten} 
-                  onChange={(e) => setWhiten(Number(e.target.value))} 
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex justify-between">
-                  <span>Brillo general</span>
-                  <span className="text-primary font-mono">{brightness}%</span>
-                </label>
-                <input 
-                  type="range" 
-                  min={50} 
-                  max={150} 
-                  value={brightness} 
-                  onChange={(e) => setBrightness(Number(e.target.value))} 
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex justify-between">
-                  <span>Contraste</span>
-                  <span className="text-primary font-mono">{contrast}%</span>
-                </label>
-                <input 
-                  type="range" 
-                  min={50} 
-                  max={150} 
-                  value={contrast} 
-                  onChange={(e) => setContrast(Number(e.target.value))} 
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex justify-between">
-                  <span>Saturación</span>
-                  <span className="text-primary font-mono">{saturation}%</span>
-                </label>
-                <input 
-                  type="range" 
-                  min={0} 
-                  max={200} 
-                  value={saturation} 
-                  onChange={(e) => setSaturation(Number(e.target.value))} 
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex justify-between">
-                  <span>Alineación horizontal</span>
-                  <span className="text-primary font-mono">{align}px</span>
-                </label>
-                <input 
-                  type="range" 
-                  min={-15} 
-                  max={15} 
-                  value={align} 
-                  onChange={(e) => setAlign(Number(e.target.value))} 
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-              </div>
-              
-              <div className="p-4 bg-muted/50 rounded-lg border border-border">
-                <p className="text-xs text-muted-foreground">
-                  * Simulación orientativa. La evaluación clínica puede diferir.
-                </p>
-              </div>
-            </div>
-            
-            <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-              {smileB64 ? (
-                <img
-                  src={smileB64}
-                  alt="simulación"
-                  className="w-full h-auto"
-                  style={{
-                    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) hue-rotate(${whiten * 0.1}deg)`,
-                    transform: `translateX(${align}px)`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-64 text-muted-foreground p-6 text-center">
-                  Sube una foto de sonrisa para simular cambios visuales
+        {simulatedB64 && (
+          <Card className="bg-card/80 backdrop-blur-sm border-border shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Simulación con IA — Resultado
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-foreground">Foto original</h3>
+                <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                  <img src={smileB64} alt="original" className="w-full h-auto" />
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="font-semibold text-foreground">Simulación corregida</h3>
+                <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                  <img src={simulatedB64} alt="simulada" className="w-full h-auto" />
+                </div>
+                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <p className="text-sm text-foreground">
+                    ✨ Correcciones aplicadas con IA basadas en los patrones estéticos detectados
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
