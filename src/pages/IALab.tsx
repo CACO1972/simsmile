@@ -85,17 +85,22 @@ export default function IALab() {
       setMetrics(m);
       track({ name: "analyze_ok", data: { arc: m.smileArc, gingivalClass: m.gingival.class } });
 
-      // Pintar overlays en 3 canvas separados
-      [canvasRef1, canvasRef2, canvasRef3].forEach((ref, idx) => {
-        const canvas = ref.current!;
-        canvas.width = smileImg.width;
-        canvas.height = smileImg.height;
-        const ctx = canvas.getContext("2d")!;
-        
-        if (idx === 0) drawMidlineOverlay(ctx, smileImg, smileLm, m);
-        else if (idx === 1) drawProportionsOverlay(ctx, smileImg, smileLm, m);
-        else drawSmileOverlay(ctx, smileImg, smileLm, m);
-      });
+      // Pintar overlays en 3 canvas separados con manejo seguro de refs
+      setTimeout(() => {
+        [canvasRef1, canvasRef2, canvasRef3].forEach((ref, idx) => {
+          const canvas = ref.current;
+          if (!canvas) return;
+          
+          canvas.width = smileImg.width;
+          canvas.height = smileImg.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+          
+          if (idx === 0) drawMidlineOverlay(ctx, smileImg, smileLm, m);
+          else if (idx === 1) drawProportionsOverlay(ctx, smileImg, smileLm, m);
+          else drawSmileOverlay(ctx, smileImg, smileLm, m);
+        });
+      }, 0);
 
     } catch (e) {
       console.error(e);
