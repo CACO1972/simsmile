@@ -220,6 +220,60 @@ export default function IALab() {
               {metrics && (
                 <div className="space-y-3">
                   <h3 className="font-semibold text-lg text-foreground">Resultados del análisis</h3>
+                  
+                  <div className="p-3 bg-primary/10 rounded-lg border border-primary/30">
+                    <h4 className="text-sm font-semibold mb-2 text-foreground">Líneas Medias</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Dental:</span>
+                        <span className={`font-bold ${
+                          Math.abs(metrics.midline.mm) < 1 ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {metrics.midline.mm.toFixed(1)}mm {metrics.midline.side}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Facial:</span>
+                        <span className="font-bold text-green-600">{metrics.facialMidline.side}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Coincidencia:</span>
+                        <span className={`font-bold capitalize ${
+                          metrics.midlineCoincidence.status === 'coincidente' ? 'text-green-600' : 
+                          metrics.midlineCoincidence.status === 'leve' ? 'text-yellow-600' :
+                          metrics.midlineCoincidence.status === 'moderada' ? 'text-orange-600' : 'text-red-600'
+                        }`}>
+                          {metrics.midlineCoincidence.status} ({metrics.midlineCoincidence.deviation.toFixed(1)}mm)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-accent/10 rounded-lg border border-accent/30">
+                    <h4 className="text-sm font-semibold mb-2 text-foreground">Proporciones Faciales</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Tercio Superior:</span>
+                        <span className="font-bold">{metrics.facialProportions.upperThird.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Tercio Medio:</span>
+                        <span className="font-bold">{metrics.facialProportions.middleThird.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Tercio Inferior:</span>
+                        <span className="font-bold">{metrics.facialProportions.lowerThird.toFixed(1)}%</span>
+                      </div>
+                      <div className="pt-2 border-t border-accent/30">
+                        <span className={`text-sm font-bold ${
+                          metrics.facialProportions.isBalanced ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {metrics.facialProportions.isBalanced ? '✓ Equilibradas' : '⚠ Desbalanceadas'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid gap-2">
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                       <span className="text-sm font-medium">Arco de sonrisa:</span>
@@ -235,15 +289,6 @@ export default function IALab() {
                         metrics.gingival.class === 'media' ? 'text-yellow-600' : 'text-red-600'
                       }`}>
                         {metrics.gingival.class} ({metrics.gingival.mm.toFixed(1)} mm)
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-sm font-medium">Línea media dental:</span>
-                      <span className={`text-sm font-bold capitalize ${
-                        Math.abs(metrics.midline.mm) < 2 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {Math.abs(metrics.midline.mm) < 0.5 ? 'Centrada' : 
-                         `${metrics.midline.mm.toFixed(1)} mm ${metrics.midline.side}`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
