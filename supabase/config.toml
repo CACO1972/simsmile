@@ -1,1 +1,4 @@
 project_id = "qdbldrlzabqcuadlkyoy"
+
+[functions.simulate-smile]
+verify_jwt = false

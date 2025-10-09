@@ -12,39 +12,54 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, metrics } = await req.json();
+    const { imageBase64, metrics, simulationType = 'smile' } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Construir prompt basado en las métricas
-    const corrections = [];
+    let prompt = '';
     
-    if (metrics.smileArc === 'invertido' || metrics.smileArc === 'plano') {
-      corrections.push('mejorar el arco de sonrisa para que sea consonante');
-    }
-    
-    if (metrics.gingival.class === 'excesiva') {
-      corrections.push('reducir la exposición gingival excesiva');
-    }
-    
-    if (Math.abs(metrics.midline.mm) > 2) {
-      corrections.push(`corregir la línea media dental desviada ${metrics.midline.mm.toFixed(1)}mm hacia ${metrics.midline.side}`);
-    }
-    
-    if (metrics.buccalRatio < 0.1 || metrics.buccalRatio > 0.3) {
-      corrections.push('optimizar el corredor bucal');
-    }
+    // Simulación de relleno facial (surcos nasogenianos)
+    if (simulationType === 'facial-filler') {
+      prompt = `Eres un experto en simulación de estética facial. Realiza un relleno facial estético sutil en los surcos nasogenianos (las líneas desde la nariz hasta las comisuras de los labios). 
 
-    // Agregar correcciones de dientes faltantes/desalineados
-    corrections.push('agregar dientes faltantes con forma y color natural');
-    corrections.push('enderezar y alinear dientes torcidos o desalineados');
-    corrections.push('blanquear dientes manteniendo apariencia natural');
-    corrections.push('igualar tamaños y proporciones de dientes según estándares estéticos');
+INSTRUCCIONES:
+- El relleno debe verse completamente natural y profesional
+- Suaviza las líneas nasogenianas sin exagerar
+- Mantén todos los demás rasgos faciales exactamente iguales
+- El resultado debe parecer que la persona descansó bien y se ve más juvenil
+- No alterar forma de nariz, labios, ojos o estructura facial
+- Mantener texturas de piel, iluminación y sombras originales
+- El efecto debe ser sutil pero visible, como un relleno de ácido hialurónico profesional`;
+    } else {
+      // Simulación de corrección dental
+      const corrections = [];
+      
+      if (metrics.smileArc === 'inverso' || metrics.smileArc === 'plano') {
+        corrections.push('mejorar el arco de sonrisa para que sea consonante');
+      }
+      
+      if (metrics.gingival.class === 'excesiva') {
+        corrections.push('reducir la exposición gingival excesiva');
+      }
+      
+      if (Math.abs(metrics.midline.mm) > 2) {
+        corrections.push(`corregir la línea media dental desviada ${metrics.midline.mm.toFixed(1)}mm hacia ${metrics.midline.side}`);
+      }
+      
+      if (metrics.buccalRatio < 0.1 || metrics.buccalRatio > 0.3) {
+        corrections.push('optimizar el corredor bucal');
+      }
 
-    const prompt = `Eres un experto en simulación dental. Edita esta fotografía de sonrisa aplicando las siguientes correcciones estéticas de forma natural y realista:
+      // Agregar correcciones de dientes
+      corrections.push('agregar dientes faltantes con forma y color natural');
+      corrections.push('enderezar y alinear dientes torcidos o desalineados');
+      corrections.push('blanquear dientes manteniendo apariencia natural');
+      corrections.push('igualar tamaños y proporciones de dientes según estándares estéticos');
+
+      prompt = `Eres un experto en simulación dental. Edita esta fotografía de sonrisa aplicando las siguientes correcciones estéticas de forma natural y realista:
 
 ${corrections.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
@@ -55,6 +70,7 @@ IMPORTANTE:
 - Usa tonos de dientes naturales (no blanco artificial)
 - La encía debe verse saludable y proporcionada
 - Mantén la iluminación y sombras originales`;
+    }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

@@ -108,7 +108,7 @@ export default function IALab() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ imageBase64: smileB64, metrics }),
+        body: JSON.stringify({ imageBase64: smileB64, metrics, simulationType: 'smile' }),
       });
 
       if (!response.ok) {
@@ -122,6 +122,38 @@ export default function IALab() {
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : "Error al simular. Intenta de nuevo.");
+    } finally {
+      setSimulating(false);
+    }
+  };
+
+  const simulateFacialFiller = async () => {
+    if (!smileB64) return alert("Primero analiza una foto de sonrisa.");
+    setSimulating(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/simulate-smile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ 
+          imageBase64: smileB64, 
+          simulationType: 'facial-filler'
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error en simulación facial');
+      }
+
+      const data = await response.json();
+      setSimulatedB64(data.simulatedImage);
+      track({ name: "facial_filler_simulation", data: { success: true } });
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : "Error al simular relleno facial. Intenta de nuevo.");
     } finally {
       setSimulating(false);
     }
@@ -257,60 +289,90 @@ export default function IALab() {
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-border">
-                    <h4 className="font-semibold text-sm text-foreground mb-3">Proporciones Faciales</h4>
+                    <h4 className="font-semibold text-sm text-foreground mb-3">Métricas Dentales</h4>
                     <div className="grid gap-2 text-xs">
                       <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span>Tercios Faciales:</span>
-                        <span className="font-mono">{metrics.facialRatios.faceHorizontal.upper}% : {metrics.facialRatios.faceHorizontal.middle}% : {metrics.facialRatios.faceHorizontal.lower}%</span>
+                        <span>Ancho de Sonrisa:</span>
+                        <span className="font-mono font-bold text-primary">{metrics.dentalMetrics.smileWidth} mm</span>
                       </div>
                       <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span>Aspecto Facial:</span>
-                        <span className="font-mono">1 : {metrics.facialRatios.faceAspect}</span>
+                        <span>Incisivo Central:</span>
+                        <span className="font-mono">{metrics.dentalMetrics.centralIncisorWidth} × {metrics.dentalMetrics.centralIncisorHeight} mm</span>
                       </div>
                       <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span>Aspecto Ojos:</span>
-                        <span className="font-mono">1 : {metrics.facialRatios.eyeAspect}</span>
-                      </div>
-                      <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span>Nariz-Labios-Mentón:</span>
-                        <span className="font-mono">1 : {metrics.facialRatios.noseLipChin.toFixed(3)}</span>
-                      </div>
-                      <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span>Proporción Áurea:</span>
+                        <span>Proporción IC (ancho/alto):</span>
                         <span className={`font-mono ${
-                          metrics.facialRatios.noseLipChin > 1.5 && metrics.facialRatios.noseLipChin < 1.7 ? 'text-green-600' : 'text-yellow-600'
+                          metrics.dentalMetrics.incisorProportion >= 0.75 && metrics.dentalMetrics.incisorProportion <= 0.85 ? 'text-green-600' : 'text-yellow-600'
                         }`}>
-                          {metrics.facialRatios.noseLipChin > 1.5 && metrics.facialRatios.noseLipChin < 1.7 ? '✓' : '○'} 1.618
+                          {metrics.dentalMetrics.incisorProportion} {metrics.dentalMetrics.incisorProportion >= 0.75 && metrics.dentalMetrics.incisorProportion <= 0.85 ? '✓' : ''}
+                        </span>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted/30 rounded">
+                        <span>Incisivo Lateral:</span>
+                        <span className="font-mono">{metrics.dentalMetrics.lateralIncisorWidth} mm</span>
+                      </div>
+                      <div className="flex justify-between p-2 bg-muted/30 rounded">
+                        <span>Proporción IL/IC:</span>
+                        <span className={`font-mono ${
+                          metrics.dentalMetrics.interdentalProportions[0] >= 0.6 && metrics.dentalMetrics.interdentalProportions[0] <= 0.65 ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {metrics.dentalMetrics.interdentalProportions[0]} (ideal: 0.62)
                         </span>
                       </div>
                     </div>
                   </div>
                   
-                  <Button 
-                    className="w-full mt-4" 
-                    onClick={simulateCorrections} 
-                    disabled={simulating}
-                    size="lg"
-                    variant="default"
-                  >
-                    {simulating ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Simulando correcciones...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        Simular correcciones con IA
-                      </>
-                    )}
-                  </Button>
+                  <div className="grid gap-3 mt-4">
+                    <Button 
+                      className="w-full" 
+                      onClick={simulateCorrections} 
+                      disabled={simulating}
+                      size="lg"
+                      variant="default"
+                    >
+                      {simulating ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Simulando...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Simular correcciones dentales
+                        </>
+                      )}
+                    </Button>
+
+                    <Button 
+                      className="w-full" 
+                      onClick={simulateFacialFiller} 
+                      disabled={simulating}
+                      size="lg"
+                      variant="outline"
+                    >
+                      {simulating ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Simulando...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                          Simular relleno surcos nasogenianos
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

@@ -1,14 +1,10 @@
-export type FacialRatios = {
-  faceHorizontal: { upper: number; middle: number; lower: number };
-  faceVertical: number[]; // 5 sections
-  faceAspect: number;
-  eyeAspect: number;
-  noseAspect: number;
-  noseToMouth: number;
-  noseLipChin: number;
-  upperToLowerLip: number;
-  eyeDistance: "narrow" | "balanced" | "wide";
-  eyeWidth: "narrow" | "balanced" | "wide";
+export type DentalMetrics = {
+  smileWidth: number; // mm
+  centralIncisorWidth: number; // mm
+  centralIncisorHeight: number; // mm
+  lateralIncisorWidth: number; // mm
+  interdentalProportions: number[]; // ratios
+  incisorProportion: number; // width/height ratio
 };
 
 export type SmileMetrics = {
@@ -16,7 +12,7 @@ export type SmileMetrics = {
   gingival: { mm: number; class: "ninguna" | "baja" | "media" | "excesiva" };
   midline: { mm: number; side: "izquierda" | "derecha" | "centrado" };
   buccalRatio: number; // 0..1
-  facialRatios: FacialRatios;
+  dentalMetrics: DentalMetrics;
 };
 
 // Distancia euclidiana
@@ -73,11 +69,13 @@ export function computeMetrics(params: {
   else smileArc = "plano";
 
   // Exposición gingival CORREGIDA: comparar labio superior en reposo vs sonrisa
-  // La encía se expone cuando el labio superior SUBE al sonreír
+  // Solo hay exposición si el borde de la encía es visible por encima de los dientes
   const restUpperY = restUpper.y;
   const smileUpperY = smileUpperTop.y;
   const lipMovement = restUpperY - smileUpperY; // Positivo = labio subió
-  const gingMM = Math.max(0, toMM(Math.max(0, lipMovement - 0.008), ipd));
+  
+  // Threshold más estricto: solo considerar exposición si hay movimiento significativo
+  const gingMM = lipMovement > 0.015 ? toMM(lipMovement - 0.015, ipd) : 0;
   const gingClass = gingMM < 0.5 ? "ninguna" : gingMM < 2 ? "baja" : gingMM < 4 ? "media" : "excesiva";
 
   // Corredor bucal
@@ -85,76 +83,44 @@ export function computeMetrics(params: {
   const faceW = d(smileEyeL, smileEyeR) * 2.8;
   const buccalRatio = Math.min(1, mouthW / faceW);
 
-  // === ANÁLISIS DE PROPORCIONES FACIALES ===
+  // === ANÁLISIS DENTAL DETALLADO ===
   
-  // Face Horizontal (thirds): forehead-to-nose, nose-to-upperLip, upperLip-to-chin
-  const faceHeight = d(smileForehead, smileChin);
-  const upperThird = d(smileForehead, smileNoseBridge);
-  const middleThird = d(smileNoseBridge, smileUpper);
-  const lowerThird = d(smileUpper, smileChin);
-  const totalThirds = upperThird + middleThird + lowerThird || 1;
+  // Ancho de sonrisa
+  const smileWidthMM = toMM(mouthW, ipd);
   
-  const faceHorizontal = {
-    upper: Math.round((upperThird / totalThirds) * 100),
-    middle: Math.round((middleThird / totalThirds) * 100),
-    lower: Math.round((lowerThird / totalThirds) * 100)
-  };
+  // Estimación de anchos dentales (basado en proporciones faciales)
+  // El incisivo central típicamente es ~10-12mm, usamos la distancia de boca como referencia
+  const teethSegment = mouthW / 6; // Dividimos en 6 dientes visibles aprox
+  const centralIncisorWidth = toMM(teethSegment * 1.1, ipd); // Central más ancho
+  const lateralIncisorWidth = toMM(teethSegment * 0.85, ipd); // Lateral más estrecho
+  
+  // Altura del incisivo central (estimación desde borde incisal al borde gingival)
+  const incisorHeight = toMM(d(smileUpper, smileLower) * 1.8, ipd);
+  
+  // Proporción ancho/alto del incisivo central (ideal ~0.8)
+  const incisorProportion = Number((centralIncisorWidth / incisorHeight).toFixed(2));
+  
+  // Proporciones interdentales (golden proportion: 0.618)
+  const interdentalProportions = [
+    Number((lateralIncisorWidth / centralIncisorWidth).toFixed(2)), // Lateral/Central
+    0.62, // Canino/Lateral (valor típico)
+  ];
 
-  // Face Vertical (5 sections) - aproximación
-  const faceVertical = [15, 19, 27, 19, 20]; // Valores estándar de referencia
-  
-  // Face Aspect Ratio (width:height)
-  const faceWidth = d(smileLm[LEFT_CHEEK], smileLm[RIGHT_CHEEK]);
-  const faceAspect = Number((faceHeight / faceWidth).toFixed(2));
-  
-  // Eye measurements
-  const eyeWidth = d(smileLm[LEFT_EYE_TOP], smileLm[LEFT_EYE_BOT]);
-  const eyeDistInner = d(smileEyeInL, smileEyeInR);
-  const eyeAspect = Number((eyeDistInner / eyeWidth).toFixed(3));
-  
-  const eyeDistanceRatio = eyeDistInner / ipd;
-  const eyeDistance = eyeDistanceRatio < 0.9 ? "narrow" : eyeDistanceRatio > 1.1 ? "wide" : "balanced";
-  const eyeWidth2 = eyeWidth / ipd;
-  const eyeWidthClass = eyeWidth2 < 0.35 ? "narrow" : eyeWidth2 > 0.45 ? "wide" : "balanced";
-  
-  // Nose measurements
-  const noseHeight = d(smileNoseBridge, smileNose);
-  const noseWidth = d(smileLm[234], smileLm[454]) * 0.6; // Aproximación ancho nasal
-  const noseAspect = Number((noseHeight / noseWidth).toFixed(3));
-  
-  // Nose to mouth width
-  const mouthWidth = d(smileMouthL, smileMouthR);
-  const noseToMouth = Number((noseWidth / mouthWidth).toFixed(3));
-  
-  // Nose-Lip-Chin ratio
-  const noseLipDist = d(smileNose, smileUpper);
-  const lipChinDist = d(smileUpper, smileChin);
-  const noseLipChin = Number((lipChinDist / noseLipDist).toFixed(3));
-  
-  // Upper to Lower Lip
-  const upperLipHeight = d(smileUpper, smileLm[0]);
-  const lowerLipHeight = d(smileLower, smileLm[17]);
-  const upperToLowerLip = Number((lowerLipHeight / upperLipHeight).toFixed(3));
-
-  const facialRatios: FacialRatios = {
-    faceHorizontal,
-    faceVertical,
-    faceAspect,
-    eyeAspect,
-    noseAspect,
-    noseToMouth,
-    noseLipChin,
-    upperToLowerLip,
-    eyeDistance,
-    eyeWidth: eyeWidthClass
+  const dentalMetrics: DentalMetrics = {
+    smileWidth: Number(smileWidthMM.toFixed(1)),
+    centralIncisorWidth: Number(centralIncisorWidth.toFixed(1)),
+    centralIncisorHeight: Number(incisorHeight.toFixed(1)),
+    lateralIncisorWidth: Number(lateralIncisorWidth.toFixed(1)),
+    interdentalProportions,
+    incisorProportion
   };
 
   return {
     smileArc,
-    gingival: { mm: gingMM, class: gingClass },
+    gingival: { mm: Number(gingMM.toFixed(1)), class: gingClass },
     midline: { mm: midlineMM, side },
     buccalRatio,
-    facialRatios
+    dentalMetrics
   };
 }
 
@@ -173,125 +139,137 @@ export function drawOverlay(
   const toScreen = (p: any) => ({ x: p.x * w, y: p.y * h });
 
   // Puntos clave
-  const eyeL = toScreen(lm[33]);
-  const eyeR = toScreen(lm[263]);
-  const eyeInL = toScreen(lm[133]);
-  const eyeInR = toScreen(lm[362]);
   const nose = toScreen(lm[1]);
-  const noseBridge = toScreen(lm[6]);
   const mouthL = toScreen(lm[61]);
   const mouthR = toScreen(lm[291]);
   const upperLip = toScreen(lm[13]);
   const lowerLip = toScreen(lm[14]);
-  const chin = toScreen(lm[152]);
   const forehead = toScreen(lm[10]);
-  const cheekL = toScreen(lm[234]);
-  const cheekR = toScreen(lm[454]);
+  const eyeL = toScreen(lm[33]);
+  const eyeR = toScreen(lm[263]);
 
-  // Estilo de líneas
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(255, 105, 180, 0.8)"; // Rosa
-  ctx.fillStyle = "rgba(255, 105, 180, 0.8)";
-
-  // === FACE HORIZONTAL THIRDS ===
-  ctx.strokeRect(cheekL.x, forehead.y, cheekR.x - cheekL.x, noseBridge.y - forehead.y);
-  ctx.strokeRect(cheekL.x, noseBridge.y, cheekR.x - cheekL.x, upperLip.y - noseBridge.y);
-  ctx.strokeRect(cheekL.x, upperLip.y, cheekR.x - cheekL.x, chin.y - upperLip.y);
-
-  // Líneas horizontales divisorias
-  ctx.beginPath();
-  ctx.moveTo(cheekL.x - 20, noseBridge.y);
-  ctx.lineTo(cheekR.x + 20, noseBridge.y);
-  ctx.stroke();
+  // === CUADRÍCULA FACIAL ===
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+  ctx.lineWidth = 1;
   
-  ctx.beginPath();
-  ctx.moveTo(cheekL.x - 20, upperLip.y);
-  ctx.lineTo(cheekR.x + 20, upperLip.y);
-  ctx.stroke();
+  // Líneas verticales
+  const faceCenter = (eyeL.x + eyeR.x) / 2;
+  const gridWidth = Math.abs(eyeR.x - eyeL.x) * 1.8;
+  const cols = 5;
+  for (let i = 0; i <= cols; i++) {
+    const x = faceCenter - gridWidth / 2 + (gridWidth / cols) * i;
+    ctx.beginPath();
+    ctx.moveTo(x, forehead.y);
+    ctx.lineTo(x, upperLip.y + 100);
+    ctx.stroke();
+  }
+  
+  // Líneas horizontales
+  const rows = 4;
+  const gridHeight = upperLip.y + 100 - forehead.y;
+  for (let i = 0; i <= rows; i++) {
+    const y = forehead.y + (gridHeight / rows) * i;
+    ctx.beginPath();
+    ctx.moveTo(faceCenter - gridWidth / 2, y);
+    ctx.lineTo(faceCenter + gridWidth / 2, y);
+    ctx.stroke();
+  }
 
-  // === MIDLINE DENTAL ===
-  ctx.strokeStyle = "rgba(255, 215, 0, 0.9)"; // Dorado
+  // === LÍNEA MEDIA DENTAL ===
+  ctx.strokeStyle = "rgba(255, 215, 0, 0.9)";
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(nose.x, nose.y);
-  const centerMouthX = (mouthL.x + mouthR.x) / 2;
-  ctx.lineTo(centerMouthX, upperLip.y);
+  ctx.lineTo(nose.x, upperLip.y + 50);
   ctx.stroke();
 
-  // === EYE MEASUREMENTS ===
-  ctx.strokeStyle = "rgba(0, 200, 255, 0.8)"; // Cian
-  ctx.lineWidth = 2;
-  
-  // Distancia entre ojos
-  ctx.beginPath();
-  ctx.moveTo(eyeInL.x, eyeInL.y);
-  ctx.lineTo(eyeInR.x, eyeInR.y);
-  ctx.stroke();
-  
-  // Ancho interpupilar
-  ctx.setLineDash([5, 5]);
-  ctx.beginPath();
-  ctx.moveTo(eyeL.x, eyeL.y);
-  ctx.lineTo(eyeR.x, eyeR.y);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // === NOSE MEASUREMENTS ===
-  ctx.strokeStyle = "rgba(255, 150, 150, 0.8)";
-  ctx.beginPath();
-  ctx.moveTo(noseBridge.x, noseBridge.y);
-  ctx.lineTo(nose.x, nose.y);
-  ctx.stroke();
-
-  // Ancho nasal aproximado
-  const noseWidthL = toScreen(lm[234]);
-  const noseWidthR = toScreen(lm[454]);
-  ctx.beginPath();
-  ctx.moveTo(noseWidthL.x, nose.y);
-  ctx.lineTo(noseWidthR.x, nose.y);
-  ctx.stroke();
-
-  // === MOUTH MEASUREMENTS ===
-  ctx.strokeStyle = "rgba(150, 255, 150, 0.8)"; // Verde claro
-  
-  // Ancho de boca
+  // === LÍNEA INTERCOMISURAL (SMILE WIDTH) ===
+  ctx.strokeStyle = "rgba(0, 200, 255, 0.9)";
+  ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(mouthL.x, mouthL.y);
   ctx.lineTo(mouthR.x, mouthR.y);
   ctx.stroke();
-
-  // Altura labios
+  
+  // Puntos en comisuras
+  ctx.fillStyle = "rgba(0, 200, 255, 0.9)";
   ctx.beginPath();
-  ctx.moveTo(upperLip.x, upperLip.y);
-  ctx.lineTo(lowerLip.x, lowerLip.y);
+  ctx.arc(mouthL.x, mouthL.y, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(mouthR.x, mouthR.y, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // === LÍNEA DE SONRISA (SMILE LINE/CURVE) ===
+  ctx.strokeStyle = "rgba(255, 105, 180, 0.9)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  // Curva siguiendo el borde de los dientes superiores
+  const smileY = upperLip.y + 10;
+  ctx.moveTo(mouthL.x, mouthL.y);
+  ctx.quadraticCurveTo(
+    (mouthL.x + mouthR.x) / 2, 
+    smileY - 15, 
+    mouthR.x, 
+    mouthR.y
+  );
   ctx.stroke();
 
-  // === PUNTOS DE REFERENCIA ===
-  const keyPoints = [eyeL, eyeR, eyeInL, eyeInR, nose, noseBridge, mouthL, mouthR, upperLip, lowerLip, chin, forehead];
-  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-  keyPoints.forEach(p => {
+  // === SEGMENTACIÓN DENTAL (INTERDENTAL WIDTH) ===
+  ctx.strokeStyle = "rgba(150, 255, 150, 0.7)";
+  ctx.lineWidth = 2;
+  const mouthWidth = Math.abs(mouthR.x - mouthL.x);
+  const teethSegments = 6; // 6 dientes visibles frontalmente
+  
+  for (let i = 1; i < teethSegments; i++) {
+    const x = mouthL.x + (mouthWidth / teethSegments) * i;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-    ctx.fill();
-  });
+    ctx.moveTo(x, upperLip.y);
+    ctx.lineTo(x, upperLip.y + 35);
+    ctx.stroke();
+  }
 
-  // === ETIQUETAS CON FONDO ===
-  ctx.font = "bold 13px system-ui";
+  // === PLANO INCISAL ===
+  ctx.strokeStyle = "rgba(255, 150, 150, 0.8)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  const incisorY = upperLip.y + 25;
+  ctx.beginPath();
+  ctx.moveTo(mouthL.x, incisorY);
+  ctx.lineTo(mouthR.x, incisorY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // === PROPORCIÓN INCISIVO CENTRAL ===
+  const centerX = (mouthL.x + mouthR.x) / 2;
+  const incisorWidth = mouthWidth / 6;
+  ctx.strokeStyle = "rgba(255, 255, 100, 0.9)";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(
+    centerX - incisorWidth / 2,
+    upperLip.y + 5,
+    incisorWidth,
+    35
+  );
+
+  // === ETIQUETAS CON MÉTRICAS ===
+  ctx.font = "bold 14px system-ui";
+  
   const labels = [
-    `Horizontal: ${m.facialRatios.faceHorizontal.upper}% : ${m.facialRatios.faceHorizontal.middle}% : ${m.facialRatios.faceHorizontal.lower}%`,
-    `Aspecto Facial: 1 : ${m.facialRatios.faceAspect}`,
-    `Aspecto Ojos: 1 : ${m.facialRatios.eyeAspect}`,
-    `Nariz: 1 : ${m.facialRatios.noseAspect}`,
-    `Golden Ratio: ${m.facialRatios.noseLipChin > 1.5 && m.facialRatios.noseLipChin < 1.7 ? '✓' : '○'} 1.618`
+    `Ancho de sonrisa: ${m.dentalMetrics.smileWidth} mm`,
+    `Incisivo Central: ${m.dentalMetrics.centralIncisorWidth} × ${m.dentalMetrics.centralIncisorHeight} mm`,
+    `Proporción IC: ${m.dentalMetrics.incisorProportion}`,
+    `Arco: ${m.smileArc}`,
+    `Línea media: ${m.midline.side} (${m.midline.mm.toFixed(1)} mm)`
   ];
 
   let yPos = 20;
   labels.forEach(text => {
     const metrics = ctx.measureText(text);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(5, yPos - 15, metrics.width + 10, 20);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+    ctx.fillRect(10, yPos - 15, metrics.width + 15, 22);
     ctx.fillStyle = "white";
-    ctx.fillText(text, 10, yPos);
-    yPos += 25;
+    ctx.fillText(text, 17, yPos);
+    yPos += 28;
   });
 }
