@@ -226,13 +226,112 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     const centerX = width / 2;
     const centerY = height * 0.75;
     
+    // Fondo oscuro semi-transparente
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(centerX - frameSize/2 - 10, centerY - frameSize/2 - 40, frameSize + 20, frameSize + 80);
+    ctx.fillRect(centerX - frameSize/2 - 50, centerY - frameSize/2 - 60, frameSize + 100, frameSize + 120);
     
+    // Marco principal verde
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 3;
     ctx.strokeRect(centerX - frameSize/2, centerY - frameSize/2, frameSize, frameSize);
     
+    // Regla graduada superior (horizontal)
+    const rulerStartX = centerX - frameSize/2;
+    const rulerStartY = centerY - frameSize/2 - 30;
+    const mmPerPixel = 85.6 / frameSize; // 85.6mm = ancho tarjeta de crédito
+    
+    // Línea base de la regla superior
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(rulerStartX, rulerStartY);
+    ctx.lineTo(rulerStartX + frameSize, rulerStartY);
+    ctx.stroke();
+    
+    // Marcas de la regla superior (cada 10mm)
+    ctx.strokeStyle = '#ffffff';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    
+    for (let mm = 0; mm <= 90; mm += 10) {
+      const x = rulerStartX + (mm / mmPerPixel);
+      const tickHeight = mm % 50 === 0 ? 15 : 10;
+      
+      ctx.lineWidth = mm % 50 === 0 ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(x, rulerStartY);
+      ctx.lineTo(x, rulerStartY + tickHeight);
+      ctx.stroke();
+      
+      if (mm % 10 === 0) {
+        ctx.fillText(mm.toString(), x, rulerStartY + tickHeight + 12);
+      }
+    }
+    
+    // Regla graduada lateral izquierda (vertical)
+    const rulerLeftX = centerX - frameSize/2 - 30;
+    
+    // Línea base de la regla izquierda
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(rulerLeftX, rulerStartY);
+    ctx.lineTo(rulerLeftX, rulerStartY + frameSize);
+    ctx.stroke();
+    
+    // Marcas de la regla izquierda
+    ctx.textAlign = 'right';
+    for (let mm = 0; mm <= 90; mm += 10) {
+      const y = rulerStartY + (mm / mmPerPixel);
+      const tickWidth = mm % 50 === 0 ? 15 : 10;
+      
+      ctx.lineWidth = mm % 50 === 0 ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(rulerLeftX, y);
+      ctx.lineTo(rulerLeftX + tickWidth, y);
+      ctx.stroke();
+      
+      if (mm % 10 === 0) {
+        ctx.save();
+        ctx.translate(rulerLeftX - 5, y);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(mm.toString(), 0, 0);
+        ctx.restore();
+      }
+    }
+    
+    // Regla graduada lateral derecha (vertical)
+    const rulerRightX = centerX + frameSize/2 + 30;
+    
+    // Línea base de la regla derecha
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(rulerRightX, rulerStartY);
+    ctx.lineTo(rulerRightX, rulerStartY + frameSize);
+    ctx.stroke();
+    
+    // Marcas de la regla derecha
+    ctx.textAlign = 'left';
+    for (let mm = 0; mm <= 90; mm += 10) {
+      const y = rulerStartY + (mm / mmPerPixel);
+      const tickWidth = mm % 50 === 0 ? 15 : 10;
+      
+      ctx.lineWidth = mm % 50 === 0 ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(rulerRightX, y);
+      ctx.lineTo(rulerRightX - tickWidth, y);
+      ctx.stroke();
+      
+      if (mm % 10 === 0) {
+        ctx.save();
+        ctx.translate(rulerRightX + 5, y);
+        ctx.rotate(Math.PI / 2);
+        ctx.fillText(mm.toString(), 0, 0);
+        ctx.restore();
+      }
+    }
+    
+    // Marcadores de esquina
     const markerSize = 15;
     [[0,0], [frameSize,0], [0,frameSize], [frameSize,frameSize]].forEach(([dx, dy]) => {
       const x = centerX - frameSize/2 + dx;
@@ -241,13 +340,13 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
       ctx.fillRect(x - markerSize/2, y - markerSize/2, markerSize, markerSize);
     });
     
+    // Texto informativo
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 16px sans-serif';
+    ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Marco de Calibración: 50mm', centerX, centerY - frameSize/2 - 20);
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Coloca una tarjeta de crédito aquí', centerX, centerY + frameSize/2 + 25);
-    ctx.fillText('(Ancho estándar: 85.6mm)', centerX, centerY + frameSize/2 + 45);
+    ctx.fillText('Marco de Calibración: 50mm (Escala en mm)', centerX, rulerStartY - 15);
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Coloca una tarjeta de crédito aquí (Ancho: 85.6mm)', centerX, centerY + frameSize/2 + 55);
   };
 
   const updateOverlay = () => {
