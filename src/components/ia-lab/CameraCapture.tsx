@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface CameraReadiness {
-  frameDetected: boolean;
   faceDetected: boolean;
-  goodLighting: boolean;
-  centered: boolean;
+  rollOK: boolean;
+  yawOK: boolean;
+  sizeOK: boolean;
+  centerOK: boolean;
 }
 
 interface CameraCaptureProps {
@@ -15,27 +16,41 @@ interface CameraCaptureProps {
   onClose: () => void;
 }
 
-async function ensureFilesetResolver() {
-  if ((window as any).FilesetResolver) return;
-  // @ts-ignore - Dynamic CDN import
-  const mod = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs");
-  (window as any).FilesetResolver = mod.FilesetResolver;
+async function loadMediaPipeScripts() {
+  if ((window as any).FaceMesh) return;
+  
+  const scripts = [
+    'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js',
+    'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js'
+  ];
+  
+  for (const src of scripts) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
 }
 
 export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [captureReadiness, setCaptureReadiness] = useState<CameraReadiness>({
-    frameDetected: false,
     faceDetected: false,
-    goodLighting: false,
-    centered: false
+    rollOK: false,
+    yawOK: false,
+    sizeOK: false,
+    centerOK: false
   });
   const [autoCapturing, setAutoCapturing] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
-  const detectionIntervalRef = useRef<number | null>(null);
-  const landmarkerRef = useRef<any>(null);
+  const faceMeshRef = useRef<any>(null);
+  const cameraRef = useRef<any>(null);
+  const shotTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     startCamera();
@@ -46,32 +61,44 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
 
   const startCamera = async () => {
     try {
+      await loadMediaPipeScripts();
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: 1280, height: 720 }
+        video: { facingMode: 'user', width: 420, height: 560 }
       });
       setStream(mediaStream);
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
+        await videoRef.current.play();
       }
 
-      await ensureFilesetResolver();
-      const vision = await (window as any).FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-      );
-      // @ts-ignore - Dynamic CDN import
-      const { FaceLandmarker } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs");
-      landmarkerRef.current = await (FaceLandmarker as any).createFromOptions(vision, {
-        baseOptions: {
-          modelAssetPath: "https://storage.googleapis.com/mediapipe-assets/face_landmarker.task"
-        },
-        numFaces: 1,
-        runningMode: "VIDEO",
-        outputFaceBlendshapes: false
+      const FaceMesh = (window as any).FaceMesh;
+      faceMeshRef.current = new FaceMesh({
+        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
       });
+      
+      faceMeshRef.current.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6
+      });
+      
+      faceMeshRef.current.onResults(onFaceMeshResults);
 
-      startAutoDetection();
+      const Camera = (window as any).Camera;
+      cameraRef.current = new Camera(videoRef.current, {
+        onFrame: async () => {
+          if (faceMeshRef.current && !autoCapturing) {
+            await faceMeshRef.current.send({ image: videoRef.current });
+          }
+        },
+        width: 420,
+        height: 560
+      });
+      cameraRef.current.start();
+
       updateOverlay();
     } catch (error) {
       console.error('Error al acceder a la cámara:', error);
@@ -84,121 +111,82 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
     }
-    if (detectionIntervalRef.current) {
-      clearInterval(detectionIntervalRef.current);
+    if (shotTimeoutRef.current) {
+      clearTimeout(shotTimeoutRef.current);
+    }
+    if (cameraRef.current) {
+      cameraRef.current.stop();
     }
   };
 
-  const startAutoDetection = () => {
-    if (detectionIntervalRef.current) {
-      clearInterval(detectionIntervalRef.current);
+  const onFaceMeshResults = (results: any) => {
+    const hasFace = results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0;
+    
+    if (!hasFace || autoCapturing) {
+      setCaptureReadiness({
+        faceDetected: false,
+        rollOK: false,
+        yawOK: false,
+        sizeOK: false,
+        centerOK: false
+      });
+      return;
     }
-    detectionIntervalRef.current = window.setInterval(() => {
-      checkCaptureQuality();
-    }, 500);
+
+    const lm = results.multiFaceLandmarks[0]; // 468 landmarks normalizados [0..1]
+    
+    // Ojos (puntos aproximados)
+    const L = lm[33];   // ojo derecho (imagen espejada)
+    const R = lm[263];  // ojo izquierdo
+    const nose = lm[1]; // nariz
+    
+    // Ángulo roll (inclinación) usando ojos
+    const dx = R.x - L.x;
+    const dy = R.y - L.y;
+    const rollDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+    const rollOK = Math.abs(rollDeg) < 5; // ±5°
+    
+    // Estimar yaw (giro Y) por simetría nariz vs línea ojos
+    const midX = (R.x + L.x) / 2;
+    const yawDeg = (nose.x - midX) * 200; // factor empírico
+    const yawOK = Math.abs(yawDeg) < 6;   // ±6°
+    
+    // Tamaño (distancia): distancia interpupilar normalizada
+    const ipd = Math.hypot(dx, dy);
+    const sizeOK = ipd > 0.08 && ipd < 0.14; // rango "3/4" típico a ~35–40 cm
+    
+    // Centrado (nariz cerca del centro del cuadro 0.5,0.5)
+    const centerOK = Math.abs(nose.x - 0.5) < 0.08 && Math.abs(nose.y - 0.52) < 0.10;
+    
+    const readiness = {
+      faceDetected: true,
+      rollOK,
+      yawOK,
+      sizeOK,
+      centerOK
+    };
+    
+    setCaptureReadiness(readiness);
+    
+    // Si todo OK durante 700 ms → capturar
+    const allOK = rollOK && yawOK && sizeOK && centerOK;
+    if (allOK) {
+      scheduleAutoShot();
+    }
   };
 
-  const checkCaptureQuality = async () => {
-    if (!videoRef.current || !landmarkerRef.current || autoCapturing) return;
-
-    const video = videoRef.current;
-    if (video.readyState < 2) return;
-
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      ctx.drawImage(video, 0, 0);
-      
-      const frameDetected = detectGreenFrame(ctx, canvas.width, canvas.height);
-      const timestamp = performance.now();
-      const results = await landmarkerRef.current.detectForVideo(video, timestamp);
-      const faceDetected = results?.faceLandmarks?.length > 0;
-      const goodLighting = checkLighting(ctx, canvas.width, canvas.height);
-      const centered = faceDetected && checkFaceCentered(results.faceLandmarks[0], canvas.width, canvas.height);
-      
-      const readiness = { frameDetected, faceDetected, goodLighting, centered };
-      setCaptureReadiness(readiness);
-      
-      if (frameDetected && faceDetected && goodLighting && centered) {
+  const scheduleAutoShot = () => {
+    if (shotTimeoutRef.current) {
+      clearTimeout(shotTimeoutRef.current);
+    }
+    shotTimeoutRef.current = window.setTimeout(() => {
+      if (!autoCapturing) {
         setAutoCapturing(true);
-        setTimeout(() => {
-          capturePhoto();
-        }, 300);
+        capturePhoto();
       }
-    } catch (error) {
-      console.error('Error en detección automática:', error);
-    }
+    }, 700);
   };
 
-  const detectGreenFrame = (ctx: CanvasRenderingContext2D, width: number, height: number): boolean => {
-    const frameSize = Math.min(width, height) * 0.15;
-    const centerX = width / 2;
-    const centerY = height * 0.75;
-    
-    const samplePoints = [
-      [centerX - frameSize/2, centerY - frameSize/2],
-      [centerX + frameSize/2, centerY - frameSize/2],
-      [centerX - frameSize/2, centerY + frameSize/2],
-      [centerX + frameSize/2, centerY + frameSize/2],
-    ];
-    
-    let greenPixels = 0;
-    samplePoints.forEach(([x, y]) => {
-      const imageData = ctx.getImageData(x, y, 10, 10);
-      const data = imageData.data;
-      
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        if (g > 150 && g > r * 1.5 && g > b * 1.5) {
-          greenPixels++;
-        }
-      }
-    });
-    
-    return greenPixels > 20;
-  };
-
-  const checkLighting = (ctx: CanvasRenderingContext2D, width: number, height: number): boolean => {
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const sampleSize = 100;
-    
-    const imageData = ctx.getImageData(
-      centerX - sampleSize/2,
-      centerY - sampleSize/2,
-      sampleSize,
-      sampleSize
-    );
-    
-    let brightness = 0;
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      brightness += (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
-    }
-    brightness /= (sampleSize * sampleSize);
-    
-    return brightness > 80 && brightness < 220;
-  };
-
-  const checkFaceCentered = (landmarks: any[], width: number, height: number): boolean => {
-    const nose = landmarks[1];
-    const centerX = width / 2;
-    const centerY = height / 2;
-    
-    const noseX = nose.x * width;
-    const noseY = nose.y * height;
-    
-    const marginX = width * 0.2;
-    const marginY = height * 0.2;
-    
-    return Math.abs(noseX - centerX) < marginX && Math.abs(noseY - centerY) < marginY;
-  };
 
   const capturePhoto = () => {
     if (!videoRef.current) return;
@@ -211,10 +199,12 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     
     if (!ctx) return;
     
-    ctx.drawImage(video, 0, 0);
-    drawCalibrationFrame(ctx, canvas.width, canvas.height);
+    // Voltear horizontal (la vista está espejada)
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-    const imageData = canvas.toDataURL('image/jpeg', 0.95);
+    const imageData = canvas.toDataURL('image/png', 0.95);
     onCapture(imageData);
     toast.success(`✓ Foto de ${mode === 'rest' ? 'reposo' : 'sonrisa'} capturada automáticamente`);
     stopCamera();
@@ -222,84 +212,80 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
   };
 
   const drawCalibrationFrame = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    // Marco facial ovalado en el centro superior
-    const frameWidth = width * 0.7;
-    const frameHeight = height * 0.8;
-    const frameX = width / 2;
-    const frameY = height * 0.1 + frameHeight / 2;
+    // Limpiar canvas
+    ctx.clearRect(0, 0, width, height);
     
-    // Dibujar marco ovalado
-    ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.ellipse(frameX, frameY, frameWidth / 2, frameHeight / 2, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    // Reglas milimétricas laterales
-    const rulerWidth = 20;
+    const rulerWidth = 22;
     const rulerHeight = height;
-    const tickSpacing = 10; // Espacio entre marcas (simula 10mm)
     
-    // Regla izquierda
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    // Reglas laterales con marcas cada 3px (simula mm)
+    ctx.fillStyle = 'rgba(40, 40, 40, 0.4)';
     ctx.fillRect(0, 0, rulerWidth, rulerHeight);
-    
-    // Marcas de la regla izquierda
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-    ctx.lineWidth = 1;
-    for (let y = 0; y < rulerHeight; y += tickSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(rulerWidth, y);
-      ctx.lineTo(rulerWidth - (y % 50 === 0 ? 15 : 8), y);
-      ctx.stroke();
-      
-      // Números cada 50 unidades
-      if (y % 50 === 0 && y > 0) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'right';
-        ctx.save();
-        ctx.translate(rulerWidth - 18, y);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText(String(y / 10), 0, 0);
-        ctx.restore();
-      }
-    }
-    
-    // Regla derecha
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.fillRect(width - rulerWidth, 0, rulerWidth, rulerHeight);
     
-    // Marcas de la regla derecha
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-    for (let y = 0; y < rulerHeight; y += tickSpacing) {
+    // Marcas de regla
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.lineWidth = 1;
+    for (let y = 0; y < rulerHeight; y += 3) {
+      const isMajor = y % 15 === 0;
+      const len = isMajor ? 12 : 6;
+      
+      // Izquierda
       ctx.beginPath();
-      ctx.moveTo(width - rulerWidth, y);
-      ctx.lineTo(width - rulerWidth + (y % 50 === 0 ? 15 : 8), y);
+      ctx.moveTo(rulerWidth, y);
+      ctx.lineTo(rulerWidth - len, y);
       ctx.stroke();
       
-      // Números cada 50 unidades
-      if (y % 50 === 0 && y > 0) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'left';
-        ctx.save();
-        ctx.translate(width - rulerWidth + 18, y);
-        ctx.rotate(Math.PI / 2);
-        ctx.fillText(String(y / 10), 0, 0);
-        ctx.restore();
+      // Derecha
+      ctx.beginPath();
+      ctx.moveTo(width - rulerWidth, y);
+      ctx.lineTo(width - rulerWidth + len, y);
+      ctx.stroke();
+      
+      // Números cada 15px (5mm)
+      if (isMajor && y > 0) {
+        ctx.fillStyle = 'rgba(220, 220, 220, 0.9)';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(Math.floor(y / 3)), rulerWidth / 2, y + 3);
+        ctx.fillText(String(Math.floor(y / 3)), width - rulerWidth / 2, y + 3);
       }
     }
     
-    // Indicador inferior
-    const indicatorY = height - 30;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(width / 2 - 150, indicatorY - 10, 300, 30);
+    // Esquinas de encuadre
+    const cornerSize = 26;
+    const cornerOffset = 6;
+    const cornerThickness = 3;
+    ctx.strokeStyle = 'rgba(220, 220, 220, 0.9)';
+    ctx.lineWidth = cornerThickness;
     
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Coloca tu rostro dentro del marco...', width / 2, indicatorY + 8);
+    // Top-left
+    ctx.beginPath();
+    ctx.moveTo(cornerOffset + cornerSize, cornerOffset);
+    ctx.lineTo(cornerOffset, cornerOffset);
+    ctx.lineTo(cornerOffset, cornerOffset + cornerSize);
+    ctx.stroke();
+    
+    // Top-right
+    ctx.beginPath();
+    ctx.moveTo(width - cornerOffset - cornerSize, cornerOffset);
+    ctx.lineTo(width - cornerOffset, cornerOffset);
+    ctx.lineTo(width - cornerOffset, cornerOffset + cornerSize);
+    ctx.stroke();
+    
+    // Bottom-left
+    ctx.beginPath();
+    ctx.moveTo(cornerOffset, height - cornerOffset - cornerSize);
+    ctx.lineTo(cornerOffset, height - cornerOffset);
+    ctx.lineTo(cornerOffset + cornerSize, height - cornerOffset);
+    ctx.stroke();
+    
+    // Bottom-right
+    ctx.beginPath();
+    ctx.moveTo(width - cornerOffset - cornerSize, height - cornerOffset);
+    ctx.lineTo(width - cornerOffset, height - cornerOffset);
+    ctx.lineTo(width - cornerOffset, height - cornerOffset - cornerSize);
+    ctx.stroke();
   };
 
   const updateOverlay = () => {
@@ -325,15 +311,15 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
 
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-4xl">
-        <div className="bg-card rounded-xl overflow-hidden shadow-2xl">
+      <div className="relative w-full max-w-md">
+        <div className="bg-card rounded-2xl overflow-hidden shadow-2xl">
           <div className="bg-primary/10 border-b border-border p-4 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-foreground">
-                Captura con Marco Calibrado
+                Marco Antropométrico
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {mode === 'rest' ? 'Foto en reposo' : 'Foto sonriendo'} - Coloca una tarjeta en el marco verde
+                {mode === 'rest' ? 'Foto en reposo' : 'Foto sonriendo'}
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -343,73 +329,143 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
             </Button>
           </div>
           
-          <div className="relative bg-black">
+          <div className="relative bg-black aspect-[3/4]">
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-auto"
+              style={{ transform: 'scaleX(-1)' }}
+              className="w-full h-full object-cover"
             />
-            <canvas
-              ref={overlayCanvasRef}
-              className="absolute inset-0 w-full h-full pointer-events-none"
-            />
+            
+            {/* Overlay con reglas, esquinas y marco SVG */}
+            <div className="absolute inset-0 pointer-events-none">
+              <canvas
+                ref={overlayCanvasRef}
+                className="absolute inset-0 w-full h-full"
+              />
+              
+              {/* Marco antropométrico SVG */}
+              <svg 
+                className="absolute inset-0 w-full h-full" 
+                viewBox="0 0 100 133" 
+                preserveAspectRatio="xMidYMid slice"
+              >
+                {/* Contorno cabeza */}
+                <path 
+                  className="face-outline"
+                  d="M20,30 Q20,15 34,10 Q50,4 66,10 Q80,15 80,30 Q84,52 75,78 Q66,104 50,112 Q34,104 25,78 Q16,52 20,30 Z"
+                  fill="none"
+                  stroke="rgb(0, 229, 255)"
+                  strokeWidth="2.4"
+                  opacity="0.95"
+                />
+                
+                {/* Línea bipupilar */}
+                <line 
+                  x1="28" y1="52" x2="72" y2="52"
+                  stroke="rgb(0, 229, 255)"
+                  strokeWidth="1.4"
+                  opacity="0.7"
+                />
+                
+                {/* Línea media */}
+                <line 
+                  x1="50" y1="24" x2="50" y2="110"
+                  stroke="rgb(0, 229, 255)"
+                  strokeWidth="1.4"
+                  opacity="0.7"
+                />
+                
+                {/* Plano de Frankfort */}
+                <line 
+                  x1="24" y1="58" x2="76" y2="56"
+                  stroke="rgb(0, 229, 255)"
+                  strokeWidth="1.4"
+                  opacity="0.7"
+                />
+                
+                {/* Mentón */}
+                <ellipse 
+                  cx="50" cy="108" rx="14" ry="7"
+                  fill="none"
+                  stroke="rgb(0, 229, 255)"
+                  strokeWidth="1.4"
+                  opacity="0.7"
+                />
+                
+                {/* Malla facial */}
+                <path 
+                  d="M35,50 L50,46 L65,50 L60,62 L50,66 L40,62 Z M35,50 L40,62 L35,74 L50,86 L65,74 L60,62 L65,50"
+                  fill="none"
+                  stroke="rgb(189, 189, 189)"
+                  strokeWidth="1"
+                  opacity="0.45"
+                />
+                
+                {/* Marcas comisuras */}
+                <circle cx="40" cy="74" r="0.9" fill="rgb(0, 229, 255)" />
+                <circle cx="60" cy="74" r="0.9" fill="rgb(0, 229, 255)" />
+              </svg>
+              
+              {/* Estado inferior */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/55 backdrop-blur-sm rounded-lg px-3 py-2">
+                <div className="flex flex-wrap gap-1.5 justify-center text-[10px]">
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                    captureReadiness.faceDetected 
+                      ? 'border-green-500/30 text-green-400' 
+                      : 'border-amber-500/35 text-amber-400'
+                  }`}>
+                    {captureReadiness.faceDetected ? '✓' : '○'} Rostro
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                    captureReadiness.rollOK 
+                      ? 'border-green-500/30 text-green-400' 
+                      : 'border-amber-500/35 text-amber-400'
+                  }`}>
+                    {captureReadiness.rollOK ? '✓' : '○'} Nivel
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                    captureReadiness.yawOK 
+                      ? 'border-green-500/30 text-green-400' 
+                      : 'border-amber-500/35 text-amber-400'
+                  }`}>
+                    {captureReadiness.yawOK ? '✓' : '○'} Frente
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                    captureReadiness.sizeOK 
+                      ? 'border-green-500/30 text-green-400' 
+                      : 'border-amber-500/35 text-amber-400'
+                  }`}>
+                    {captureReadiness.sizeOK ? '✓' : '○'} Distancia
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                    captureReadiness.centerOK 
+                      ? 'border-green-500/30 text-green-400' 
+                      : 'border-amber-500/35 text-amber-400'
+                  }`}>
+                    {captureReadiness.centerOK ? '✓' : '○'} Centrado
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className="p-4 bg-card/50 border-t border-border">
             <div className="space-y-3">
-              <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Detección Automática
-                  </h4>
-                  {autoCapturing && (
-                    <span className="text-xs font-bold text-green-600 dark:text-green-400 animate-pulse">
-                      ¡Capturando!
-                    </span>
-                  )}
+              {autoCapturing && (
+                <div className="bg-green-500/20 text-green-700 dark:text-green-400 p-3 rounded-lg text-center font-semibold animate-pulse">
+                  ¡Capturando en breve!
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className={`flex items-center gap-2 p-2 rounded ${
-                    captureReadiness.frameDetected ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {captureReadiness.frameDetected ? '✓' : '○'} Marco detectado
-                  </div>
-                  <div className={`flex items-center gap-2 p-2 rounded ${
-                    captureReadiness.faceDetected ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {captureReadiness.faceDetected ? '✓' : '○'} Rostro detectado
-                  </div>
-                  <div className={`flex items-center gap-2 p-2 rounded ${
-                    captureReadiness.goodLighting ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {captureReadiness.goodLighting ? '✓' : '○'} Buena iluminación
-                  </div>
-                  <div className={`flex items-center gap-2 p-2 rounded ${
-                    captureReadiness.centered ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {captureReadiness.centered ? '✓' : '○'} Bien centrado
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 text-sm text-muted-foreground bg-accent/20 p-3 rounded-lg">
-                <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div>
-                  <p className="font-medium text-foreground mb-1">Instrucciones:</p>
-                  <ul className="space-y-1 text-xs">
-                    <li>• Coloca una tarjeta de crédito en el marco verde (ancho: 85.6mm)</li>
-                    <li>• Mantén el rostro centrado y bien iluminado</li>
-                    <li>• {mode === 'rest' ? 'Mantén una expresión neutral' : 'Sonríe naturalmente'}</li>
-                    <li>• <strong>La foto se capturará automáticamente</strong> cuando todo esté perfecto</li>
-                  </ul>
-                </div>
+              )}
+              
+              <div className="text-xs text-muted-foreground bg-accent/20 p-3 rounded-lg">
+                <p className="leading-relaxed">
+                  Mantén el teléfono a ~35–40 cm. Mira al frente con los ojos a la altura de la línea cian. 
+                  {mode === 'rest' ? ' Expresión neutral.' : ' Sonríe naturalmente.'}
+                  <strong> La foto se tomará automáticamente</strong> cuando todos los indicadores estén en verde.
+                </p>
               </div>
               
               <div className="flex gap-3">
@@ -418,12 +474,13 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
                   size="lg"
                   variant="outline"
                   className="flex-1"
+                  disabled={autoCapturing}
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Capturar Manual
+                  Manual
                 </Button>
                 <Button
                   variant="outline"
