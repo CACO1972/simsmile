@@ -37,6 +37,7 @@ async function loadMediaPipeScripts() {
 }
 
 export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) {
+  const [showInstructions, setShowInstructions] = useState(true);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [captureReadiness, setCaptureReadiness] = useState<CameraReadiness>({
     faceDetected: false,
@@ -143,38 +144,60 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     // Limpiar canvas
     ctx.clearRect(0, 0, width, height);
     
-    const rulerWidth = 22;
-    const rulerHeight = height;
+    // Marco del rostro centrado (80% del alto de la imagen)
+    const frameHeight = height * 0.8;
+    const frameWidth = frameHeight * 0.7; // Proporción aproximada de un rostro
+    const centerX = width / 2;
+    const centerY = height / 2;
     
-    // Marcas de regla laterales (cada 3px) y numeración cada 15px
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    // Dibujar contorno de la cabeza (forma ovalada)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    // Parte superior de la cabeza (semicírculo)
+    const topRadius = frameWidth / 2;
+    const headTop = centerY - frameHeight / 2;
+    ctx.arc(centerX, headTop + topRadius, topRadius, Math.PI, 0, false);
+    
+    // Lados de la cara
+    const jawWidth = frameWidth * 0.85;
+    const jawHeight = frameHeight - topRadius;
+    ctx.lineTo(centerX + jawWidth / 2, headTop + topRadius + jawHeight * 0.6);
+    
+    // Mandíbula (curva suave)
+    ctx.quadraticCurveTo(
+      centerX + jawWidth / 2, 
+      centerY + frameHeight / 2,
+      centerX, 
+      centerY + frameHeight / 2
+    );
+    ctx.quadraticCurveTo(
+      centerX - jawWidth / 2,
+      centerY + frameHeight / 2,
+      centerX - jawWidth / 2,
+      headTop + topRadius + jawHeight * 0.6
+    );
+    
+    ctx.lineTo(centerX - topRadius, headTop + topRadius);
+    ctx.stroke();
+    
+    // Línea guía vertical (centro)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - frameHeight / 2);
+    ctx.lineTo(centerX, centerY + frameHeight / 2);
+    ctx.stroke();
     
-    for (let y = 0; y < rulerHeight; y += 3) {
-      const isMajor = y % 15 === 0;
-      const len = isMajor ? 12 : 6;
-      
-      // Izquierda
-      ctx.beginPath();
-      ctx.moveTo(rulerWidth, y);
-      ctx.lineTo(rulerWidth - len, y);
-      ctx.stroke();
-      
-      // Derecha
-      ctx.beginPath();
-      ctx.moveTo(width - rulerWidth, y);
-      ctx.lineTo(width - rulerWidth + len, y);
-      ctx.stroke();
-      
-      if (isMajor && y > 0 && y < rulerHeight - 10) {
-        ctx.fillStyle = 'rgba(220, 220, 220, 0.9)';
-        ctx.font = '10px system-ui';
-        ctx.textAlign = 'center';
-        const label = String(Math.floor(y / 3));
-        ctx.fillText(label, rulerWidth / 2, y + 3);
-        ctx.fillText(label, width - rulerWidth / 2, y + 3);
-      }
-    }
+    // Línea guía horizontal (ojos)
+    ctx.beginPath();
+    ctx.moveTo(centerX - frameWidth / 2, centerY - frameHeight * 0.1);
+    ctx.lineTo(centerX + frameWidth / 2, centerY - frameHeight * 0.1);
+    ctx.stroke();
+    
+    ctx.setLineDash([]);
   };
 
   const updateOverlay = () => {
@@ -198,6 +221,64 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     requestAnimationFrame(updateOverlay);
   };
 
+  // Pantalla de instrucciones
+  if (showInstructions) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+        <div className="relative w-full max-w-md">
+          <div className="bg-card rounded-2xl overflow-hidden shadow-2xl">
+            <div className="bg-primary/10 border-b border-border p-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Cara frontal
+                </h3>
+              </div>
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </Button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Imagen de ejemplo */}
+              <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden">
+                <img 
+                  src={faceFrame}
+                  alt="Ejemplo de posición"
+                  className="w-full h-full object-cover opacity-50"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[70%] h-[80%] border-2 border-white rounded-full opacity-80" />
+                </div>
+              </div>
+              
+              {/* Consejo */}
+              <div className="bg-accent/30 p-4 rounded-lg">
+                <p className="text-sm text-center leading-relaxed text-foreground">
+                  <strong>Consejo:</strong> Ajusta la zona de la cara en el marco elegido para asegurar una distancia adecuada y estandarizar tus fotos.
+                  {mode === 'rest' ? ' Mantén una expresión neutral.' : ' Sonríe naturalmente.'}
+                </p>
+              </div>
+              
+              {/* Botón entendí */}
+              <Button
+                onClick={() => {
+                  setShowInstructions(false);
+                  startCamera();
+                }}
+                size="lg"
+                className="w-full"
+              >
+                Entendí
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
       <div className="relative w-full max-w-md">
@@ -205,7 +286,7 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
           <div className="bg-primary/10 border-b border-border p-4 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-foreground">
-                Marco Antropométrico
+                Cara frontal
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {mode === 'rest' ? 'Foto en reposo' : 'Foto sonriendo'}
@@ -228,17 +309,11 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
               className="w-full h-full object-cover"
             />
             
-            {/* Overlay con reglas y marco de rostro */}
+            {/* Overlay con marco de rostro */}
             <div className="absolute inset-0 pointer-events-none">
               <canvas
                 ref={overlayCanvasRef}
                 className="absolute inset-0 w-full h-full"
-              />
-              <img 
-                src={faceFrame}
-                alt="Marco de rostro"
-                className="absolute inset-0 w-full h-full object-contain px-2 md:px-4 transform origin-center scale-[1.45] md:scale-[1.25]"
-                style={{ opacity: 0.9 }}
               />
             </div>
               
@@ -254,9 +329,8 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
               
               <div className="text-xs text-muted-foreground bg-accent/20 p-3 rounded-lg leading-relaxed">
                 <p>
-                  Coloca tu rostro dentro del marco y mantén el teléfono a ~35–40 cm. 
+                  Centra tu rostro en el marco y alinea tu cara con las guías. 
                   {mode === 'rest' ? ' Expresión neutral.' : ' Sonríe naturalmente.'}
-                  Usa el botón "Tomar foto" para capturar.
                 </p>
               </div>
               
