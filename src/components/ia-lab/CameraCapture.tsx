@@ -237,8 +237,8 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
               <img 
                 src={faceFrame}
                 alt="Marco de rostro"
-                className="absolute inset-0 w-full h-full object-contain px-6"
-                style={{ opacity: 0.85 }}
+                className="absolute inset-0 w-full h-full object-contain px-2 md:px-4 transform origin-center scale-[1.45] md:scale-[1.25]"
+                style={{ opacity: 0.9 }}
               />
             </div>
               
