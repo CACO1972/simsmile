@@ -1,6 +1,9 @@
 import { useRef, useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { computeMetrics, drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
 
@@ -46,6 +49,14 @@ export default function IALab() {
   const [loading, setLoading] = useState(false);
   const [simulatedB64, setSimulatedB64] = useState<string>("");
   const [simulating, setSimulating] = useState(false);
+  
+  // Ajustes sutiles post-simulación (±5% máximo)
+  const [adjustments, setAdjustments] = useState({
+    toothLength: 0,    // -5 a +5
+    toothWidth: 0,     // -5 a +5
+    whiteness: 0       // 0=natural, 1=moderado, 2=intenso
+  });
+  const [showAdjustments, setShowAdjustments] = useState(false);
   const canvasRef1 = useRef<HTMLCanvasElement>(null);
   const canvasRef2 = useRef<HTMLCanvasElement>(null);
   const canvasRef3 = useRef<HTMLCanvasElement>(null);
@@ -110,17 +121,24 @@ export default function IALab() {
     }
   };
 
-  const simulateCorrections = async () => {
+  const simulateCorrections = async (withAdjustments = false) => {
     if (!smileB64 || !metrics) return alert("Primero analiza una foto de sonrisa.");
     setSimulating(true);
     try {
+      const body: any = { imageBase64: smileB64, metrics };
+      
+      // Agregar ajustes si se especifica
+      if (withAdjustments) {
+        body.adjustments = adjustments;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/simulate-smile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ imageBase64: smileB64, metrics }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -130,13 +148,26 @@ export default function IALab() {
 
       const data = await response.json();
       setSimulatedB64(data.simulatedImage);
-      track({ name: "simulation_success", data: { corrections: true } });
+      
+      // Mostrar controles de ajuste después de la primera simulación
+      if (!withAdjustments) {
+        setShowAdjustments(true);
+        toast.success('Simulación completada. Ahora puedes ajustar parámetros.');
+      } else {
+        toast.success('Simulación actualizada con tus ajustes');
+      }
+      
+      track({ name: "simulation_success", data: { corrections: true, withAdjustments } });
     } catch (e) {
       console.error(e);
-      alert(e instanceof Error ? e.message : "Error al simular. Intenta de nuevo.");
+      toast.error(e instanceof Error ? e.message : "Error al simular. Intenta de nuevo.");
     } finally {
       setSimulating(false);
     }
+  };
+
+  const resetAdjustments = () => {
+    setAdjustments({ toothLength: 0, toothWidth: 0, whiteness: 0 });
   };
 
   return (
@@ -379,7 +410,7 @@ export default function IALab() {
                   
                   <Button 
                     className="w-full mt-4" 
-                    onClick={simulateCorrections} 
+                    onClick={() => simulateCorrections(false)} 
                     disabled={simulating}
                     size="lg"
                     variant="default"
@@ -418,25 +449,144 @@ export default function IALab() {
                 Simulación con IA — Resultado
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-foreground">Foto original</h3>
-                <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-                  <img src={smileB64} alt="original" className="w-full h-auto" />
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-foreground">Foto original</h3>
+                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                    <img src={smileB64} alt="original" className="w-full h-auto" />
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-foreground">Simulación corregida</h3>
+                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                    <img src={simulatedB64} alt="simulada" className="w-full h-auto" />
+                  </div>
+                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <p className="text-sm text-foreground">
+                      ✨ Correcciones aplicadas con IA basadas en los patrones estéticos detectados
+                    </p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="space-y-3">
-                <h3 className="font-semibold text-foreground">Simulación corregida</h3>
-                <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-                  <img src={simulatedB64} alt="simulada" className="w-full h-auto" />
+
+              {showAdjustments && (
+                <div className="border-t border-border pt-6">
+                  <div className="bg-accent/10 rounded-xl p-6 border border-accent/30">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
+                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Ajustes sutiles (±5% máximo)
+                      </h3>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={resetAdjustments}
+                      >
+                        Restablecer
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      {/* Longitud de dientes */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium flex items-center justify-between">
+                          <span>Longitud de dientes</span>
+                          <span className="text-xs font-mono text-muted-foreground">
+                            {adjustments.toothLength > 0 ? '+' : ''}{adjustments.toothLength}%
+                          </span>
+                        </Label>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground w-16">Más cortos</span>
+                          <Slider
+                            value={[adjustments.toothLength]}
+                            onValueChange={(val) => setAdjustments(prev => ({ ...prev, toothLength: val[0] }))}
+                            min={-5}
+                            max={5}
+                            step={1}
+                            className="flex-1"
+                          />
+                          <span className="text-xs text-muted-foreground w-16 text-right">Más largos</span>
+                        </div>
+                      </div>
+
+                      {/* Anchura de dientes */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium flex items-center justify-between">
+                          <span>Anchura de dientes</span>
+                          <span className="text-xs font-mono text-muted-foreground">
+                            {adjustments.toothWidth > 0 ? '+' : ''}{adjustments.toothWidth}%
+                          </span>
+                        </Label>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground w-16">Más estrechos</span>
+                          <Slider
+                            value={[adjustments.toothWidth]}
+                            onValueChange={(val) => setAdjustments(prev => ({ ...prev, toothWidth: val[0] }))}
+                            min={-5}
+                            max={5}
+                            step={1}
+                            className="flex-1"
+                          />
+                          <span className="text-xs text-muted-foreground w-16 text-right">Más anchos</span>
+                        </div>
+                      </div>
+
+                      {/* Blancura */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Blancura de dientes</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(['Natural', 'Moderado', 'Intenso'] as const).map((level, idx) => (
+                            <button
+                              key={level}
+                              onClick={() => setAdjustments(prev => ({ ...prev, whiteness: idx }))}
+                              className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                                adjustments.whiteness === idx
+                                  ? 'bg-primary text-primary-foreground border-primary'
+                                  : 'bg-background text-foreground border-border hover:border-primary/50'
+                              }`}
+                            >
+                              {level}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Botón regenerar */}
+                      <Button 
+                        className="w-full mt-4" 
+                        onClick={() => simulateCorrections(true)}
+                        disabled={simulating || (adjustments.toothLength === 0 && adjustments.toothWidth === 0 && adjustments.whiteness === 0)}
+                        size="lg"
+                      >
+                        {simulating ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Regenerando...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Regenerar con ajustes
+                          </>
+                        )}
+                      </Button>
+
+                      <p className="text-xs text-muted-foreground text-center mt-2">
+                        Los cambios se mantienen sutiles para preservar la armonía facial
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm text-foreground">
-                    ✨ Correcciones aplicadas con IA basadas en los patrones estéticos detectados
-                  </p>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         )}
