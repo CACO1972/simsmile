@@ -222,131 +222,84 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
   };
 
   const drawCalibrationFrame = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const frameSize = Math.min(width, height) * 0.15;
-    const centerX = width / 2;
-    const centerY = height * 0.75;
+    // Marco facial ovalado en el centro superior
+    const frameWidth = width * 0.7;
+    const frameHeight = height * 0.8;
+    const frameX = width / 2;
+    const frameY = height * 0.1 + frameHeight / 2;
     
-    // Fondo oscuro semi-transparente
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(centerX - frameSize/2 - 50, centerY - frameSize/2 - 60, frameSize + 100, frameSize + 120);
-    
-    // Marco principal verde
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(centerX - frameSize/2, centerY - frameSize/2, frameSize, frameSize);
-    
-    // Regla graduada superior (horizontal)
-    const rulerStartX = centerX - frameSize/2;
-    const rulerStartY = centerY - frameSize/2 - 30;
-    const mmPerPixel = 85.6 / frameSize; // 85.6mm = ancho tarjeta de crédito
-    
-    // Línea base de la regla superior
-    ctx.strokeStyle = '#ffffff';
+    // Dibujar marco ovalado
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(rulerStartX, rulerStartY);
-    ctx.lineTo(rulerStartX + frameSize, rulerStartY);
+    ctx.ellipse(frameX, frameY, frameWidth / 2, frameHeight / 2, 0, 0, Math.PI * 2);
     ctx.stroke();
     
-    // Marcas de la regla superior (cada 10mm)
-    ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '10px monospace';
-    ctx.textAlign = 'center';
+    // Reglas milimétricas laterales
+    const rulerWidth = 20;
+    const rulerHeight = height;
+    const tickSpacing = 10; // Espacio entre marcas (simula 10mm)
     
-    for (let mm = 0; mm <= 90; mm += 10) {
-      const x = rulerStartX + (mm / mmPerPixel);
-      const tickHeight = mm % 50 === 0 ? 15 : 10;
-      
-      ctx.lineWidth = mm % 50 === 0 ? 2 : 1;
-      ctx.beginPath();
-      ctx.moveTo(x, rulerStartY);
-      ctx.lineTo(x, rulerStartY + tickHeight);
-      ctx.stroke();
-      
-      if (mm % 10 === 0) {
-        ctx.fillText(mm.toString(), x, rulerStartY + tickHeight + 12);
-      }
-    }
-    
-    // Regla graduada lateral izquierda (vertical)
-    const rulerLeftX = centerX - frameSize/2 - 30;
-    
-    // Línea base de la regla izquierda
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(rulerLeftX, rulerStartY);
-    ctx.lineTo(rulerLeftX, rulerStartY + frameSize);
-    ctx.stroke();
+    // Regla izquierda
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillRect(0, 0, rulerWidth, rulerHeight);
     
     // Marcas de la regla izquierda
-    ctx.textAlign = 'right';
-    for (let mm = 0; mm <= 90; mm += 10) {
-      const y = rulerStartY + (mm / mmPerPixel);
-      const tickWidth = mm % 50 === 0 ? 15 : 10;
-      
-      ctx.lineWidth = mm % 50 === 0 ? 2 : 1;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.lineWidth = 1;
+    for (let y = 0; y < rulerHeight; y += tickSpacing) {
       ctx.beginPath();
-      ctx.moveTo(rulerLeftX, y);
-      ctx.lineTo(rulerLeftX + tickWidth, y);
+      ctx.moveTo(rulerWidth, y);
+      ctx.lineTo(rulerWidth - (y % 50 === 0 ? 15 : 8), y);
       ctx.stroke();
       
-      if (mm % 10 === 0) {
+      // Números cada 50 unidades
+      if (y % 50 === 0 && y > 0) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'right';
         ctx.save();
-        ctx.translate(rulerLeftX - 5, y);
+        ctx.translate(rulerWidth - 18, y);
         ctx.rotate(-Math.PI / 2);
-        ctx.fillText(mm.toString(), 0, 0);
+        ctx.fillText(String(y / 10), 0, 0);
         ctx.restore();
       }
     }
     
-    // Regla graduada lateral derecha (vertical)
-    const rulerRightX = centerX + frameSize/2 + 30;
-    
-    // Línea base de la regla derecha
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(rulerRightX, rulerStartY);
-    ctx.lineTo(rulerRightX, rulerStartY + frameSize);
-    ctx.stroke();
+    // Regla derecha
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillRect(width - rulerWidth, 0, rulerWidth, rulerHeight);
     
     // Marcas de la regla derecha
-    ctx.textAlign = 'left';
-    for (let mm = 0; mm <= 90; mm += 10) {
-      const y = rulerStartY + (mm / mmPerPixel);
-      const tickWidth = mm % 50 === 0 ? 15 : 10;
-      
-      ctx.lineWidth = mm % 50 === 0 ? 2 : 1;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+    for (let y = 0; y < rulerHeight; y += tickSpacing) {
       ctx.beginPath();
-      ctx.moveTo(rulerRightX, y);
-      ctx.lineTo(rulerRightX - tickWidth, y);
+      ctx.moveTo(width - rulerWidth, y);
+      ctx.lineTo(width - rulerWidth + (y % 50 === 0 ? 15 : 8), y);
       ctx.stroke();
       
-      if (mm % 10 === 0) {
+      // Números cada 50 unidades
+      if (y % 50 === 0 && y > 0) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'left';
         ctx.save();
-        ctx.translate(rulerRightX + 5, y);
+        ctx.translate(width - rulerWidth + 18, y);
         ctx.rotate(Math.PI / 2);
-        ctx.fillText(mm.toString(), 0, 0);
+        ctx.fillText(String(y / 10), 0, 0);
         ctx.restore();
       }
     }
     
-    // Marcadores de esquina
-    const markerSize = 15;
-    [[0,0], [frameSize,0], [0,frameSize], [frameSize,frameSize]].forEach(([dx, dy]) => {
-      const x = centerX - frameSize/2 + dx;
-      const y = centerY - frameSize/2 + dy;
-      ctx.fillStyle = '#10b981';
-      ctx.fillRect(x - markerSize/2, y - markerSize/2, markerSize, markerSize);
-    });
+    // Indicador inferior
+    const indicatorY = height - 30;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(width / 2 - 150, indicatorY - 10, 300, 30);
     
-    // Texto informativo
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px sans-serif';
+    ctx.font = '14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Marco de Calibración: 50mm (Escala en mm)', centerX, rulerStartY - 15);
-    ctx.font = '12px sans-serif';
-    ctx.fillText('Coloca una tarjeta de crédito aquí (Ancho: 85.6mm)', centerX, centerY + frameSize/2 + 55);
+    ctx.fillText('Coloca tu rostro dentro del marco...', width / 2, indicatorY + 8);
   };
 
   const updateOverlay = () => {
