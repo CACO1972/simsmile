@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import faceFrame from "@/assets/face-frame.png";
+import cameraFrame from "@/assets/camera-frame.png";
 
 interface CameraReadiness {
   faceDetected: boolean;
@@ -49,7 +50,6 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
   const [autoCapturing, setAutoCapturing] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
-  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const faceMeshRef = useRef<any>(null);
   const cameraRef = useRef<any>(null);
   const shotTimeoutRef = useRef<number | null>(null);
@@ -72,8 +72,6 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
         videoRef.current.srcObject = mediaStream;
         await videoRef.current.play();
       }
-
-      updateOverlay();
     } catch (error) {
       console.error('Error al acceder a la cámara:', error);
       toast.error('No se pudo acceder a la cámara');
@@ -140,79 +138,6 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     onClose();
   };
 
-  const drawCalibrationFrame = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    // Limpiar canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Marco del rostro centrado (80% del alto de la imagen)
-    const frameHeight = height * 0.8;
-    const frameWidth = width * 0.55; // Ancho proporcional
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const topY = centerY - frameHeight / 2;
-    const bottomY = centerY + frameHeight / 2;
-    
-    // Radio para las curvas (mitad del ancho)
-    const radius = frameWidth / 2;
-    
-    // Dibujar contorno simple tipo cápsula
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    
-    // Semicírculo superior
-    ctx.arc(centerX, topY + radius, radius, Math.PI, 0, false);
-    
-    // Línea derecha
-    ctx.lineTo(centerX + radius, bottomY - radius);
-    
-    // Semicírculo inferior (mandíbula)
-    ctx.arc(centerX, bottomY - radius, radius, 0, Math.PI, false);
-    
-    // Línea izquierda cerrando el contorno
-    ctx.lineTo(centerX - radius, topY + radius);
-    
-    ctx.stroke();
-    
-    // Línea guía vertical (centro)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(centerX, topY + radius);
-    ctx.lineTo(centerX, bottomY - radius);
-    ctx.stroke();
-    
-    // Línea guía horizontal (nivel de ojos - aprox 35% desde arriba)
-    const eyeLineY = topY + frameHeight * 0.35;
-    ctx.beginPath();
-    ctx.moveTo(centerX - radius + 15, eyeLineY);
-    ctx.lineTo(centerX + radius - 15, eyeLineY);
-    ctx.stroke();
-    
-    ctx.setLineDash([]);
-  };
-
-  const updateOverlay = () => {
-    if (!videoRef.current || !overlayCanvasRef.current) return;
-    
-    const video = videoRef.current;
-    const canvas = overlayCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx || video.readyState < 2) {
-      requestAnimationFrame(updateOverlay);
-      return;
-    }
-    
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawCalibrationFrame(ctx, canvas.width, canvas.height);
-    
-    requestAnimationFrame(updateOverlay);
-  };
 
   // Pantalla de instrucciones
   if (showInstructions) {
@@ -303,10 +228,11 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
             />
             
             {/* Overlay con marco de rostro */}
-            <div className="absolute inset-0 pointer-events-none">
-              <canvas
-                ref={overlayCanvasRef}
-                className="absolute inset-0 w-full h-full"
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-4">
+              <img 
+                src={cameraFrame}
+                alt="Marco de captura"
+                className="w-full h-full object-contain"
               />
             </div>
               
