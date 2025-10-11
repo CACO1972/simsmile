@@ -57,9 +57,18 @@ export default function IALab() {
     whiteness: 0       // 0=natural, 1=moderado, 2=intenso
   });
   const [showAdjustments, setShowAdjustments] = useState(false);
+  
+  // Estado para captura con cámara
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraMode, setCameraMode] = useState<"rest" | "smile" | null>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [calibrationScale, setCalibrationScale] = useState<number | null>(null); // píxeles por mm
+  
   const canvasRef1 = useRef<HTMLCanvasElement>(null);
   const canvasRef2 = useRef<HTMLCanvasElement>(null);
   const canvasRef3 = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const onFile = (e: any, kind: "rest" | "smile") => {
     const f = e.target.files?.[0]; 
@@ -170,6 +179,127 @@ export default function IALab() {
     setAdjustments({ toothLength: 0, toothWidth: 0, whiteness: 0 });
   };
 
+  // Activar cámara con marco calibrado
+  const startCamera = async (mode: "rest" | "smile") => {
+    setCameraMode(mode);
+    setShowCamera(true);
+    
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: 1280, height: 720 }
+      });
+      setStream(mediaStream);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error al acceder a la cámara:', error);
+      toast.error('No se pudo acceder a la cámara');
+      setShowCamera(false);
+    }
+  };
+
+  // Detener cámara
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setShowCamera(false);
+    setCameraMode(null);
+  };
+
+  // Capturar foto con marco de calibración
+  const capturePhoto = () => {
+    if (!videoRef.current || !overlayCanvasRef.current) return;
+    
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return;
+    
+    // Dibujar video
+    ctx.drawImage(video, 0, 0);
+    
+    // Dibujar marco de calibración sobre la foto
+    drawCalibrationFrame(ctx, canvas.width, canvas.height);
+    
+    // Convertir a base64
+    const imageData = canvas.toDataURL('image/jpeg', 0.95);
+    
+    if (cameraMode === 'rest') {
+      setRestB64(imageData);
+    } else {
+      setSmileB64(imageData);
+    }
+    
+    toast.success(`Foto de ${cameraMode === 'rest' ? 'reposo' : 'sonrisa'} capturada`);
+    stopCamera();
+  };
+
+  // Dibujar marco de calibración (50mm de referencia)
+  const drawCalibrationFrame = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const frameSize = Math.min(width, height) * 0.15; // Marco de referencia
+    const centerX = width / 2;
+    const centerY = height * 0.75; // Parte inferior para que no tape la boca
+    
+    // Fondo semitransparente
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(centerX - frameSize/2 - 10, centerY - frameSize/2 - 40, frameSize + 20, frameSize + 80);
+    
+    // Marco de calibración (50mm x 50mm)
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(centerX - frameSize/2, centerY - frameSize/2, frameSize, frameSize);
+    
+    // Marcadores en las esquinas
+    const markerSize = 15;
+    [[0,0], [frameSize,0], [0,frameSize], [frameSize,frameSize]].forEach(([dx, dy]) => {
+      const x = centerX - frameSize/2 + dx;
+      const y = centerY - frameSize/2 + dy;
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(x - markerSize/2, y - markerSize/2, markerSize, markerSize);
+    });
+    
+    // Texto de referencia
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Marco de Calibración: 50mm', centerX, centerY - frameSize/2 - 20);
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Coloca una tarjeta de crédito aquí', centerX, centerY + frameSize/2 + 25);
+    ctx.fillText('(Ancho estándar: 85.6mm)', centerX, centerY + frameSize/2 + 45);
+  };
+
+  // Actualizar overlay en tiempo real
+  const updateOverlay = () => {
+    if (!videoRef.current || !overlayCanvasRef.current || !showCamera) return;
+    
+    const video = videoRef.current;
+    const canvas = overlayCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return;
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawCalibrationFrame(ctx, canvas.width, canvas.height);
+    
+    requestAnimationFrame(updateOverlay);
+  };
+
+  // Iniciar overlay cuando se active la cámara
+  if (showCamera && videoRef.current && videoRef.current.readyState >= 2) {
+    requestAnimationFrame(updateOverlay);
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
@@ -220,6 +350,20 @@ export default function IALab() {
             <div className="grid gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Foto en reposo</label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => startCamera('rest')}
+                    className="flex-1"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Capturar con Cámara
+                  </Button>
+                </div>
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -235,6 +379,20 @@ export default function IALab() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Foto sonriendo</label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => startCamera('smile')}
+                    className="flex-1"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Capturar con Cámara
+                  </Button>
+                </div>
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -407,6 +565,66 @@ export default function IALab() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Mediciones de Dientes */}
+                  {metrics.toothMeasurements && (
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          Dimensiones Dentales
+                        </h4>
+                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                          metrics.toothMeasurements.calibrated 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        }`}>
+                          {metrics.toothMeasurements.calibrated ? '✓ Calibrado' : '≈ Estimado'}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2 p-2 bg-white/50 dark:bg-black/20 rounded">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Incisivo Central</p>
+                            <p className="text-sm font-bold text-foreground">
+                              Ancho: {metrics.toothMeasurements.centralIncisor.width.toFixed(1)}mm
+                            </p>
+                            <p className="text-sm font-bold text-foreground">
+                              Alto: {metrics.toothMeasurements.centralIncisor.height.toFixed(1)}mm
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Incisivo Lateral</p>
+                            <p className="text-sm font-bold text-foreground">
+                              Ancho: {metrics.toothMeasurements.lateralIncisor.width.toFixed(1)}mm
+                            </p>
+                            <p className="text-sm font-bold text-foreground">
+                              Alto: {metrics.toothMeasurements.lateralIncisor.height.toFixed(1)}mm
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="p-2 bg-white/50 dark:bg-black/20 rounded">
+                          <p className="text-xs text-muted-foreground mb-1">Canino</p>
+                          <p className="text-sm font-bold text-foreground">
+                            Ancho: {metrics.toothMeasurements.canine.width.toFixed(1)}mm
+                          </p>
+                          <p className="text-sm font-bold text-foreground">
+                            Alto: {metrics.toothMeasurements.canine.height.toFixed(1)}mm
+                          </p>
+                        </div>
+                        
+                        {!metrics.toothMeasurements.calibrated && (
+                          <p className="text-xs text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
+                            💡 Para mediciones precisas, usa el marco de calibración al capturar la foto
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   <Button 
                     className="w-full mt-4" 
@@ -591,6 +809,84 @@ export default function IALab() {
           </Card>
         )}
       </main>
+
+      {/* Modal de Cámara con Marco Calibrado */}
+      {showCamera && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-4xl">
+            <div className="bg-card rounded-xl overflow-hidden shadow-2xl">
+              <div className="bg-primary/10 border-b border-border p-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Captura con Marco Calibrado
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {cameraMode === 'rest' ? 'Foto en reposo' : 'Foto sonriendo'} - Coloca una tarjeta en el marco verde
+                  </p>
+                </div>
+                <Button variant="ghost" size="sm" onClick={stopCamera}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </Button>
+              </div>
+              
+              <div className="relative bg-black">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-auto"
+                />
+                <canvas
+                  ref={overlayCanvasRef}
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                />
+              </div>
+              
+              <div className="p-4 bg-card/50 border-t border-border">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 text-sm text-muted-foreground bg-accent/20 p-3 rounded-lg">
+                    <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="font-medium text-foreground mb-1">Instrucciones:</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Coloca una tarjeta de crédito en el marco verde (ancho: 85.6mm)</li>
+                        <li>• Mantén el rostro centrado y bien iluminado</li>
+                        <li>• {cameraMode === 'rest' ? 'Mantén una expresión neutral' : 'Sonríe naturalmente'}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={capturePhoto}
+                      size="lg"
+                      className="flex-1"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Capturar Foto
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={stopCamera}
+                      size="lg"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
