@@ -232,7 +232,7 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
               <img 
                 src={cameraFrame}
                 alt="Marco de captura"
-                className="w-full h-full object-contain scale-110"
+                className="w-full h-full object-contain scale-[1.25]"
               />
             </div>
               
