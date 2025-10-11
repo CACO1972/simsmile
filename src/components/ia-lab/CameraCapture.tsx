@@ -212,51 +212,64 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
   };
 
   const drawCalibrationFrame = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    // Limpiar canvas
     ctx.clearRect(0, 0, width, height);
     
-    const rulerWidth = 22;
-    const rulerHeight = height;
+    const rulerWidth = 32;
     
-    // Reglas laterales con marcas cada 3px (simula mm)
-    ctx.fillStyle = 'rgba(40, 40, 40, 0.4)';
-    ctx.fillRect(0, 0, rulerWidth, rulerHeight);
-    ctx.fillRect(width - rulerWidth, 0, rulerWidth, rulerHeight);
+    // Reglas laterales con fondo semi-transparente
+    ctx.fillStyle = 'rgba(50, 50, 50, 0.6)';
+    ctx.fillRect(0, 0, rulerWidth, height);
+    ctx.fillRect(width - rulerWidth, 0, rulerWidth, height);
     
-    // Marcas de regla
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    // Marcas de regla cada 2px (simula mm)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.lineWidth = 1;
-    for (let y = 0; y < rulerHeight; y += 3) {
-      const isMajor = y % 15 === 0;
-      const len = isMajor ? 12 : 6;
+    
+    for (let y = 0; y < height; y += 2) {
+      const isMajor = y % 20 === 0; // Cada 10mm
+      const isMedium = y % 10 === 0; // Cada 5mm
+      const len = isMajor ? 16 : isMedium ? 10 : 6;
       
-      // Izquierda
+      // Regla izquierda
       ctx.beginPath();
       ctx.moveTo(rulerWidth, y);
       ctx.lineTo(rulerWidth - len, y);
       ctx.stroke();
       
-      // Derecha
+      // Regla derecha
       ctx.beginPath();
       ctx.moveTo(width - rulerWidth, y);
       ctx.lineTo(width - rulerWidth + len, y);
       ctx.stroke();
       
-      // Números cada 15px (5mm)
-      if (isMajor && y > 0) {
-        ctx.fillStyle = 'rgba(220, 220, 220, 0.9)';
-        ctx.font = '9px monospace';
+      // Números cada 10mm
+      if (isMajor && y > 0 && y < height - 20) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.font = 'bold 10px monospace';
+        
+        // Izquierda - números rotados
+        ctx.translate(8, y);
+        ctx.rotate(-Math.PI / 2);
         ctx.textAlign = 'center';
-        ctx.fillText(String(Math.floor(y / 3)), rulerWidth / 2, y + 3);
-        ctx.fillText(String(Math.floor(y / 3)), width - rulerWidth / 2, y + 3);
+        ctx.fillText(String(Math.floor(y / 2)), 0, 0);
+        ctx.restore();
+        
+        // Derecha - números rotados
+        ctx.save();
+        ctx.translate(width - 8, y);
+        ctx.rotate(Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillText(String(Math.floor(y / 2)), 0, 0);
+        ctx.restore();
       }
     }
     
-    // Esquinas de encuadre
-    const cornerSize = 26;
-    const cornerOffset = 6;
-    const cornerThickness = 3;
-    ctx.strokeStyle = 'rgba(220, 220, 220, 0.9)';
+    // Esquinas de encuadre (más gruesas y visibles)
+    const cornerSize = 40;
+    const cornerOffset = rulerWidth + 4;
+    const cornerThickness = 5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.lineWidth = cornerThickness;
     
     // Top-left
@@ -349,101 +362,127 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
               {/* Marco antropométrico SVG */}
               <svg 
                 className="absolute inset-0 w-full h-full" 
-                viewBox="0 0 100 133" 
+                viewBox="0 0 100 140" 
                 preserveAspectRatio="xMidYMid slice"
               >
-                {/* Contorno cabeza */}
+                {/* Contorno facial principal - ovalado grande cian brillante */}
                 <path 
-                  className="face-outline"
-                  d="M20,30 Q20,15 34,10 Q50,4 66,10 Q80,15 80,30 Q84,52 75,78 Q66,104 50,112 Q34,104 25,78 Q16,52 20,30 Z"
+                  d="M22,38 Q22,20 32,12 Q50,3 68,12 Q78,20 78,38 Q80,58 75,78 Q68,100 50,115 Q32,100 25,78 Q20,58 22,38 Z"
                   fill="none"
                   stroke="rgb(0, 229, 255)"
-                  strokeWidth="2.4"
-                  opacity="0.95"
+                  strokeWidth="3.5"
+                  opacity="1"
                 />
                 
-                {/* Línea bipupilar */}
+                {/* Líneas horizontales superiores (bipupilar y área de ojos) */}
                 <line 
-                  x1="28" y1="52" x2="72" y2="52"
+                  x1="25" y1="50" x2="75" y2="50"
                   stroke="rgb(0, 229, 255)"
-                  strokeWidth="1.4"
-                  opacity="0.7"
+                  strokeWidth="2.2"
+                  opacity="0.9"
                 />
-                
-                {/* Línea media */}
                 <line 
-                  x1="50" y1="24" x2="50" y2="110"
+                  x1="25" y1="58" x2="75" y2="58"
                   stroke="rgb(0, 229, 255)"
-                  strokeWidth="1.4"
-                  opacity="0.7"
+                  strokeWidth="2.2"
+                  opacity="0.9"
                 />
                 
-                {/* Plano de Frankfort */}
+                {/* Línea media vertical */}
                 <line 
-                  x1="24" y1="58" x2="76" y2="56"
+                  x1="50" y1="20" x2="50" y2="115"
                   stroke="rgb(0, 229, 255)"
-                  strokeWidth="1.4"
-                  opacity="0.7"
+                  strokeWidth="2.2"
+                  opacity="0.9"
                 />
                 
-                {/* Mentón */}
-                <ellipse 
-                  cx="50" cy="108" rx="14" ry="7"
-                  fill="none"
-                  stroke="rgb(0, 229, 255)"
-                  strokeWidth="1.4"
-                  opacity="0.7"
-                />
-                
-                {/* Malla facial */}
+                {/* Malla facial detallada (gris tenue) */}
+                {/* Triángulos superiores (frente y cejas) */}
                 <path 
-                  d="M35,50 L50,46 L65,50 L60,62 L50,66 L40,62 Z M35,50 L40,62 L35,74 L50,86 L65,74 L60,62 L65,50"
+                  d="M32,40 L50,35 L68,40 L50,50 Z"
                   fill="none"
-                  stroke="rgb(189, 189, 189)"
+                  stroke="rgba(200, 200, 200, 0.5)"
                   strokeWidth="1"
-                  opacity="0.45"
                 />
                 
-                {/* Marcas comisuras */}
-                <circle cx="40" cy="74" r="0.9" fill="rgb(0, 229, 255)" />
-                <circle cx="60" cy="74" r="0.9" fill="rgb(0, 229, 255)" />
+                {/* Área de ojos */}
+                <path 
+                  d="M28,48 L38,46 L50,50 L38,54 Z M72,48 L62,46 L50,50 L62,54 Z"
+                  fill="none"
+                  stroke="rgba(200, 200, 200, 0.5)"
+                  strokeWidth="1"
+                />
+                
+                {/* Nariz */}
+                <path 
+                  d="M42,58 L50,65 L58,58 L50,72 Z"
+                  fill="none"
+                  stroke="rgba(200, 200, 200, 0.5)"
+                  strokeWidth="1"
+                />
+                
+                {/* Boca y mentón */}
+                <path 
+                  d="M35,75 L42,78 L50,80 L58,78 L65,75 L58,85 L50,88 L42,85 Z"
+                  fill="none"
+                  stroke="rgba(200, 200, 200, 0.5)"
+                  strokeWidth="1"
+                />
+                
+                {/* Contorno inferior (mandíbula) */}
+                <path 
+                  d="M35,75 L30,90 L35,105 L50,115 L65,105 L70,90 L65,75"
+                  fill="none"
+                  stroke="rgba(200, 200, 200, 0.5)"
+                  strokeWidth="1"
+                />
+                
+                {/* Líneas de conexión vertical */}
+                <line x1="35" y1="50" x2="35" y2="75" stroke="rgba(200, 200, 200, 0.5)" strokeWidth="1" />
+                <line x1="65" y1="50" x2="65" y2="75" stroke="rgba(200, 200, 200, 0.5)" strokeWidth="1" />
+                <line x1="42" y1="58" x2="42" y2="85" stroke="rgba(200, 200, 200, 0.5)" strokeWidth="1" />
+                <line x1="58" y1="58" x2="58" y2="85" stroke="rgba(200, 200, 200, 0.5)" strokeWidth="1" />
+                
+                {/* Puntos de referencia cian (comisuras) */}
+                <circle cx="42" cy="78" r="1.5" fill="rgb(0, 229, 255)" />
+                <circle cx="58" cy="78" r="1.5" fill="rgb(0, 229, 255)" />
               </svg>
               
-              {/* Estado inferior */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/55 backdrop-blur-sm rounded-lg px-3 py-2">
-                <div className="flex flex-wrap gap-1.5 justify-center text-[10px]">
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+              {/* Estado inferior - estilo idéntico al ejemplo */}
+              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-md rounded-2xl px-4 py-3 min-w-[280px]">
+                <div className="grid grid-cols-2 gap-2">
+                  <span className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium ${
                     captureReadiness.faceDetected 
-                      ? 'border-green-500/30 text-green-400' 
-                      : 'border-amber-500/35 text-amber-400'
+                      ? 'border-green-500/50 bg-green-500/10 text-green-400' 
+                      : 'border-gray-600/50 bg-gray-800/30 text-gray-400'
                   }`}>
                     {captureReadiness.faceDetected ? '✓' : '○'} Rostro
                   </span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                  <span className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium ${
                     captureReadiness.rollOK 
-                      ? 'border-green-500/30 text-green-400' 
-                      : 'border-amber-500/35 text-amber-400'
+                      ? 'border-green-500/50 bg-green-500/10 text-green-400' 
+                      : 'border-gray-600/50 bg-gray-800/30 text-gray-400'
                   }`}>
                     {captureReadiness.rollOK ? '✓' : '○'} Nivel
                   </span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                  <span className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium ${
                     captureReadiness.yawOK 
-                      ? 'border-green-500/30 text-green-400' 
-                      : 'border-amber-500/35 text-amber-400'
+                      ? 'border-green-500/50 bg-green-500/10 text-green-400' 
+                      : 'border-gray-600/50 bg-gray-800/30 text-gray-400'
                   }`}>
                     {captureReadiness.yawOK ? '✓' : '○'} Frente
                   </span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                  <span className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium ${
                     captureReadiness.sizeOK 
-                      ? 'border-green-500/30 text-green-400' 
-                      : 'border-amber-500/35 text-amber-400'
+                      ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' 
+                      : 'border-gray-600/50 bg-gray-800/30 text-gray-400'
                   }`}>
                     {captureReadiness.sizeOK ? '✓' : '○'} Distancia
                   </span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
+                  <span className={`col-span-2 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium ${
                     captureReadiness.centerOK 
-                      ? 'border-green-500/30 text-green-400' 
-                      : 'border-amber-500/35 text-amber-400'
+                      ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' 
+                      : 'border-gray-600/50 bg-gray-800/30 text-gray-400'
                   }`}>
                     {captureReadiness.centerOK ? '✓' : '○'} Centrado
                   </span>
@@ -452,7 +491,7 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
             </div>
           </div>
           
-          <div className="p-4 bg-card/50 border-t border-border">
+          <div className="p-4 bg-gradient-to-b from-cyan-50 to-cyan-100 dark:from-gray-800 dark:to-gray-900 border-t border-border">
             <div className="space-y-3">
               {autoCapturing && (
                 <div className="bg-green-500/20 text-green-700 dark:text-green-400 p-3 rounded-lg text-center font-semibold animate-pulse">
@@ -460,35 +499,11 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
                 </div>
               )}
               
-              <div className="text-xs text-muted-foreground bg-accent/20 p-3 rounded-lg">
+              <div className="text-sm text-gray-700 dark:text-gray-300 bg-cyan-100/80 dark:bg-gray-800/80 p-3 rounded-xl border border-cyan-200 dark:border-gray-700">
                 <p className="leading-relaxed">
                   Mantén el teléfono a ~35–40 cm. Mira al frente con los ojos a la altura de la línea cian. 
                   {mode === 'rest' ? ' Expresión neutral.' : ' Sonríe naturalmente.'}
-                  <strong> La foto se tomará automáticamente</strong> cuando todos los indicadores estén en verde.
                 </p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button
-                  onClick={capturePhoto}
-                  size="lg"
-                  variant="outline"
-                  className="flex-1"
-                  disabled={autoCapturing}
-                >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Manual
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={onClose}
-                  size="lg"
-                >
-                  Cancelar
-                </Button>
               </div>
             </div>
           </div>
