@@ -228,11 +228,11 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
             />
             
             {/* Overlay con marco de rostro */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-2">
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
               <img 
                 src={cameraFrame}
                 alt="Marco de captura"
-                className="w-full h-full object-contain scale-[1.25]"
+                className="w-full h-full max-w-none max-h-none object-contain origin-center scale-[1.6] md:scale-[1.35]"
               />
             </div>
               
