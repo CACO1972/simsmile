@@ -64,6 +64,17 @@ export default function IALab() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [calibrationScale, setCalibrationScale] = useState<number | null>(null); // píxeles por mm
   
+  // Estado para captura automática
+  const [captureReadiness, setCaptureReadiness] = useState({
+    frameDetected: false,
+    faceDetected: false,
+    goodLighting: false,
+    centered: false
+  });
+  const [autoCapturing, setAutoCapturing] = useState(false);
+  const detectionIntervalRef = useRef<number | null>(null);
+  const landmarkerRef = useRef<any>(null);
+  
   const canvasRef1 = useRef<HTMLCanvasElement>(null);
   const canvasRef2 = useRef<HTMLCanvasElement>(null);
   const canvasRef3 = useRef<HTMLCanvasElement>(null);
@@ -179,10 +190,17 @@ export default function IALab() {
     setAdjustments({ toothLength: 0, toothWidth: 0, whiteness: 0 });
   };
 
-  // Activar cámara con marco calibrado
+  // Activar cámara con marco calibrado y detección automática
   const startCamera = async (mode: "rest" | "smile") => {
     setCameraMode(mode);
     setShowCamera(true);
+    setAutoCapturing(false);
+    setCaptureReadiness({
+      frameDetected: false,
+      faceDetected: false,
+      goodLighting: false,
+      centered: false
+    });
     
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -194,6 +212,27 @@ export default function IALab() {
         videoRef.current.srcObject = mediaStream;
         videoRef.current.play();
       }
+
+      // Inicializar MediaPipe para detección facial
+      await ensureFilesetResolver();
+      const landmarker = await loadFaceTask();
+      // Cambiar a modo VIDEO
+      const vision = await (window as any).FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+      );
+      // @ts-ignore - Dynamic CDN import
+      const { FaceLandmarker } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs");
+      landmarkerRef.current = await (FaceLandmarker as any).createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-assets/face_landmarker.task"
+        },
+        numFaces: 1,
+        runningMode: "VIDEO",
+        outputFaceBlendshapes: false
+      });
+
+      // Iniciar detección automática
+      startAutoDetection();
     } catch (error) {
       console.error('Error al acceder a la cámara:', error);
       toast.error('No se pudo acceder a la cámara');
@@ -207,8 +246,152 @@ export default function IALab() {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
     setShowCamera(false);
     setCameraMode(null);
+    setAutoCapturing(false);
+    landmarkerRef.current = null;
+  };
+
+  // Detección automática de calidad
+  const startAutoDetection = () => {
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+    }
+
+    detectionIntervalRef.current = window.setInterval(() => {
+      checkCaptureQuality();
+    }, 500); // Verificar cada 500ms
+  };
+
+  const checkCaptureQuality = async () => {
+    if (!videoRef.current || !landmarkerRef.current || autoCapturing) return;
+
+    const video = videoRef.current;
+    if (video.readyState < 2) return;
+
+    try {
+      // Crear canvas temporal para análisis
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.drawImage(video, 0, 0);
+      
+      // 1. Detectar marco verde (calibración)
+      const frameDetected = detectGreenFrame(ctx, canvas.width, canvas.height);
+      
+      // 2. Detectar rostro con MediaPipe
+      const timestamp = performance.now();
+      const results = await landmarkerRef.current.detectForVideo(video, timestamp);
+      const faceDetected = results?.faceLandmarks?.length > 0;
+      
+      // 3. Verificar iluminación
+      const goodLighting = checkLighting(ctx, canvas.width, canvas.height);
+      
+      // 4. Verificar centrado del rostro
+      const centered = faceDetected && checkFaceCentered(results.faceLandmarks[0], canvas.width, canvas.height);
+      
+      // Actualizar estado
+      const readiness = {
+        frameDetected,
+        faceDetected,
+        goodLighting,
+        centered
+      };
+      
+      setCaptureReadiness(readiness);
+      
+      // Si todo está perfecto, capturar automáticamente
+      if (frameDetected && faceDetected && goodLighting && centered) {
+        setAutoCapturing(true);
+        // Pequeña pausa para mostrar feedback
+        setTimeout(() => {
+          capturePhoto();
+        }, 300);
+      }
+    } catch (error) {
+      console.error('Error en detección automática:', error);
+    }
+  };
+
+  // Detectar marco verde de calibración
+  const detectGreenFrame = (ctx: CanvasRenderingContext2D, width: number, height: number): boolean => {
+    const frameSize = Math.min(width, height) * 0.15;
+    const centerX = width / 2;
+    const centerY = height * 0.75;
+    
+    // Muestrear píxeles en el área del marco
+    const samplePoints = [
+      [centerX - frameSize/2, centerY - frameSize/2],
+      [centerX + frameSize/2, centerY - frameSize/2],
+      [centerX - frameSize/2, centerY + frameSize/2],
+      [centerX + frameSize/2, centerY + frameSize/2],
+    ];
+    
+    let greenPixels = 0;
+    samplePoints.forEach(([x, y]) => {
+      const imageData = ctx.getImageData(x, y, 10, 10);
+      const data = imageData.data;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // Detectar verde brillante (del marco)
+        if (g > 150 && g > r * 1.5 && g > b * 1.5) {
+          greenPixels++;
+        }
+      }
+    });
+    
+    return greenPixels > 20; // Umbral ajustable
+  };
+
+  // Verificar iluminación adecuada
+  const checkLighting = (ctx: CanvasRenderingContext2D, width: number, height: number): boolean => {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const sampleSize = 100;
+    
+    const imageData = ctx.getImageData(
+      centerX - sampleSize/2,
+      centerY - sampleSize/2,
+      sampleSize,
+      sampleSize
+    );
+    
+    let brightness = 0;
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      brightness += (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
+    }
+    brightness /= (sampleSize * sampleSize);
+    
+    // Rango óptimo de brillo (ni muy oscuro ni sobreexpuesto)
+    return brightness > 80 && brightness < 220;
+  };
+
+  // Verificar que el rostro esté centrado
+  const checkFaceCentered = (landmarks: any[], width: number, height: number): boolean => {
+    // Punto de la nariz (landmark 1)
+    const nose = landmarks[1];
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    const noseX = nose.x * width;
+    const noseY = nose.y * height;
+    
+    // Verificar que esté en el tercio central
+    const marginX = width * 0.2;
+    const marginY = height * 0.2;
+    
+    return Math.abs(noseX - centerX) < marginX && Math.abs(noseY - centerY) < marginY;
   };
 
   // Capturar foto con marco de calibración
@@ -238,7 +421,7 @@ export default function IALab() {
       setSmileB64(imageData);
     }
     
-    toast.success(`Foto de ${cameraMode === 'rest' ? 'reposo' : 'sonrisa'} capturada`);
+    toast.success(`✓ Foto de ${cameraMode === 'rest' ? 'reposo' : 'sonrisa'} capturada automáticamente`);
     stopCamera();
   };
 
@@ -847,6 +1030,45 @@ export default function IALab() {
               
               <div className="p-4 bg-card/50 border-t border-border">
                 <div className="space-y-3">
+                  {/* Indicadores de calidad para captura automática */}
+                  <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Detección Automática
+                      </h4>
+                      {autoCapturing && (
+                        <span className="text-xs font-bold text-green-600 dark:text-green-400 animate-pulse">
+                          ¡Capturando!
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className={`flex items-center gap-2 p-2 rounded ${
+                        captureReadiness.frameDetected ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {captureReadiness.frameDetected ? '✓' : '○'} Marco detectado
+                      </div>
+                      <div className={`flex items-center gap-2 p-2 rounded ${
+                        captureReadiness.faceDetected ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {captureReadiness.faceDetected ? '✓' : '○'} Rostro detectado
+                      </div>
+                      <div className={`flex items-center gap-2 p-2 rounded ${
+                        captureReadiness.goodLighting ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {captureReadiness.goodLighting ? '✓' : '○'} Buena iluminación
+                      </div>
+                      <div className={`flex items-center gap-2 p-2 rounded ${
+                        captureReadiness.centered ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {captureReadiness.centered ? '✓' : '○'} Bien centrado
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex items-start gap-3 text-sm text-muted-foreground bg-accent/20 p-3 rounded-lg">
                     <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -857,6 +1079,7 @@ export default function IALab() {
                         <li>• Coloca una tarjeta de crédito en el marco verde (ancho: 85.6mm)</li>
                         <li>• Mantén el rostro centrado y bien iluminado</li>
                         <li>• {cameraMode === 'rest' ? 'Mantén una expresión neutral' : 'Sonríe naturalmente'}</li>
+                        <li>• <strong>La foto se capturará automáticamente</strong> cuando todo esté perfecto</li>
                       </ul>
                     </div>
                   </div>
@@ -865,13 +1088,14 @@ export default function IALab() {
                     <Button
                       onClick={capturePhoto}
                       size="lg"
+                      variant="outline"
                       className="flex-1"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      Capturar Foto
+                      Capturar Manual
                     </Button>
                     <Button
                       variant="outline"
