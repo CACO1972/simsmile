@@ -146,40 +146,37 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     
     // Marco del rostro centrado (80% del alto de la imagen)
     const frameHeight = height * 0.8;
-    const frameWidth = frameHeight * 0.7; // Proporción aproximada de un rostro
+    const frameWidth = width * 0.65; // Usar proporción del ancho de la pantalla
     const centerX = width / 2;
     const centerY = height / 2;
     
-    // Dibujar contorno de la cabeza (forma ovalada)
+    // Dibujar contorno de la cabeza (forma tipo cápsula/U invertida)
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
     
-    // Parte superior de la cabeza (semicírculo)
-    const topRadius = frameWidth / 2;
-    const headTop = centerY - frameHeight / 2;
-    ctx.arc(centerX, headTop + topRadius, topRadius, Math.PI, 0, false);
+    // Parte superior de la cabeza (semicírculo amplio)
+    const topY = centerY - frameHeight / 2;
+    const bottomY = centerY + frameHeight / 2;
+    const radiusX = frameWidth / 2;
+    const radiusY = frameWidth / 2; // Radio circular para la parte superior
     
-    // Lados de la cara
-    const jawWidth = frameWidth * 0.85;
-    const jawHeight = frameHeight - topRadius;
-    ctx.lineTo(centerX + jawWidth / 2, headTop + topRadius + jawHeight * 0.6);
+    // Dibujar el contorno completo tipo cápsula
+    ctx.ellipse(centerX, topY + radiusY, radiusX, radiusY, 0, Math.PI, 0, false);
     
-    // Mandíbula (curva suave)
-    ctx.quadraticCurveTo(
-      centerX + jawWidth / 2, 
-      centerY + frameHeight / 2,
-      centerX, 
-      centerY + frameHeight / 2
+    // Líneas laterales con ligera curva hacia adentro (forma de mandíbula)
+    const jawCurveControl = frameWidth * 0.1;
+    ctx.bezierCurveTo(
+      centerX + radiusX, topY + radiusY + frameHeight * 0.2,
+      centerX + radiusX - jawCurveControl, bottomY - radiusY,
+      centerX, bottomY
     );
-    ctx.quadraticCurveTo(
-      centerX - jawWidth / 2,
-      centerY + frameHeight / 2,
-      centerX - jawWidth / 2,
-      headTop + topRadius + jawHeight * 0.6
+    ctx.bezierCurveTo(
+      centerX - radiusX + jawCurveControl, bottomY - radiusY,
+      centerX - radiusX, topY + radiusY + frameHeight * 0.2,
+      centerX - radiusX, topY + radiusY
     );
     
-    ctx.lineTo(centerX - topRadius, headTop + topRadius);
     ctx.stroke();
     
     // Línea guía vertical (centro)
@@ -187,14 +184,15 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
     ctx.beginPath();
-    ctx.moveTo(centerX, centerY - frameHeight / 2);
-    ctx.lineTo(centerX, centerY + frameHeight / 2);
+    ctx.moveTo(centerX, topY);
+    ctx.lineTo(centerX, bottomY);
     ctx.stroke();
     
-    // Línea guía horizontal (ojos)
+    // Línea guía horizontal (nivel de ojos - aprox 40% desde arriba)
+    const eyeLineY = topY + frameHeight * 0.4;
     ctx.beginPath();
-    ctx.moveTo(centerX - frameWidth / 2, centerY - frameHeight * 0.1);
-    ctx.lineTo(centerX + frameWidth / 2, centerY - frameHeight * 0.1);
+    ctx.moveTo(centerX - radiusX + 10, eyeLineY);
+    ctx.lineTo(centerX + radiusX - 10, eyeLineY);
     ctx.stroke();
     
     ctx.setLineDash([]);
