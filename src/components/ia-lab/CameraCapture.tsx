@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import faceFrame from "@/assets/face-frame.png";
 
 interface CameraReadiness {
   faceDetected: boolean;
@@ -227,25 +228,18 @@ export function CameraCapture({ mode, onCapture, onClose }: CameraCaptureProps) 
               className="w-full h-full object-cover"
             />
             
-            {/* Overlay con reglas y marco simple */}
+            {/* Overlay con reglas y marco de rostro */}
             <div className="absolute inset-0 pointer-events-none">
               <canvas
                 ref={overlayCanvasRef}
                 className="absolute inset-0 w-full h-full"
               />
-              <svg 
-                className="absolute inset-0 w-full h-full" 
-                viewBox="0 0 100 133" 
-                preserveAspectRatio="xMidYMid slice"
-              >
-                <ellipse 
-                  cx="50" cy="66.5" rx="26" ry="34"
-                  fill="none"
-                  stroke="rgb(0, 229, 255)"
-                  strokeWidth="2.2"
-                  opacity="0.95"
-                />
-              </svg>
+              <img 
+                src={faceFrame}
+                alt="Marco de rostro"
+                className="absolute inset-0 w-full h-full object-contain p-8"
+                style={{ opacity: 0.85 }}
+              />
             </div>
               
             </div>
