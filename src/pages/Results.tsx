@@ -1,33 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
 import { Button } from "@/components/ui/button";
 import { ImageComparison } from "@/components/ia-lab/ImageComparison";
-import { SimulationControls } from "@/components/ia-lab/SimulationControls";
-import { toast } from "sonner";
-import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
 
 export default function Results() {
   const navigate = useNavigate();
   const { smileImage, simulatedImage, contactData, contactSubmitted, metrics } = useSmileAnalysis();
-  
-  const [adjustments, setAdjustments] = useState({
-    toothLength: 0,
-    toothWidth: 0,
-    whiteness: 0
-  });
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [currentSimulation, setCurrentSimulation] = useState(simulatedImage);
-  
-  const canvasRef1 = useRef<HTMLCanvasElement>(null);
-  const canvasRef2 = useRef<HTMLCanvasElement>(null);
-  const canvasRef3 = useRef<HTMLCanvasElement>(null);
-  
-  const [overlayImages, setOverlayImages] = useState<{
-    midline: string;
-    proportions: string;
-    smile: string;
-  } | null>(null);
 
   // Proteger ruta
   useEffect(() => {
@@ -35,151 +14,6 @@ export default function Results() {
       navigate("/captura-reposo");
     }
   }, [contactSubmitted, smileImage, simulatedImage, navigate]);
-  
-  // Generar overlays cuando se carga la página
-  useEffect(() => {
-    if (smileImage && metrics) {
-      generateOverlays();
-    }
-  }, [smileImage, metrics]);
-  
-  // Actualizar simulación actual cuando cambia la imagen simulada
-  useEffect(() => {
-    if (simulatedImage) {
-      setCurrentSimulation(simulatedImage);
-    }
-  }, [simulatedImage]);
-  
-  const generateOverlays = async () => {
-    if (!smileImage || !metrics) return;
-    
-    try {
-      // Cargar imagen
-      const img = await loadImage(smileImage);
-      
-      // Crear landmarks mock (necesitaríamos guardarlos en el contexto idealmente)
-      // Por ahora generamos overlays sin landmarks precisos
-      const canvas1 = canvasRef1.current;
-      const canvas2 = canvasRef2.current;
-      const canvas3 = canvasRef3.current;
-      
-      if (!canvas1 || !canvas2 || !canvas3) return;
-      
-      // Aquí necesitaríamos los landmarks reales, pero como no los tenemos guardados
-      // creamos una versión simplificada mostrando solo las métricas
-      
-      const midlineUrl = await createMetricsOverlay(img, 'midline', metrics);
-      const proportionsUrl = await createMetricsOverlay(img, 'proportions', metrics);
-      const smileUrl = await createMetricsOverlay(img, 'smile', metrics);
-      
-      setOverlayImages({
-        midline: midlineUrl,
-        proportions: proportionsUrl,
-        smile: smileUrl
-      });
-    } catch (error) {
-      console.error('Error generating overlays:', error);
-    }
-  };
-  
-  const loadImage = (src: string): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = src;
-    });
-  };
-  
-  const createMetricsOverlay = async (
-    img: HTMLImageElement, 
-    type: 'midline' | 'proportions' | 'smile',
-    metrics: any
-  ): Promise<string> => {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('No context');
-    
-    ctx.drawImage(img, 0, 0);
-    
-    // Dibujar overlay simplificado basado en métricas
-    if (type === 'midline') {
-      drawSimplifiedMidlineOverlay(ctx, canvas.width, canvas.height, metrics);
-    } else if (type === 'proportions') {
-      drawSimplifiedProportionsOverlay(ctx, canvas.width, canvas.height, metrics);
-    } else {
-      drawSimplifiedSmileOverlay(ctx, canvas.width, canvas.height, metrics);
-    }
-    
-    return canvas.toDataURL('image/png');
-  };
-  
-  const drawSimplifiedMidlineOverlay = (ctx: CanvasRenderingContext2D, w: number, h: number, m: any) => {
-    // Panel de información
-    ctx.fillStyle = "rgba(0,0,0,0.75)";
-    ctx.fillRect(10, 10, 320, 140);
-    
-    ctx.font = "bold 16px system-ui";
-    ctx.fillStyle = "white";
-    ctx.fillText("📏 LÍNEAS MEDIAS", 20, 40);
-    
-    ctx.font = "13px system-ui";
-    ctx.fillStyle = "rgba(34,197,94,1)";
-    ctx.fillText(`Línea Media Facial: ${m.facialMidline?.side || 'centrado'}`, 20, 70);
-    
-    ctx.fillStyle = "rgba(249,115,22,1)";
-    ctx.fillText(`Línea Media Dental: ${m.midline.side}`, 20, 95);
-    ctx.fillText(`Desviación: ${m.midline.mm.toFixed(1)}mm`, 20, 115);
-    
-    const statusColor = m.midlineCoincidence?.status === "coincidente" ? "rgba(34,197,94,1)" :
-                        m.midlineCoincidence?.status === "leve" ? "rgba(250,204,21,1)" : "rgba(239,68,68,1)";
-    ctx.fillStyle = statusColor;
-    ctx.fillText(`Estado: ${m.midlineCoincidence?.status || 'N/A'}`, 20, 140);
-  };
-  
-  const drawSimplifiedProportionsOverlay = (ctx: CanvasRenderingContext2D, w: number, h: number, m: any) => {
-    // Panel de información
-    ctx.fillStyle = "rgba(0,0,0,0.75)";
-    ctx.fillRect(10, 10, 320, 160);
-    
-    ctx.font = "bold 16px system-ui";
-    ctx.fillStyle = "white";
-    ctx.fillText("📐 PROPORCIONES FACIALES", 20, 40);
-    
-    ctx.font = "13px system-ui";
-    ctx.fillStyle = "rgba(59,130,246,1)";
-    ctx.fillText(`Tercio Superior: ${m.facialProportions?.upperThird.toFixed(1)}%`, 20, 70);
-    ctx.fillText(`Tercio Medio: ${m.facialProportions?.middleThird.toFixed(1)}%`, 20, 95);
-    ctx.fillText(`Tercio Inferior: ${m.facialProportions?.lowerThird.toFixed(1)}%`, 20, 120);
-    
-    const balanceColor = m.facialProportions?.isBalanced ? "rgba(34,197,94,1)" : "rgba(250,204,21,1)";
-    ctx.fillStyle = balanceColor;
-    ctx.fillText(m.facialProportions?.isBalanced ? "✓ Equilibradas" : "⚠ Desbalanceadas", 20, 145);
-  };
-  
-  const drawSimplifiedSmileOverlay = (ctx: CanvasRenderingContext2D, w: number, h: number, m: any) => {
-    // Panel de información
-    ctx.fillStyle = "rgba(0,0,0,0.75)";
-    ctx.fillRect(10, 10, 320, 180);
-    
-    ctx.font = "bold 16px system-ui";
-    ctx.fillStyle = "white";
-    ctx.fillText("😊 ANÁLISIS DE SONRISA", 20, 40);
-    
-    ctx.font = "13px system-ui";
-    const arcColor = m.smileArc === 'consonante' ? "rgba(34,197,94,1)" : 
-                     m.smileArc === 'plano' ? "rgba(250,204,21,1)" : "rgba(239,68,68,1)";
-    ctx.fillStyle = arcColor;
-    ctx.fillText(`Arco: ${m.smileArc}`, 20, 70);
-    
-    ctx.fillStyle = "white";
-    ctx.fillText(`Ancho: ${m.smileWidth?.mm.toFixed(1)}mm (${m.smileWidth?.status})`, 20, 95);
-    ctx.fillText(`Exposición gingival: ${m.gingival.mm.toFixed(1)}mm`, 20, 120);
-    ctx.fillText(`Corredor bucal: ${Math.round(m.buccalRatio*100)}%`, 20, 145);
-    ctx.fillText(`Simetría: ${m.symmetry?.horizontal.toFixed(0)}%`, 20, 170);
-  };
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(
@@ -188,130 +22,14 @@ export default function Results() {
     window.open(`https://wa.me/56912345678?text=${message}`, "_blank");
   };
 
-  const handleRegenerate = async () => {
-    if (!smileImage || !metrics) return;
-    
-    setIsRegenerating(true);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/simulate-smile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          imageBase64: smileImage,
-          metrics,
-          adjustments
-        }),
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Mi nueva sonrisa con Sonríe.AI',
+        text: 'Mira mi simulación de sonrisa transformada con IA',
+        url: window.location.href
       });
-
-      if (!response.ok) {
-        throw new Error('Error en simulación');
-      }
-
-      const data = await response.json();
-      setCurrentSimulation(data.simulatedImage);
-      toast.success('Simulación actualizada con tus ajustes');
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Error al regenerar. Intenta de nuevo.');
-    } finally {
-      setIsRegenerating(false);
     }
-  };
-  
-  const resetAdjustments = () => {
-    setAdjustments({ toothLength: 0, toothWidth: 0, whiteness: 0 });
-    setCurrentSimulation(simulatedImage);
-  };
-  
-  const handleShare = async () => {
-    try {
-      // Crear un canvas con la comparación
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      // Cargar imágenes
-      const beforeImg = await loadImage(smileImage!);
-      const afterImg = await loadImage(currentSimulation!);
-      
-      // Configurar canvas
-      const padding = 40;
-      const spacing = 20;
-      canvas.width = beforeImg.width * 2 + spacing + padding * 2;
-      canvas.height = beforeImg.height + padding * 2 + 60;
-      
-      // Fondo
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Título
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 24px system-ui';
-      ctx.fillText('Mi Transformación con Sonríe.AI', padding, 35);
-      
-      // Imágenes
-      ctx.drawImage(beforeImg, padding, padding + 60, beforeImg.width, beforeImg.height);
-      ctx.drawImage(afterImg, padding + beforeImg.width + spacing, padding + 60, afterImg.width, afterImg.height);
-      
-      // Etiquetas
-      ctx.font = 'bold 18px system-ui';
-      ctx.fillText('Antes', padding + beforeImg.width/2 - 30, padding + 50);
-      ctx.fillText('Después', padding + beforeImg.width + spacing + afterImg.width/2 - 35, padding + 50);
-      
-      // Convertir a blob
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        
-        const file = new File([blob], 'mi-sonrisa.png', { type: 'image/png' });
-        
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'Mi nueva sonrisa con Sonríe.AI',
-            text: 'Mira mi simulación de sonrisa transformada con IA',
-            files: [file]
-          });
-        } else {
-          // Fallback: descargar imagen
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'mi-sonrisa-sonrie-ai.png';
-          a.click();
-          URL.revokeObjectURL(url);
-          toast.success('Imagen descargada');
-        }
-      }, 'image/png');
-    } catch (error) {
-      console.error('Error al compartir:', error);
-      toast.error('Error al compartir');
-    }
-  };
-  
-  const downloadOverlays = async () => {
-    if (!overlayImages) {
-      toast.error('Generando overlays, espera un momento...');
-      return;
-    }
-    
-    // Descargar las tres imágenes con overlay
-    const downloads = [
-      { url: overlayImages.midline, name: 'analisis-lineas-medias.png' },
-      { url: overlayImages.proportions, name: 'analisis-proporciones-faciales.png' },
-      { url: overlayImages.smile, name: 'analisis-sonrisa.png' }
-    ];
-    
-    for (const download of downloads) {
-      const a = document.createElement('a');
-      a.href = download.url;
-      a.download = download.name;
-      a.click();
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    
-    toast.success('Análisis descargados (3 imágenes)');
   };
 
   const handleRestart = () => {
@@ -355,73 +73,22 @@ export default function Results() {
         <div className="mb-10">
           <ImageComparison 
             beforeImage={smileImage}
-            afterImage={currentSimulation}
-          />
-        </div>
-        
-        {/* Controles de ajuste */}
-        <div className="mb-10">
-          <SimulationControls
-            adjustments={adjustments}
-            onAdjustmentChange={setAdjustments}
-            onReset={resetAdjustments}
-            onRegenerate={handleRegenerate}
-            isSimulating={isRegenerating}
+            afterImage={simulatedImage}
           />
         </div>
 
-        {/* Share & Download Buttons */}
-        <div className="flex justify-center gap-4 mb-10 flex-wrap">
+        {/* Share Button */}
+        <div className="flex justify-center mb-10">
           <Button
+            variant="outline"
             onClick={handleShare}
-            className="font-display font-bold rounded-xl px-8 py-6 text-lg"
+            className="font-display font-bold border-2 rounded-xl px-8 py-6 text-lg"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
-            Compartir en Redes Sociales
+            Compartir Mi Resultado
           </Button>
-          
-          <Button
-            variant="outline"
-            onClick={downloadOverlays}
-            className="font-display font-bold border-2 rounded-xl px-8 py-6 text-lg"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Descargar Análisis Detallado
-          </Button>
-        </div>
-        
-        {/* Overlay Images Preview */}
-        {overlayImages && (
-          <div className="mb-10">
-            <h3 className="text-2xl font-display font-black text-foreground mb-6 text-center">
-              📊 Análisis Visual Detallado
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-card rounded-2xl border-2 border-border p-4 shadow-lg">
-                <img src={overlayImages.midline} alt="Análisis de líneas medias" className="w-full rounded-lg mb-3" />
-                <p className="text-sm font-display font-bold text-center text-foreground">Líneas Medias</p>
-              </div>
-              <div className="bg-card rounded-2xl border-2 border-border p-4 shadow-lg">
-                <img src={overlayImages.proportions} alt="Proporciones faciales" className="w-full rounded-lg mb-3" />
-                <p className="text-sm font-display font-bold text-center text-foreground">Proporciones Faciales</p>
-              </div>
-              <div className="bg-card rounded-2xl border-2 border-border p-4 shadow-lg">
-                <img src={overlayImages.smile} alt="Análisis de sonrisa" className="w-full rounded-lg mb-3" />
-                <p className="text-sm font-display font-bold text-center text-foreground">Análisis de Sonrisa</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Canvas ocultos para generar overlays */}
-        <div className="hidden">
-          <canvas ref={canvasRef1} />
-          <canvas ref={canvasRef2} />
-          <canvas ref={canvasRef3} />
         </div>
 
         {/* Summary Card */}
@@ -439,11 +106,6 @@ export default function Results() {
               <p className="text-2xl font-display font-black text-foreground capitalize">{metrics?.smileArc || "N/A"}</p>
             </div>
             <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
-              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Ancho de Sonrisa</p>
-              <p className="text-2xl font-display font-black text-foreground">{metrics?.smileWidth.mm.toFixed(1)}mm</p>
-              <p className="text-sm text-muted-foreground capitalize">{metrics?.smileWidth.status}</p>
-            </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
               <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Exposición Gingival</p>
               <p className="text-2xl font-display font-black text-foreground">{metrics?.gingival.mm.toFixed(1)}mm</p>
               <p className="text-sm text-muted-foreground capitalize">{metrics?.gingival.class}</p>
@@ -456,21 +118,6 @@ export default function Results() {
             <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
               <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Corredor Bucal</p>
               <p className="text-2xl font-display font-black text-foreground">{metrics ? Math.round(metrics.buccalRatio * 100) : 0}%</p>
-            </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
-              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Proporción Dental</p>
-              <p className="text-2xl font-display font-black text-foreground">{metrics?.toothProportions.goldenRatio.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground">{metrics?.toothProportions.isIdeal ? "✓ Proporción áurea" : "Mejorable"}</p>
-            </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
-              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Simetría Facial</p>
-              <p className="text-2xl font-display font-black text-foreground">{metrics?.symmetry.horizontal.toFixed(0)}%</p>
-              <p className="text-sm text-muted-foreground">{metrics?.symmetry.isSymmetric ? "✓ Simétrica" : "Asimétrica"}</p>
-            </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
-              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Alineación Dental</p>
-              <p className="text-2xl font-display font-black text-foreground capitalize">{metrics?.toothAlignment.status}</p>
-              <p className="text-sm text-muted-foreground">{metrics?.toothAlignment.score.toFixed(0)}% score</p>
             </div>
           </div>
         </div>

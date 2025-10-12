@@ -18,21 +18,6 @@ export type SmileMetrics = {
     canine: { width: number; height: number }; // en mm
     calibrated: boolean; // indica si se usó calibración o estimación
   };
-  // Nuevas métricas del artículo
-  smileWidth: { mm: number; ratio: number; status: "estrecha" | "ideal" | "amplia" };
-  toothProportions: {
-    goldenRatio: number; // ratio ancho central/lateral
-    isIdeal: boolean;
-  };
-  symmetry: {
-    horizontal: number; // 0-100%
-    vertical: number; // 0-100%
-    isSymmetric: boolean;
-  };
-  toothAlignment: {
-    status: "alineada" | "leve" | "moderada" | "severa";
-    score: number; // 0-100
-  };
 };
 
 // Distancia euclidiana
@@ -188,45 +173,6 @@ export function computeMetrics(params: {
     };
   }
 
-  // === ANCHO DE SONRISA (Smile Width) ===
-  const smileWidthNorm = d(mouthL, mouthR);
-  const smileWidthMM = toMM(smileWidthNorm, ipd);
-  const interocularWidth = d(eyeL, eyeR);
-  const smileWidthRatio = smileWidthNorm / interocularWidth;
-  let smileWidthStatus: "estrecha" | "ideal" | "amplia";
-  if (smileWidthRatio < 0.45) smileWidthStatus = "estrecha";
-  else if (smileWidthRatio > 0.55) smileWidthStatus = "amplia";
-  else smileWidthStatus = "ideal";
-
-  // === PROPORCIONES DENTALES (Golden Ratio) ===
-  // Ratio ideal entre incisivo central y lateral es ~1.618 (proporción áurea)
-  const centralWidth = toothMeasurements?.centralIncisor.width || 10;
-  const lateralWidth = toothMeasurements?.lateralIncisor.width || 7;
-  const goldenRatio = centralWidth / lateralWidth;
-  const isGoldenIdeal = Math.abs(goldenRatio - 1.618) < 0.2;
-
-  // === SIMETRÍA FACIAL ===
-  // Simetría horizontal (izquierda vs derecha)
-  const leftSide = d(eyeL, { x: facialCenterX, y: eyeL.y });
-  const rightSide = d(eyeR, { x: facialCenterX, y: eyeR.y });
-  const horizontalSymmetry = Math.min(leftSide, rightSide) / Math.max(leftSide, rightSide) * 100;
-  
-  // Simetría vertical (proporciones arriba/abajo)
-  const verticalBalance = Math.min(upperThird, lowerThird) / Math.max(upperThird, lowerThird) * 100;
-  const isSymmetric = horizontalSymmetry > 90 && verticalBalance > 85;
-
-  // === ALINEACIÓN DENTAL ===
-  // Estimación basada en la uniformidad del arco de sonrisa
-  const mouthCenterY = (mouthL.y + mouthR.y) / 2;
-  const upperLipY = upper.y;
-  const alignment = Math.abs(mouthCenterY - upperLipY);
-  const alignmentScore = Math.max(0, 100 - (alignment * 1000));
-  let alignmentStatus: "alineada" | "leve" | "moderada" | "severa";
-  if (alignmentScore > 85) alignmentStatus = "alineada";
-  else if (alignmentScore > 70) alignmentStatus = "leve";
-  else if (alignmentScore > 50) alignmentStatus = "moderada";
-  else alignmentStatus = "severa";
-
   return {
     smileArc,
     gingival: { mm: gingMM, class: gingClass },
@@ -240,11 +186,7 @@ export function computeMetrics(params: {
       lowerThird: lowerThird * 100,
       isBalanced
     },
-    toothMeasurements,
-    smileWidth: { mm: smileWidthMM, ratio: smileWidthRatio, status: smileWidthStatus },
-    toothProportions: { goldenRatio, isIdeal: isGoldenIdeal },
-    symmetry: { horizontal: horizontalSymmetry, vertical: verticalBalance, isSymmetric },
-    toothAlignment: { status: alignmentStatus, score: alignmentScore }
+    toothMeasurements
   };
 }
 
