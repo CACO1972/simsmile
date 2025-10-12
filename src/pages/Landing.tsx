@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
-import { LogoCorner } from "@/components/LogoCorner";
 import logo from "@/assets/logo.png";
 
 export default function Landing() {
@@ -15,7 +14,6 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background flex items-center">
-      <LogoCorner />
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Logo y Header */}

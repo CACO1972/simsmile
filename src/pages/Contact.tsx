@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
-import { LogoCorner } from "@/components/LogoCorner";
 
 const contactSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
@@ -84,7 +83,6 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-background">
-      <LogoCorner />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Progress */}
         <div className="mb-8">

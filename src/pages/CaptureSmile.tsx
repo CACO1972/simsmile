@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { CameraCapture } from "@/components/ia-lab/CameraCapture";
 import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
 import { Button } from "@/components/ui/button";
-import { LogoCorner } from "@/components/LogoCorner";
 
 export default function CaptureSmile() {
   const navigate = useNavigate();
@@ -30,7 +29,6 @@ export default function CaptureSmile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <LogoCorner />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Progress */}
         <div className="mb-8">
