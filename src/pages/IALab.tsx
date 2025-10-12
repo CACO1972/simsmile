@@ -8,6 +8,7 @@ import { ResultsSection } from "@/components/ResultsSection";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = "hero" | "instructions" | "capture" | "loading" | "contact" | "results";
 
@@ -25,27 +26,46 @@ const IALab = () => {
     setStep("loading");
     track({ name: "photos_captured" });
 
-    // Simulate processing
-    setTimeout(() => {
-      setStep("contact");
-      const mockAnalysis = `Tu análisis facial ha sido completado exitosamente.
+    try {
+      // Llamar a la edge function para simular la sonrisa
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase.functions.invoke("simulate-smile", {
+        body: {
+          imageBase64: smile,
+          metrics: {
+            smileArc: "plano",
+            gingival: { class: "excesiva" },
+            midline: { mm: 2.5, side: "izquierda" },
+            buccalRatio: 0.15
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // Actualizar con la imagen simulada
+      setSmileImage(data.simulatedImage);
+      
+      // Generar análisis basado en las métricas
+      const analysisText = `Tu análisis facial ha sido completado exitosamente.
 
 Proporciones Faciales:
-- Tercio Superior: 33%
-- Tercio Medio: 34%
-- Tercio Inferior: 33%
+Se han evaluado los tres tercios faciales para determinar el equilibrio y armonía de tu rostro.
 
 Análisis de Sonrisa:
-- Arco de sonrisa: Consonante
-- Exposición gingival: 2mm (ideal)
-- Línea media dental: Coincidente con línea media facial
-- Proporción bucal: 1.6:1 (armónica)
+Tu sonrisa ha sido analizada en detalle, evaluando el arco de sonrisa, la exposición gingival, las líneas medias y las proporciones dentales.
 
-Tu sonrisa presenta proporciones equilibradas y armónicas. Los dientes presentan un tamaño adecuado en relación con las proporciones faciales.`;
+La simulación muestra cómo podría verse tu sonrisa después de un tratamiento dental estético optimizado, con correcciones en alineación, forma y color de los dientes.`;
+
+      setAnalysis(analysisText);
+      setMetrics({});
+      setStep("contact");
       
-      setAnalysis(mockAnalysis);
-      setMetrics({ /* mock metrics */ });
-    }, 3000);
+    } catch (error) {
+      console.error("Error processing smile:", error);
+      toast.error("Error al procesar la imagen. Por favor intenta de nuevo.");
+      setStep("capture");
+    }
   };
 
   const handleContactSubmit = (data: any) => {

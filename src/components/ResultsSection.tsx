@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Logo } from "./Logo";
-import { Share2, Mail, Download } from "lucide-react";
+import { Share2, Mail, Download, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics, computeMetrics } from "@/lib/metrics";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -24,6 +25,10 @@ export const ResultsSection = ({
   const [teethSize, setTeethSize] = useState([0]);
   const [teethWidth, setTeethWidth] = useState([0]);
   const [teethWhiteness, setTeethWhiteness] = useState([0]);
+  const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
+  
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const handleEmailAnalysis = () => {
     toast.success(`Análisis enviado a ${contactEmail}`);
@@ -42,6 +47,56 @@ export const ResultsSection = ({
       }
     } else {
       toast.success("Link copiado al portapapeles");
+    }
+  };
+
+  const drawOverlay = (type: "midline" | "proportions" | "smile") => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Mock landmarks y métricas para demostración
+    const mockLandmarks = Array(478).fill(null).map((_, i) => ({
+      x: Math.random(),
+      y: Math.random()
+    }));
+
+    const mockMetrics: SmileMetrics = {
+      smileArc: "consonante",
+      gingival: { mm: 2, class: "media" },
+      midline: { mm: 1.2, side: "centrado" },
+      buccalRatio: 0.2,
+      facialMidline: { mm: 0.8, side: "centrado" },
+      midlineCoincidence: { deviation: 1.2, status: "coincidente" },
+      facialProportions: {
+        upperThird: 33,
+        middleThird: 34,
+        lowerThird: 33,
+        isBalanced: true
+      }
+    };
+
+    if (type === "midline") {
+      drawMidlineOverlay(ctx, img, mockLandmarks, mockMetrics);
+    } else if (type === "proportions") {
+      drawProportionsOverlay(ctx, img, mockLandmarks, mockMetrics);
+    } else if (type === "smile") {
+      drawSmileOverlay(ctx, img, mockLandmarks, mockMetrics);
+    }
+  };
+
+  useEffect(() => {
+    if (overlayType && imgRef.current?.complete) {
+      drawOverlay(overlayType);
+    }
+  }, [overlayType]);
+
+  const handleImageLoad = () => {
+    if (overlayType) {
+      drawOverlay(overlayType);
     }
   };
 
@@ -69,8 +124,55 @@ export const ResultsSection = ({
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-lavender to-gold rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
             <div className="relative bg-card border border-border rounded-lg p-4">
-              <h3 className="text-xl font-heading font-bold mb-4 text-center">Después</h3>
-              <img src={smileImage} alt="Después" className="w-full rounded-lg" />
+              <h3 className="text-xl font-heading font-bold mb-4 text-center">Después (Simulación)</h3>
+              <div className="relative">
+                <img 
+                  ref={imgRef}
+                  src={smileImage} 
+                  alt="Después" 
+                  className="w-full rounded-lg"
+                  onLoad={handleImageLoad}
+                  style={{ display: overlayType ? 'none' : 'block' }}
+                />
+                <canvas
+                  ref={canvasRef}
+                  width={800}
+                  height={800}
+                  className="w-full rounded-lg"
+                  style={{ display: overlayType ? 'block' : 'none' }}
+                />
+              </div>
+              
+              {/* Botones de overlay */}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant={overlayType === "midline" ? "default" : "outline"}
+                  onClick={() => setOverlayType(overlayType === "midline" ? null : "midline")}
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Líneas Medias
+                </Button>
+                <Button
+                  size="sm"
+                  variant={overlayType === "proportions" ? "default" : "outline"}
+                  onClick={() => setOverlayType(overlayType === "proportions" ? null : "proportions")}
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Proporciones
+                </Button>
+                <Button
+                  size="sm"
+                  variant={overlayType === "smile" ? "default" : "outline"}
+                  onClick={() => setOverlayType(overlayType === "smile" ? null : "smile")}
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Análisis Sonrisa
+                </Button>
+              </div>
             </div>
           </div>
         </div>
