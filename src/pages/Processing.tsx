@@ -206,81 +206,159 @@ export default function Processing() {
     );
   }
 
+  const progressPercentage = ((currentStep + 1) / steps.length) * 100;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4 overflow-hidden relative">
+      {/* Animated background particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-primary/10"
+            style={{
+              width: `${Math.random() * 80 + 20}px`,
+              height: `${Math.random() * 80 + 20}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 10 + 15}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`,
+            }}
+          />
+        ))}
+      </div>
+
       {/* Logo sutil en esquina */}
       <div className="fixed top-4 left-4 z-10">
         <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
       </div>
       
-      <div className="max-w-2xl w-full">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">Paso 4 de 6</span>
-            <span className="text-sm font-medium text-primary">67%</span>
-          </div>
-          <div className="w-full bg-muted rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full transition-all" style={{ width: '67%' }} />
-          </div>
-        </div>
-
+      <div className="max-w-2xl w-full relative z-10">
         {/* Main Card */}
-        <div className="bg-card rounded-3xl border border-border p-8 shadow-2xl">
-          {/* Animated Icon */}
+        <div className="bg-card/80 backdrop-blur-xl rounded-3xl border border-border/50 p-8 shadow-2xl">
+          {/* Spectacular animated center */}
           <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center animate-pulse">
-                <svg className="w-12 h-12 text-primary animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
+            <div className="relative w-40 h-40">
+              {/* Rotating gradient rings */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-primary/50 to-primary animate-spin opacity-20" style={{ animationDuration: '3s' }} />
+              <div className="absolute inset-2 rounded-full bg-gradient-to-l from-primary via-primary/50 to-primary animate-spin opacity-30" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
+              <div className="absolute inset-4 rounded-full bg-gradient-to-r from-primary via-primary/50 to-primary animate-spin opacity-40" style={{ animationDuration: '4s' }} />
+              
+              {/* Center smile animation */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                  {/* Animated smile face */}
+                  <svg className="w-24 h-24" viewBox="0 0 100 100" fill="none">
+                    {/* Face circle with glow */}
+                    <circle cx="50" cy="50" r="45" fill="hsl(var(--primary))" className="animate-pulse" opacity="0.2" />
+                    <circle cx="50" cy="50" r="40" fill="hsl(var(--primary))" opacity="0.1" />
+                    
+                    {/* Eyes */}
+                    <circle cx="35" cy="40" r="3" fill="hsl(var(--primary-foreground))" className="animate-bounce" style={{ animationDuration: '2s' }} />
+                    <circle cx="65" cy="40" r="3" fill="hsl(var(--primary-foreground))" className="animate-bounce" style={{ animationDuration: '2s', animationDelay: '0.1s' }} />
+                    
+                    {/* Animated smile - teeth showing */}
+                    <path
+                      d="M 30 55 Q 50 70 70 55"
+                      stroke="hsl(var(--primary-foreground))"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                      className="animate-pulse"
+                    />
+                    {/* Teeth sparkles */}
+                    {[0, 1, 2, 3].map((i) => (
+                      <circle
+                        key={i}
+                        cx={35 + i * 10}
+                        cy="58"
+                        r="1.5"
+                        fill="hsl(var(--primary-foreground))"
+                        className="animate-ping"
+                        style={{ animationDelay: `${i * 0.2}s`, animationDuration: '1.5s' }}
+                      />
+                    ))}
+                  </svg>
+                  
+                  {/* Sparkle effects */}
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="absolute w-2 h-2 bg-primary rounded-full animate-ping"
+                      style={{
+                        top: `${Math.sin(i * 1.2) * 50 + 50}%`,
+                        left: `${Math.cos(i * 1.2) * 50 + 50}%`,
+                        animationDelay: `${i * 0.3}s`,
+                        animationDuration: '2s'
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="absolute inset-0 w-24 h-24 bg-primary/20 rounded-full animate-ping"></div>
             </div>
           </div>
 
-          {/* Title */}
-          <h1 className="text-3xl font-bold text-center text-foreground mb-3">
+          {/* Title with gradient */}
+          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent mb-3 animate-fade-in">
             Analizando tu Sonrisa
           </h1>
-          <p className="text-center text-muted-foreground mb-8">
+          <p className="text-center text-muted-foreground mb-6">
             Nuestra IA está procesando tus fotos...
           </p>
 
-          {/* Steps */}
-          <div className="space-y-4">
+          {/* Animated progress bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-muted-foreground">Paso {currentStep + 1} de {steps.length}</span>
+              <span className="text-sm font-bold text-primary">{Math.round(progressPercentage)}%</span>
+            </div>
+            <div className="relative w-full h-3 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-primary/50 via-primary to-primary/50 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progressPercentage}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          {/* Steps with improved design */}
+          <div className="space-y-3">
             {steps.map((step, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
+                className={`relative flex items-center gap-4 p-4 rounded-xl transition-all duration-300 ${
                   index === currentStep
-                    ? "bg-primary/10 border border-primary/20"
+                    ? "bg-gradient-to-r from-primary/20 to-primary/10 border-2 border-primary/30 scale-105"
                     : index < currentStep
-                    ? "bg-green-500/10 border border-green-500/20"
-                    : "bg-muted/30 border border-transparent"
+                    ? "bg-gradient-to-r from-green-500/20 to-green-500/10 border border-green-500/30"
+                    : "bg-muted/30 border border-transparent opacity-60"
                 }`}
               >
+                {/* Step number/icon */}
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                     index === currentStep
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50 scale-110"
                       : index < currentStep
-                      ? "bg-green-600 dark:bg-green-500 text-white"
+                      ? "bg-gradient-to-br from-green-600 to-green-500 text-white"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {index < currentStep ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
                     <span className="text-sm font-bold">{index + 1}</span>
                   )}
                 </div>
+                
+                {/* Step text */}
                 <span
-                  className={`text-sm font-medium ${
+                  className={`text-sm font-medium flex-grow ${
                     index === currentStep
-                      ? "text-foreground"
+                      ? "text-foreground font-semibold"
                       : index < currentStep
                       ? "text-green-700 dark:text-green-400"
                       : "text-muted-foreground"
@@ -288,27 +366,38 @@ export default function Processing() {
                 >
                   {step.text}
                 </span>
+                
+                {/* Animated indicator for current step */}
                 {index === currentStep && (
-                  <div className="ml-auto">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                    </div>
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Fun Fact */}
-          <div className="mt-8 p-4 bg-accent/20 rounded-lg border border-accent">
-            <p className="text-sm text-center text-foreground">
-              <strong>💡 Sabías que...</strong> Una sonrisa saludable puede mejorar tu confianza hasta en un 80%
+          {/* Fun motivational message */}
+          <div className="mt-8 p-5 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-xl border border-primary/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+            <p className="text-sm text-center text-foreground relative z-10">
+              <span className="text-2xl mr-2">✨</span>
+              <strong>Tu nueva sonrisa está a punto de revelarse...</strong>
             </p>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          25% { transform: translateY(-20px) translateX(10px); }
+          50% { transform: translateY(-40px) translateX(-10px); }
+          75% { transform: translateY(-20px) translateX(5px); }
+        }
+      `}</style>
     </div>
   );
 }
