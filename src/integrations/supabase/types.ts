@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      smile_analyses: {
+        Row: {
+          completed_at: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contact_submitted: boolean | null
+          created_at: string
+          id: string
+          metrics: Json
+          notes: string | null
+          rest_image_url: string
+          simulated_image_url: string | null
+          smile_image_url: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_submitted?: boolean | null
+          created_at?: string
+          id?: string
+          metrics: Json
+          notes?: string | null
+          rest_image_url: string
+          simulated_image_url?: string | null
+          smile_image_url: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_submitted?: boolean | null
+          created_at?: string
+          id?: string
+          metrics?: Json
+          notes?: string | null
+          rest_image_url?: string
+          simulated_image_url?: string | null
+          smile_image_url?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
