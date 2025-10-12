@@ -23,23 +23,77 @@ export default function Instructions() {
         <div className="bg-card rounded-3xl border-2 border-border overflow-hidden shadow-xl">
           <div className="bg-gradient-to-br from-accent/30 to-primary/20 p-8 border-b-2 border-border">
             <h1 className="text-3xl font-display font-black text-foreground mb-3">
-              📸 Preparación para las Fotos
+              📸 Guía para las Fotos
             </h1>
             <p className="text-muted-foreground text-lg">
-              Sigue estas indicaciones para obtener los mejores resultados
+              Puedes tomar las fotos con tu cámara, subirlas desde tu galería, o pedirle a alguien que te ayude
             </p>
           </div>
 
           <div className="p-8 space-y-8">
-            {/* Imagen de ejemplo */}
-            <div className="relative aspect-[3/4] bg-gradient-to-br from-muted to-muted/50 rounded-2xl overflow-hidden border-2 border-border">
-              <img 
-                src={faceFrame}
-                alt="Ejemplo de posición correcta"
-                className="w-full h-full object-cover opacity-60"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-[70%] h-[80%] border-4 border-primary rounded-full opacity-90 shadow-lg" />
+            {/* Formas de captura */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="text-center p-4 bg-primary/5 rounded-2xl border border-primary/20">
+                <div className="text-4xl mb-2">📱</div>
+                <p className="text-xs font-display font-bold text-foreground">Selfie</p>
+              </div>
+              <div className="text-center p-4 bg-primary/5 rounded-2xl border border-primary/20">
+                <div className="text-4xl mb-2">👤</div>
+                <p className="text-xs font-display font-bold text-foreground">Con ayuda</p>
+              </div>
+              <div className="text-center p-4 bg-primary/5 rounded-2xl border border-primary/20">
+                <div className="text-4xl mb-2">🖼️</div>
+                <p className="text-xs font-display font-bold text-foreground">Subir foto</p>
+              </div>
+            </div>
+
+            {/* Ejemplos visuales */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Ejemplo correcto */}
+              <div className="space-y-3">
+                <div className="relative aspect-[3/4] bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-2xl overflow-hidden border-2 border-green-500/30">
+                  <img 
+                    src={faceFrame}
+                    alt="Ejemplo correcto"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-[70%] h-[80%] border-4 border-green-500 rounded-full opacity-90 shadow-lg" />
+                  </div>
+                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    CORRECTO
+                  </div>
+                </div>
+                <div className="bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                  <p className="text-sm text-foreground font-medium">✓ Rostro centrado y frontal</p>
+                  <p className="text-sm text-foreground font-medium">✓ Buena iluminación</p>
+                  <p className="text-sm text-foreground font-medium">✓ Distancia adecuada</p>
+                </div>
+              </div>
+
+              {/* Ejemplo incorrecto */}
+              <div className="space-y-3">
+                <div className="relative aspect-[3/4] bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-2xl overflow-hidden border-2 border-red-500/30">
+                  <img 
+                    src={faceFrame}
+                    alt="Ejemplo incorrecto"
+                    className="w-full h-full object-cover opacity-40 transform rotate-12 scale-75"
+                  />
+                  <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    INCORRECTO
+                  </div>
+                </div>
+                <div className="bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                  <p className="text-sm text-foreground font-medium">✗ Rostro girado o ladeado</p>
+                  <p className="text-sm text-foreground font-medium">✗ Muy oscuro o con sombras</p>
+                  <p className="text-sm text-foreground font-medium">✗ Muy cerca o muy lejos</p>
+                </div>
               </div>
             </div>
 

@@ -106,6 +106,11 @@ export default function Results() {
               <p className="text-2xl font-display font-black text-foreground capitalize">{metrics?.smileArc || "N/A"}</p>
             </div>
             <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
+              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Ancho de Sonrisa</p>
+              <p className="text-2xl font-display font-black text-foreground">{metrics?.smileWidth.mm.toFixed(1)}mm</p>
+              <p className="text-sm text-muted-foreground capitalize">{metrics?.smileWidth.status}</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
               <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Exposición Gingival</p>
               <p className="text-2xl font-display font-black text-foreground">{metrics?.gingival.mm.toFixed(1)}mm</p>
               <p className="text-sm text-muted-foreground capitalize">{metrics?.gingival.class}</p>
@@ -118,6 +123,21 @@ export default function Results() {
             <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
               <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Corredor Bucal</p>
               <p className="text-2xl font-display font-black text-foreground">{metrics ? Math.round(metrics.buccalRatio * 100) : 0}%</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
+              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Proporción Dental</p>
+              <p className="text-2xl font-display font-black text-foreground">{metrics?.toothProportions.goldenRatio.toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">{metrics?.toothProportions.isIdeal ? "✓ Proporción áurea" : "Mejorable"}</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
+              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Simetría Facial</p>
+              <p className="text-2xl font-display font-black text-foreground">{metrics?.symmetry.horizontal.toFixed(0)}%</p>
+              <p className="text-sm text-muted-foreground">{metrics?.symmetry.isSymmetric ? "✓ Simétrica" : "Asimétrica"}</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-primary/20">
+              <p className="text-sm text-muted-foreground mb-2 font-display font-bold uppercase tracking-wide">Alineación Dental</p>
+              <p className="text-2xl font-display font-black text-foreground capitalize">{metrics?.toothAlignment.status}</p>
+              <p className="text-sm text-muted-foreground">{metrics?.toothAlignment.score.toFixed(0)}% score</p>
             </div>
           </div>
         </div>
