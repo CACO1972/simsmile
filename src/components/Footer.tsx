@@ -5,8 +5,15 @@ export const Footer = () => {
   return (
     <footer className="bg-card border-t border-border py-8 mt-16">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <Logo size="sm" className="opacity-50" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col items-center md:items-start gap-2">
+            <Logo size="md" />
+            <p className="text-xs text-muted-foreground text-center md:text-left">
+              <span className="font-semibold">Powered by Clínica Miró</span>
+              <br />
+              Desarrollo de IA con propiedad intelectual y patente chilena
+            </p>
+          </div>
           
           <div className="flex items-center gap-6">
             <a

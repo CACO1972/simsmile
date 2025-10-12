@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Check, X, Camera } from "lucide-react";
 import { Logo } from "./Logo";
+import correctPhotoExample from "@/assets/correct-photo-example.jpg";
+import incorrectPhotoExample from "@/assets/incorrect-photo-example.jpg";
 
 interface InstructionsSectionProps {
   onContinue: () => void;
@@ -10,10 +12,10 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
   return (
     <div className="min-h-screen flex flex-col px-4 py-8">
       <div className="absolute top-8 left-8">
-        <Logo size="sm" className="opacity-50" />
+        <Logo size="lg" />
       </div>
 
-      <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center">
+      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center">
         <h2 className="text-4xl md:text-5xl font-heading font-bold text-center mb-4">
           Instrucciones para el Análisis
         </h2>
@@ -23,67 +25,87 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Foto Correcta */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-green-500/20 p-2 rounded-full">
-                <Check className="h-6 w-6 text-green-500" />
+          <div className="bg-card border border-border rounded-lg overflow-hidden">
+            <div className="relative">
+              <img 
+                src={correctPhotoExample} 
+                alt="Ejemplo de foto correcta"
+                className="w-full h-64 object-cover"
+              />
+              <div className="absolute top-4 right-4 bg-green-500/90 p-3 rounded-full">
+                <Check className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-heading font-bold">Foto Correcta</h3>
             </div>
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Rostro de frente, mirando a la cámara</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Iluminación uniforme y clara</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Sonrisa natural mostrando los dientes</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Fondo neutro sin distracciones</span>
-              </li>
-            </ul>
+            <div className="p-6">
+              <h3 className="text-2xl font-heading font-bold mb-4 text-green-500">Foto Correcta</h3>
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Rostro de frente, mirando a la cámara</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Iluminación uniforme y clara</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Sonrisa natural mostrando los dientes</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Fondo neutro sin distracciones</span>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Foto Incorrecta */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-destructive/20 p-2 rounded-full">
-                <X className="h-6 w-6 text-destructive" />
+          <div className="bg-card border border-border rounded-lg overflow-hidden">
+            <div className="relative">
+              <img 
+                src={incorrectPhotoExample} 
+                alt="Ejemplo de foto incorrecta"
+                className="w-full h-64 object-cover"
+              />
+              <div className="absolute top-4 right-4 bg-destructive/90 p-3 rounded-full">
+                <X className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-heading font-bold">Evita Esto</h3>
             </div>
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
-                <span>Rostro de perfil o ángulos extremos</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
-                <span>Sombras fuertes o contraluz</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
-                <span>Labios cerrados o sonrisa forzada</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
-                <span>Fotos borrosas o pixeladas</span>
-              </li>
-            </ul>
+            <div className="p-6">
+              <h3 className="text-2xl font-heading font-bold mb-4 text-destructive">Evita Esto</h3>
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <span>Rostro de perfil o ángulos extremos</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <span>Sombras fuertes o contraluz</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <span>Labios cerrados o sonrisa forzada</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <X className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <span>Fotos borrosas o pixeladas</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-6">
           <Button size="lg" onClick={onContinue} className="text-lg px-8">
             <Camera className="mr-2" />
             Entendido, Continuar
           </Button>
+          
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+            <span className="font-semibold">Powered by Clínica Miró</span>
+            <br />
+            Desarrollo de Inteligencia Artificial con propiedad intelectual y patente chilena
+          </p>
         </div>
       </div>
     </div>
