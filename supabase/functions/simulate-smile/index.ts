@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, metrics, adjustments } = await req.json();
+    const { imageBase64, metrics } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
@@ -44,39 +44,17 @@ serve(async (req) => {
     corrections.push('blanquear dientes manteniendo apariencia natural');
     corrections.push('igualar tamaños y proporciones de dientes según estándares estéticos');
 
-    // Aplicar ajustes sutiles si se especifican (±5% máximo)
-    if (adjustments) {
-      if (adjustments.toothLength !== 0) {
-        const direction = adjustments.toothLength > 0 ? 'ligeramente más largos' : 'ligeramente más cortos';
-        const percentage = Math.abs(adjustments.toothLength);
-        corrections.push(`ajustar la longitud de los dientes ${direction} en aproximadamente ${percentage}% (cambio muy sutil)`);
-      }
-      
-      if (adjustments.toothWidth !== 0) {
-        const direction = adjustments.toothWidth > 0 ? 'ligeramente más anchos' : 'ligeramente más estrechos';
-        const percentage = Math.abs(adjustments.toothWidth);
-        corrections.push(`ajustar el ancho de los dientes ${direction} en aproximadamente ${percentage}% (cambio muy sutil)`);
-      }
-      
-      if (adjustments.whiteness > 0) {
-        const whiteLevel = adjustments.whiteness === 1 ? 'moderadamente' : 'intensamente';
-        corrections.push(`blanquear los dientes ${whiteLevel} pero manteniendo apariencia natural sin llegar a blanco artificial`);
-      }
-    }
-
     const prompt = `Eres un experto en simulación dental. Edita esta fotografía de sonrisa aplicando las siguientes correcciones estéticas de forma natural y realista:
 
 ${corrections.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
 IMPORTANTE: 
 - Mantén la naturalidad de la imagen
-- Los cambios deben ser EXTREMADAMENTE SUTILES (máximo 5% de variación)
+- Los cambios deben ser sutiles pero visibles
 - Respeta la estructura facial original
 - Usa tonos de dientes naturales (no blanco artificial)
 - La encía debe verse saludable y proporcionada
-- Mantén la iluminación y sombras originales
-- NUNCA hagas cambios dramáticos que puedan generar desarmonía
-- Los ajustes porcentuales deben ser imperceptibles pero efectivos`;
+- Mantén la iluminación y sombras originales`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

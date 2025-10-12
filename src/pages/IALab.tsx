@@ -1,15 +1,10 @@
 import { useRef, useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { computeMetrics, drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
-import { CameraCapture } from "@/components/ia-lab/CameraCapture";
-import { ImageUpload } from "@/components/ia-lab/ImageUpload";
-import { MetricsDisplay } from "@/components/ia-lab/MetricsDisplay";
-import { SimulationControls } from "@/components/ia-lab/SimulationControls";
-import { ImageComparison } from "@/components/ia-lab/ImageComparison";
 
+// Carga dinámica de MediaPipe Tasks desde CDN (sin tocar package.json)
 async function loadFaceTask() {
   const vision = await (window as any).FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
@@ -27,6 +22,7 @@ async function loadFaceTask() {
   return landmarker;
 }
 
+// Carga del FilesetResolver global (necesario para vision_bundle.mjs)
 async function ensureFilesetResolver() {
   if ((window as any).FilesetResolver) return;
   // @ts-ignore - Dynamic CDN import
@@ -50,17 +46,6 @@ export default function IALab() {
   const [loading, setLoading] = useState(false);
   const [simulatedB64, setSimulatedB64] = useState<string>("");
   const [simulating, setSimulating] = useState(false);
-  
-  const [adjustments, setAdjustments] = useState({
-    toothLength: 0,
-    toothWidth: 0,
-    whiteness: 0
-  });
-  const [showAdjustments, setShowAdjustments] = useState(false);
-  
-  const [showCamera, setShowCamera] = useState(false);
-  const [cameraMode, setCameraMode] = useState<"rest" | "smile" | null>(null);
-  
   const canvasRef1 = useRef<HTMLCanvasElement>(null);
   const canvasRef2 = useRef<HTMLCanvasElement>(null);
   const canvasRef3 = useRef<HTMLCanvasElement>(null);
@@ -80,9 +65,11 @@ export default function IALab() {
       await ensureFilesetResolver();
       const landmarker = await loadFaceTask();
 
+      // Crear imágenes
       const restImg = await loadImage(restB64);
       const smileImg = await loadImage(smileB64);
 
+      // Detectar
       const restRes = await (landmarker as any).detect(restImg);
       const smileRes = await (landmarker as any).detect(smileImg);
 
@@ -93,10 +80,12 @@ export default function IALab() {
       const restLm = restRes.faceLandmarks[0];
       const smileLm = smileRes.faceLandmarks[0];
 
+      // Calcular métricas
       const m = computeMetrics({ restLm, smileLm, imgW: smileImg.width, imgH: smileImg.height });
       setMetrics(m);
       track({ name: "analyze_ok", data: { arc: m.smileArc, gingivalClass: m.gingival.class } });
 
+      // Pintar overlays en 3 canvas separados con manejo seguro de refs
       setTimeout(() => {
         [canvasRef1, canvasRef2, canvasRef3].forEach((ref, idx) => {
           const canvas = ref.current;
@@ -121,23 +110,17 @@ export default function IALab() {
     }
   };
 
-  const simulateCorrections = async (withAdjustments = false) => {
+  const simulateCorrections = async () => {
     if (!smileB64 || !metrics) return alert("Primero analiza una foto de sonrisa.");
     setSimulating(true);
     try {
-      const body: any = { imageBase64: smileB64, metrics };
-      
-      if (withAdjustments) {
-        body.adjustments = adjustments;
-      }
-
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/simulate-smile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ imageBase64: smileB64, metrics }),
       });
 
       if (!response.ok) {
@@ -147,39 +130,13 @@ export default function IALab() {
 
       const data = await response.json();
       setSimulatedB64(data.simulatedImage);
-      
-      if (!withAdjustments) {
-        setShowAdjustments(true);
-        toast.success('Simulación completada. Ahora puedes ajustar parámetros.');
-      } else {
-        toast.success('Simulación actualizada con tus ajustes');
-      }
-      
-      track({ name: "simulation_success", data: { corrections: true, withAdjustments } });
+      track({ name: "simulation_success", data: { corrections: true } });
     } catch (e) {
       console.error(e);
-      toast.error(e instanceof Error ? e.message : "Error al simular. Intenta de nuevo.");
+      alert(e instanceof Error ? e.message : "Error al simular. Intenta de nuevo.");
     } finally {
       setSimulating(false);
     }
-  };
-
-  const resetAdjustments = () => {
-    setAdjustments({ toothLength: 0, toothWidth: 0, whiteness: 0 });
-  };
-
-  const startCamera = (mode: "rest" | "smile") => {
-    setCameraMode(mode);
-    setShowCamera(true);
-  };
-
-  const handleCameraCapture = (imageData: string) => {
-    if (cameraMode === 'rest') {
-      setRestB64(imageData);
-    } else {
-      setSmileB64(imageData);
-    }
-    setShowCamera(false);
   };
 
   return (
@@ -230,19 +187,35 @@ export default function IALab() {
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6">
             <div className="grid gap-4">
-              <ImageUpload
-                label="Foto en reposo"
-                imageData={restB64}
-                onFileChange={(e) => onFile(e, "rest")}
-                onCameraClick={() => startCamera('rest')}
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Foto en reposo</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => onFile(e, "rest")} 
+                  className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                />
+                {restB64 && (
+                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                    <img src={restB64} alt="reposo" className="w-full h-64 object-contain" />
+                  </div>
+                )}
+              </div>
 
-              <ImageUpload
-                label="Foto sonriendo"
-                imageData={smileB64}
-                onFileChange={(e) => onFile(e, "smile")}
-                onCameraClick={() => startCamera('smile')}
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Foto sonriendo</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => onFile(e, "smile")} 
+                  className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                />
+                {smileB64 && (
+                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                    <img src={smileB64} alt="sonrisa" className="w-full h-64 object-contain" />
+                  </div>
+                )}
+              </div>
 
               <Button 
                 className="mt-4 w-full" 
@@ -272,17 +245,141 @@ export default function IALab() {
               )}
               
               {metrics && (
-                <>
-                  <MetricsDisplay
-                    metrics={metrics}
-                    canvas1Ref={canvasRef1}
-                    canvas2Ref={canvasRef2}
-                    canvas3Ref={canvasRef3}
-                  />
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                      <canvas 
+                        ref={canvasRef1} 
+                        className="w-full h-auto" 
+                        aria-label="análisis líneas medias"
+                      />
+                    </div>
+                    <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
+                      <p className="text-xs text-foreground">
+                        <strong>Líneas Medias:</strong> Compara la simetría facial (verde) con la dental (naranja). Una buena coincidencia es clave para una sonrisa armoniosa.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                      <canvas 
+                        ref={canvasRef2} 
+                        className="w-full h-auto" 
+                        aria-label="proporciones faciales"
+                      />
+                    </div>
+                    <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
+                      <p className="text-xs text-foreground">
+                        <strong>Proporciones Faciales:</strong> El rostro se divide en tres tercios idealmente iguales (33% cada uno). Esto indica balance y armonía facial.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                      <canvas 
+                        ref={canvasRef3} 
+                        className="w-full h-auto" 
+                        aria-label="análisis de sonrisa"
+                      />
+                    </div>
+                    <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
+                      <p className="text-xs text-foreground">
+                        <strong>Análisis de Sonrisa:</strong> Evalúa el arco de la sonrisa, exposición de encías y amplitud. Una sonrisa consonante y equilibrada es el ideal estético.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {metrics && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-foreground">Resultados detallados</h3>
+                  
+                  <div className="p-3 bg-primary/10 rounded-lg border border-primary/30">
+                    <h4 className="text-sm font-semibold mb-2 text-foreground">Líneas Medias</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Dental:</span>
+                        <span className={`font-bold ${
+                          Math.abs(metrics.midline.mm) < 1 ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {metrics.midline.mm.toFixed(1)}mm {metrics.midline.side}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Facial:</span>
+                        <span className="font-bold text-green-600">{metrics.facialMidline.side}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Coincidencia:</span>
+                        <span className={`font-bold capitalize ${
+                          metrics.midlineCoincidence.status === 'coincidente' ? 'text-green-600' : 
+                          metrics.midlineCoincidence.status === 'leve' ? 'text-yellow-600' :
+                          metrics.midlineCoincidence.status === 'moderada' ? 'text-orange-600' : 'text-red-600'
+                        }`}>
+                          {metrics.midlineCoincidence.status} ({metrics.midlineCoincidence.deviation.toFixed(1)}mm)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-accent/10 rounded-lg border border-accent/30">
+                    <h4 className="text-sm font-semibold mb-2 text-foreground">Proporciones Faciales</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Tercio Superior:</span>
+                        <span className="font-bold">{metrics.facialProportions.upperThird.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Tercio Medio:</span>
+                        <span className="font-bold">{metrics.facialProportions.middleThird.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Tercio Inferior:</span>
+                        <span className="font-bold">{metrics.facialProportions.lowerThird.toFixed(1)}%</span>
+                      </div>
+                      <div className="pt-2 border-t border-accent/30">
+                        <span className={`text-sm font-bold ${
+                          metrics.facialProportions.isBalanced ? 'text-green-600' : 'text-yellow-600'
+                        }`}>
+                          {metrics.facialProportions.isBalanced ? '✓ Equilibradas' : '⚠ Desbalanceadas'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm font-medium">Arco de sonrisa:</span>
+                      <span className={`text-sm font-bold capitalize ${
+                        metrics.smileArc === 'consonante' ? 'text-green-600' : 
+                        metrics.smileArc === 'plano' ? 'text-yellow-600' : 'text-red-600'
+                      }`}>{metrics.smileArc}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm font-medium">Exposición gingival:</span>
+                      <span className={`text-sm font-bold capitalize ${
+                        metrics.gingival.class === 'baja' ? 'text-green-600' : 
+                        metrics.gingival.class === 'media' ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                        {metrics.gingival.class} ({metrics.gingival.mm.toFixed(1)} mm)
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm font-medium">Corredor bucal:</span>
+                      <span className={`text-sm font-bold ${
+                        metrics.buccalRatio >= 0.1 && metrics.buccalRatio <= 0.3 ? 'text-green-600' : 'text-yellow-600'
+                      }`}>
+                        {Math.round(metrics.buccalRatio*100)}%
+                      </span>
+                    </div>
+                  </div>
                   
                   <Button 
                     className="w-full mt-4" 
-                    onClick={() => simulateCorrections(false)} 
+                    onClick={simulateCorrections} 
                     disabled={simulating}
                     size="lg"
                     variant="default"
@@ -305,7 +402,7 @@ export default function IALab() {
                       </>
                     )}
                   </Button>
-                </>
+                </div>
               )}
             </div>
           </CardContent>
@@ -321,33 +418,29 @@ export default function IALab() {
                 Simulación con IA — Resultado
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <ImageComparison 
-                beforeImage={smileB64}
-                afterImage={simulatedB64}
-              />
-
-              {showAdjustments && (
-                <SimulationControls
-                  adjustments={adjustments}
-                  onAdjustmentChange={setAdjustments}
-                  onReset={resetAdjustments}
-                  onRegenerate={() => simulateCorrections(true)}
-                  isSimulating={simulating}
-                />
-              )}
+            <CardContent className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-foreground">Foto original</h3>
+                <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                  <img src={smileB64} alt="original" className="w-full h-auto" />
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="font-semibold text-foreground">Simulación corregida</h3>
+                <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
+                  <img src={simulatedB64} alt="simulada" className="w-full h-auto" />
+                </div>
+                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <p className="text-sm text-foreground">
+                    ✨ Correcciones aplicadas con IA basadas en los patrones estéticos detectados
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
       </main>
-
-      {showCamera && cameraMode && (
-        <CameraCapture
-          mode={cameraMode}
-          onCapture={handleCameraCapture}
-          onClose={() => setShowCamera(false)}
-        />
-      )}
     </div>
   );
 }

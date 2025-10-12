@@ -11,13 +11,6 @@ export type SmileMetrics = {
     lowerThird: number;    // base nariz a mentón
     isBalanced: boolean;
   };
-  // Dimensiones reales de dientes (cuando hay calibración)
-  toothMeasurements?: {
-    centralIncisor: { width: number; height: number }; // en mm
-    lateralIncisor: { width: number; height: number }; // en mm
-    canine: { width: number; height: number }; // en mm
-    calibrated: boolean; // indica si se usó calibración o estimación
-  };
 };
 
 // Distancia euclidiana
@@ -30,9 +23,9 @@ function toMM(norm: number, ipdNorm: number) {
 }
 
 export function computeMetrics(params: {
-  restLm: any[]; smileLm: any[]; imgW: number; imgH: number; calibrationScale?: number;
+  restLm: any[]; smileLm: any[]; imgW: number; imgH: number;
 }): SmileMetrics {
-  const { smileLm, calibrationScale } = params;
+  const { smileLm } = params;
   // Indices aproximados (MediaPipe Face Landmarker 468 pts):
   const LEFT_EYE_OUT = 33, RIGHT_EYE_OUT = 263;     // externos
   const MOUTH_LEFT = 61, MOUTH_RIGHT = 291;
@@ -114,65 +107,6 @@ export function computeMetrics(params: {
   const faceW = d(eyeL, eyeR) * 2.8;
   const buccalRatio = Math.min(1, mouthW / faceW);
 
-  // Cálculo de dimensiones reales de dientes
-  let toothMeasurements: SmileMetrics['toothMeasurements'];
-  
-  // Índices aproximados para dientes (basados en posiciones de labios)
-  const UPPER_LIP_INNER = 13;
-  const LOWER_LIP_INNER = 14;
-  
-  // Estimación del ancho y alto de dientes centrales superiores
-  // Los incisivos centrales superiores son típicamente 8-10mm de ancho y 10-12mm de alto
-  // Los laterales son ~7mm de ancho y 9-10mm de alto
-  // Los caninos son ~7.5mm de ancho y 10-11mm de alto
-  
-  if (calibrationScale) {
-    // Con calibración: calcular dimensiones reales
-    // Estimación del ancho del incisivo central basado en la distancia entre puntos de labios
-    const mouthCenterWidth = mouthW * 0.15; // ~15% del ancho de boca para 2 incisivos centrales
-    const centralIncisorWidth = (mouthCenterWidth / 2) * calibrationScale;
-    
-    // Estimación del alto basado en apertura labial y exposición dental
-    const teethExposure = lipOpen * 0.6; // ~60% de apertura es diente visible
-    const centralIncisorHeight = teethExposure * calibrationScale;
-    
-    toothMeasurements = {
-      centralIncisor: {
-        width: Math.max(8, Math.min(11, centralIncisorWidth)),
-        height: Math.max(10, Math.min(13, centralIncisorHeight))
-      },
-      lateralIncisor: {
-        width: Math.max(6, Math.min(8, centralIncisorWidth * 0.85)),
-        height: Math.max(8, Math.min(10, centralIncisorHeight * 0.9))
-      },
-      canine: {
-        width: Math.max(7, Math.min(9, centralIncisorWidth * 0.9)),
-        height: Math.max(9, Math.min(12, centralIncisorHeight * 0.95))
-      },
-      calibrated: true
-    };
-  } else {
-    // Sin calibración: usar estimación basada en IPD (menos preciso)
-    const estimatedCentralWidth = toMM(mouthW * 0.075, ipd);
-    const estimatedCentralHeight = toMM(lipOpen * 0.6, ipd);
-    
-    toothMeasurements = {
-      centralIncisor: {
-        width: Math.max(8, Math.min(11, estimatedCentralWidth)),
-        height: Math.max(10, Math.min(13, estimatedCentralHeight))
-      },
-      lateralIncisor: {
-        width: Math.max(6, Math.min(8, estimatedCentralWidth * 0.85)),
-        height: Math.max(8, Math.min(10, estimatedCentralHeight * 0.9))
-      },
-      canine: {
-        width: Math.max(7, Math.min(9, estimatedCentralWidth * 0.9)),
-        height: Math.max(9, Math.min(12, estimatedCentralHeight * 0.95))
-      },
-      calibrated: false
-    };
-  }
-
   return {
     smileArc,
     gingival: { mm: gingMM, class: gingClass },
@@ -185,8 +119,7 @@ export function computeMetrics(params: {
       middleThird: middleThird * 100,
       lowerThird: lowerThird * 100,
       isBalanced
-    },
-    toothMeasurements
+    }
   };
 }
 
