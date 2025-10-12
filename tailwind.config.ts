@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        heading: ['Montserrat', 'sans-serif'],
+        body: ['Lato', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,10 +51,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        medical: {
-          blue: "hsl(var(--medical-blue))",
-          teal: "hsl(var(--medical-teal))",
-          accent: "hsl(var(--medical-accent))",
+        gold: "hsl(var(--gold))",
+        lavender: {
+          DEFAULT: "hsl(var(--lavender))",
+          foreground: "hsl(var(--lavender-foreground))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

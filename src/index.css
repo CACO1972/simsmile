@@ -8,95 +8,91 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 18% 97%;
-    --foreground: 220 15% 15%;
+    --background: 0 0% 98%;
+    --foreground: 225 80% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    --card-foreground: 225 80% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover-foreground: 225 80% 10%;
 
-    --primary: 193 85% 45%;
+    --primary: 52 83% 39%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 220 15% 15%;
+    --secondary: 260 60% 75%;
+    --secondary-foreground: 225 80% 10%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 240 10% 95%;
+    --muted-foreground: 240 5% 50%;
 
-    --accent: 193 85% 45%;
+    --accent: 52 83% 39%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 193 85% 45%;
+    --border: 240 10% 90%;
+    --input: 240 10% 90%;
+    --ring: 52 83% 39%;
 
     --radius: 0.75rem;
 
-    --medical-blue: 193 85% 45%;
-    --medical-teal: 180 75% 50%;
-    --medical-accent: 210 100% 60%;
-    --glass-bg: 0 0% 0%;
-    --glass-border: 0 0% 100%;
+    --gold: 52 83% 39%;
+    --lavender: 260 60% 75%;
+    --lavender-foreground: 225 80% 10%;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 193 85% 45%;
+    --sidebar-foreground: 225 80% 10%;
+    --sidebar-primary: 52 83% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 10% 95%;
+    --sidebar-accent-foreground: 225 80% 10%;
+    --sidebar-border: 240 10% 90%;
+    --sidebar-ring: 52 83% 39%;
   }
 
   .dark {
-    --background: 220 20% 8%;
-    --foreground: 220 10% 95%;
+    --background: 225 80% 4%;
+    --foreground: 260 60% 75%;
 
-    --card: 220 18% 12%;
-    --card-foreground: 220 10% 95%;
+    --card: 225 70% 8%;
+    --card-foreground: 260 60% 75%;
 
-    --popover: 220 18% 12%;
-    --popover-foreground: 220 10% 95%;
+    --popover: 225 70% 8%;
+    --popover-foreground: 260 60% 75%;
 
-    --primary: 193 85% 55%;
-    --primary-foreground: 220 20% 8%;
+    --primary: 52 83% 45%;
+    --primary-foreground: 225 80% 4%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 220 10% 95%;
+    --secondary: 260 60% 75%;
+    --secondary-foreground: 225 80% 4%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 220 10% 65%;
+    --muted: 225 60% 12%;
+    --muted-foreground: 260 40% 65%;
 
-    --accent: 193 85% 55%;
-    --accent-foreground: 220 20% 8%;
+    --accent: 52 83% 45%;
+    --accent-foreground: 225 80% 4%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 193 85% 55%;
+    --border: 225 50% 15%;
+    --input: 225 50% 15%;
+    --ring: 52 83% 45%;
 
-    --medical-blue: 193 85% 55%;
-    --medical-teal: 180 75% 60%;
-    --medical-accent: 210 100% 65%;
-    --glass-bg: 0 0% 0%;
-    --glass-border: 0 0% 100%;
+    --gold: 52 83% 45%;
+    --lavender: 260 60% 75%;
+    --lavender-foreground: 225 80% 4%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 193 85% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 193 85% 55%;
+    --sidebar-background: 225 70% 8%;
+    --sidebar-foreground: 260 60% 75%;
+    --sidebar-primary: 52 83% 45%;
+    --sidebar-primary-foreground: 225 80% 4%;
+    --sidebar-accent: 225 60% 12%;
+    --sidebar-accent-foreground: 260 60% 75%;
+    --sidebar-border: 225 50% 15%;
+    --sidebar-ring: 52 83% 45%;
   }
 }
 
@@ -106,6 +102,10 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
   }
 }
