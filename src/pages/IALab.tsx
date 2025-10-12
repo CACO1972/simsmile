@@ -8,6 +8,7 @@ import { CameraCapture } from "@/components/ia-lab/CameraCapture";
 import { ImageUpload } from "@/components/ia-lab/ImageUpload";
 import { MetricsDisplay } from "@/components/ia-lab/MetricsDisplay";
 import { SimulationControls } from "@/components/ia-lab/SimulationControls";
+import { ImageComparison } from "@/components/ia-lab/ImageComparison";
 
 async function loadFaceTask() {
   const vision = await (window as any).FilesetResolver.forVisionTasks(
@@ -321,26 +322,10 @@ export default function IALab() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-foreground">Foto original</h3>
-                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-                    <img src={smileB64} alt="original" className="w-full h-auto" />
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-foreground">Simulación corregida</h3>
-                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-                    <img src={simulatedB64} alt="simulada" className="w-full h-auto" />
-                  </div>
-                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                    <p className="text-sm text-foreground">
-                      ✨ Correcciones aplicadas con IA basadas en los patrones estéticos detectados
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <ImageComparison 
+                beforeImage={smileB64}
+                afterImage={simulatedB64}
+              />
 
               {showAdjustments && (
                 <SimulationControls
