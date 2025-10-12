@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Camera, Upload, Users, Sun, Eye, Ruler, Shield, Check, X, AlertTriangle, ArrowRight, ChevronLeft } from "lucide-react";
-import simsmileLogo from "@/assets/simsmile-logo.png";
+import { LogoCorner } from "@/components/LogoCorner";
 import faceFrame from "@/assets/face-frame.png";
 
 export default function Instructions() {
@@ -9,11 +9,7 @@ export default function Instructions() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Logo sutil en esquina */}
-      <div className="fixed top-4 left-4 z-10">
-        <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
-      </div>
-      
+      <LogoCorner />
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Progress Bar */}
         <div className="mb-6">
