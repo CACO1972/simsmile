@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
 import { Button } from "@/components/ui/button";
-import { Home, HelpCircle, Eye, Maximize2, ChevronLeft, ChevronRight, Menu as MenuIcon, Edit3 } from "lucide-react";
+import { Home, HelpCircle, Eye, Maximize2, ChevronLeft, ChevronRight, Menu as MenuIcon, Edit3, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ImageUpload } from "@/components/ia-lab/ImageUpload";
 
 type AnalysisView = 'inter-commissural' | 'dental-midline' | 'smile-width' | 'interdental-proportion' | 'smile-curve' | 'incisal-plane' | 'smile-line' | 'incisal-edge' | 'central-incisor';
 
@@ -21,11 +23,14 @@ const analysisViews = [
 
 export default function Results() {
   const navigate = useNavigate();
-  const { smileImage, simulatedImage, contactSubmitted } = useSmileAnalysis();
+  const { smileImage, simulatedImage, contactSubmitted, setRestImage, setSmileImage } = useSmileAnalysis();
   
   const [mode, setMode] = useState<'analyze' | 'simulate'>('analyze');
   const [currentView, setCurrentView] = useState<AnalysisView>('inter-commissural');
   const [showMenu, setShowMenu] = useState(false);
+  const [showUploadSheet, setShowUploadSheet] = useState(false);
+  const [uploadRestImage, setUploadRestImage] = useState("");
+  const [uploadSmileImage, setUploadSmileImage] = useState("");
   
   // Simulation controls
   const [estheticCLP, setEstheticCLP] = useState(false);
@@ -33,6 +38,30 @@ export default function Results() {
   const [bleaching, setBleaching] = useState(false);
   const [showOverlays, setShowOverlays] = useState(true);
   const [redValue, setRedValue] = useState(70);
+
+  const handleFileChange = (type: 'rest' | 'smile') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        if (type === 'rest') {
+          setUploadRestImage(result);
+        } else {
+          setUploadSmileImage(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleApplyUpload = () => {
+    if (uploadRestImage) setRestImage(uploadRestImage);
+    if (uploadSmileImage) setSmileImage(uploadSmileImage);
+    setShowUploadSheet(false);
+    setUploadRestImage("");
+    setUploadSmileImage("");
+  };
 
   useEffect(() => {
     if (!contactSubmitted || !smileImage || !simulatedImage) {
@@ -170,6 +199,47 @@ export default function Results() {
         >
           <Home className="w-5 h-5" />
         </Button>
+
+        <Sheet open={showUploadSheet} onOpenChange={setShowUploadSheet}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full bg-cyan-500 hover:bg-cyan-600"
+            >
+              <Upload className="w-5 h-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="bg-gray-900 border-gray-700 text-white overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="text-white">Cargar Nueva Foto</SheetTitle>
+              <SheetDescription className="text-gray-400">
+                Sube fotos nuevas para analizar
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6 space-y-6">
+              <ImageUpload
+                label="Foto en Reposo"
+                imageData={uploadRestImage}
+                onFileChange={handleFileChange('rest')}
+                onCameraClick={() => {}}
+              />
+              <ImageUpload
+                label="Foto Sonriendo"
+                imageData={uploadSmileImage}
+                onFileChange={handleFileChange('smile')}
+                onCameraClick={() => {}}
+              />
+              <Button 
+                className="w-full bg-cyan-500 hover:bg-cyan-600"
+                onClick={handleApplyUpload}
+                disabled={!uploadRestImage && !uploadSmileImage}
+              >
+                Aplicar Fotos
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
         
         <div className="flex items-center bg-gray-800 rounded-full p-1">
           <button
