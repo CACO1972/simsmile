@@ -1,6 +1,6 @@
 export type SmileMetrics = {
   smileArc: "consonante" | "plano" | "inverso";
-  gingival: { mm: number; class: "baja" | "media" | "alta" };
+  gingival: { mm: number; class: "baja" | "media" | "alta" | "excesiva" };
   midline: { mm: number; side: "izquierda" | "derecha" | "centrado" };
   buccalRatio: number; // 0..1
   facialMidline: { mm: number; side: "izquierda" | "derecha" | "centrado" };
@@ -12,6 +12,9 @@ export type SmileMetrics = {
     isBalanced: boolean;
   };
 };
+
+// Re-export recommendation functions
+export { analyzeFaceCharacteristics, generateSmileRecommendations, generateAnalysisText, type FaceAnalysis, type SmileRecommendation } from "./recommendations";
 
 // Distancia euclidiana
 const d = (a: any, b: any) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -100,7 +103,7 @@ export function computeMetrics(params: {
   // Exposición gingival
   const lipOpen = d(upper, lower);
   const gingMM = Math.max(0, toMM(lipOpen - 0.012, ipd));
-  const gingClass = gingMM < 1 ? "baja" : gingMM < 3 ? "media" : "alta";
+  const gingClass = gingMM < 1 ? "baja" : gingMM < 3 ? "media" : gingMM < 5 ? "alta" : "excesiva";
 
   // Corredor bucal
   const mouthW = d(mouthL, mouthR);

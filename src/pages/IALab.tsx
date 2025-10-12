@@ -27,38 +27,45 @@ const IALab = () => {
     track({ name: "photos_captured" });
 
     try {
+      // Importar funciones de análisis
+      const { computeMetrics, analyzeFaceCharacteristics, generateSmileRecommendations, generateAnalysisText } = await import("@/lib/metrics");
+      
+      // Calcular métricas reales (aquí usamos datos simulados, pero deberían venir del análisis real de landmarks)
+      const mockRestLandmarks = Array(478).fill(null).map(() => ({ x: Math.random(), y: Math.random() }));
+      const mockSmileLandmarks = Array(478).fill(null).map(() => ({ x: Math.random(), y: Math.random() }));
+      
+      const calculatedMetrics = computeMetrics({
+        restLm: mockRestLandmarks,
+        smileLm: mockSmileLandmarks,
+        imgW: 800,
+        imgH: 800
+      });
+
+      // Analizar características faciales
+      const faceAnalysis = analyzeFaceCharacteristics(calculatedMetrics);
+      
+      // Generar recomendaciones
+      const recommendations = generateSmileRecommendations(faceAnalysis, calculatedMetrics);
+      
+      // Generar texto de análisis completo
+      const analysisText = generateAnalysisText(faceAnalysis, calculatedMetrics, recommendations);
+
       // Llamar a la edge function para simular la sonrisa
-      const { supabase } = await import("@/integrations/supabase/client");
       const { data, error } = await supabase.functions.invoke("simulate-smile", {
         body: {
           imageBase64: smile,
-          metrics: {
-            smileArc: "plano",
-            gingival: { class: "excesiva" },
-            midline: { mm: 2.5, side: "izquierda" },
-            buccalRatio: 0.15
-          }
+          metrics: calculatedMetrics,
+          faceAnalysis,
+          recommendations
         }
       });
 
       if (error) throw error;
 
-      // Actualizar con la imagen simulada
+      // Actualizar con la imagen simulada y métricas
       setSmileImage(data.simulatedImage);
-      
-      // Generar análisis basado en las métricas
-      const analysisText = `Tu análisis facial ha sido completado exitosamente.
-
-Proporciones Faciales:
-Se han evaluado los tres tercios faciales para determinar el equilibrio y armonía de tu rostro.
-
-Análisis de Sonrisa:
-Tu sonrisa ha sido analizada en detalle, evaluando el arco de sonrisa, la exposición gingival, las líneas medias y las proporciones dentales.
-
-La simulación muestra cómo podría verse tu sonrisa después de un tratamiento dental estético optimizado, con correcciones en alineación, forma y color de los dientes.`;
-
       setAnalysis(analysisText);
-      setMetrics({});
+      setMetrics(calculatedMetrics);
       setStep("contact");
       
     } catch (error) {

@@ -58,13 +58,13 @@ export const ResultsSection = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Mock landmarks y métricas para demostración
+    // Usar métricas reales si están disponibles, sino usar mock
     const mockLandmarks = Array(478).fill(null).map((_, i) => ({
       x: Math.random(),
       y: Math.random()
     }));
 
-    const mockMetrics: SmileMetrics = {
+    const metricsToUse: SmileMetrics = metrics || {
       smileArc: "consonante",
       gingival: { mm: 2, class: "media" },
       midline: { mm: 1.2, side: "centrado" },
@@ -79,12 +79,19 @@ export const ResultsSection = ({
       }
     };
 
+    // Configurar canvas para que coincida con la imagen
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    
+    // Dibujar la imagen primero
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
     if (type === "midline") {
-      drawMidlineOverlay(ctx, img, mockLandmarks, mockMetrics);
+      drawMidlineOverlay(ctx, img, mockLandmarks, metricsToUse);
     } else if (type === "proportions") {
-      drawProportionsOverlay(ctx, img, mockLandmarks, mockMetrics);
+      drawProportionsOverlay(ctx, img, mockLandmarks, metricsToUse);
     } else if (type === "smile") {
-      drawSmileOverlay(ctx, img, mockLandmarks, mockMetrics);
+      drawSmileOverlay(ctx, img, mockLandmarks, metricsToUse);
     }
   };
 
@@ -178,10 +185,17 @@ export const ResultsSection = ({
         </div>
 
         {/* Analysis Text */}
-        <div className="bg-card border border-border rounded-lg p-8 mb-8">
-          <h3 className="text-2xl font-heading font-bold mb-4">Análisis Facial</h3>
-          <div className="prose prose-invert max-w-none">
-            <p className="text-muted-foreground whitespace-pre-wrap">{analysis}</p>
+        <div className="relative group mb-8">
+          <div className="absolute -inset-1 bg-gradient-to-r from-gold via-lavender to-gold rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-300" />
+          <div className="relative bg-card/80 backdrop-blur border border-border rounded-lg p-8">
+            <h3 className="text-2xl font-heading font-bold mb-6 bg-gradient-to-r from-gold to-lavender bg-clip-text text-transparent">
+              📋 Análisis Facial Completo y Recomendaciones
+            </h3>
+            <div className="prose prose-invert max-w-none">
+              <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed bg-background/50 p-6 rounded-lg border border-border/50">
+                {analysis}
+              </pre>
+            </div>
           </div>
         </div>
 
