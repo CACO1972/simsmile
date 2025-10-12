@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
+import logo from "@/assets/logo.png";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -13,44 +14,38 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 lg:py-16">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <header className="text-center mb-12 lg:mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6 border border-primary/20">
+      <div className="container mx-auto px-4 py-12 lg:py-20">
+        <div className="max-w-4xl mx-auto">
+          {/* Logo y Header */}
+          <header className="text-center mb-16">
+            {/* Logo */}
+            <div className="mb-8">
+              <img 
+                src={logo} 
+                alt="Logo" 
+                className="w-32 h-32 mx-auto"
+              />
+            </div>
+            
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-8 border border-primary/20">
               <span className="text-primary font-display font-bold text-sm tracking-wide">🤖 POWERED BY AI</span>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black text-foreground mb-6 leading-tight">
+            
+            {/* Título Principal */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-foreground mb-8 leading-tight">
               Tu nueva sonrisa<br />
               <span className="text-primary">en segundos</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+            
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-4">
               Descubre cómo luciría tu sonrisa perfecta con análisis dental impulsado por IA
             </p>
+            
+            <p className="text-sm text-muted-foreground/80">
+              Análisis facial completo en tiempo real con más de 15 parámetros dentales
+            </p>
           </header>
-
-          {/* Hero Visual */}
-          <div className="relative mb-16 lg:mb-20">
-            <div className="aspect-video bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 rounded-3xl overflow-hidden border-2 border-primary/20 shadow-2xl">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center space-y-6 p-8">
-                  <div className="w-40 h-40 mx-auto bg-primary/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-primary/30">
-                    <svg className="w-20 h-20 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="space-y-3">
-                    <h3 className="text-3xl font-display font-bold text-foreground">
-                      Tecnología IA Dental Avanzada
-                    </h3>
-                    <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-                      Análisis facial completo en tiempo real con más de 15 parámetros dentales
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* CTA Principal */}
           <div className="text-center mb-20">
