@@ -65,9 +65,10 @@ IMPORTANTE:
       faceDescriptions.push(`perfil ${faceAnalysis.gender}`);
     }
     
-    const teethShapeRec = smileRecommendations?.find((r: any) => r.type === 'teeth_shape')?.suggestion || 'armónica con proporciones naturales';
-    const teethSizeRec = smileRecommendations?.find((r: any) => r.type === 'teeth_size')?.suggestion || 'proporcional al rostro';
-    const smileWidthRec = smileRecommendations?.find((r: any) => r.type === 'smile_width')?.suggestion || 'equilibrado y natural';
+    const teethShapeRec = smileRecommendations?.teethShape || 'armónica con proporciones naturales';
+    const teethSizeRec = smileRecommendations?.teethSize || 'proporcional al rostro';
+    const smileWidthRec = smileRecommendations?.smileWidth || 'equilibrado y natural';
+    const gingivalRec = smileRecommendations?.gingivalDisplay || 'exposición gingival adecuada';
     
     const recommendationPrompt = `Eres un experto en diseño de sonrisa. Basándote en la imagen corregida anterior, crea una simulación de sonrisa IDEAL considerando:
 
@@ -75,7 +76,12 @@ ANÁLISIS FACIAL:
 ${faceDescriptions.length > 0 ? faceDescriptions.map((r, i) => `${i + 1}. ${r}`).join('\n') : 'Perfil facial analizado'}
 
 RECOMENDACIONES DE DISEÑO:
-${smileRecommendations?.map((r: any, i: number) => `${i + 1}. ${r.suggestion}`).join('\n') || 'Diseño personalizado según proporciones'}
+1. Forma de dientes: ${teethShapeRec}
+2. Tamaño de dientes: ${teethSizeRec}
+3. Ancho de sonrisa: ${smileWidthRec}
+4. Exposición gingival: ${gingivalRec}
+
+RATIONALE: ${smileRecommendations?.rationale || 'Diseño personalizado según proporciones faciales'}
 
 IMPORTANTE:
 - Aplica la forma de dientes recomendada: ${teethShapeRec}
