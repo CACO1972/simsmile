@@ -31,15 +31,37 @@ export default function Instructions() {
           </div>
 
           <div className="p-8 space-y-8">
-            {/* Imagen de ejemplo */}
-            <div className="relative aspect-[3/4] bg-gradient-to-br from-muted to-muted/50 rounded-2xl overflow-hidden border-2 border-border">
-              <img 
-                src={faceFrame}
-                alt="Ejemplo de posición correcta"
-                className="w-full h-full object-cover opacity-60"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-[70%] h-[80%] border-4 border-primary rounded-full opacity-90 shadow-lg" />
+            {/* Imágenes de referencia */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="relative aspect-[3/4] bg-gradient-to-br from-green-500/10 to-green-600/20 rounded-2xl overflow-hidden border-2 border-green-500/30">
+                <img 
+                  src={faceFrame}
+                  alt="Posición correcta"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[70%] h-[80%] border-4 border-green-500 rounded-full shadow-lg" />
+                </div>
+                <div className="absolute top-4 left-4 right-4 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-bold text-center">
+                  ✅ CORRECTO
+                </div>
+              </div>
+
+              <div className="relative aspect-[3/4] bg-gradient-to-br from-red-500/10 to-red-600/20 rounded-2xl overflow-hidden border-2 border-red-500/30">
+                <img 
+                  src={faceFrame}
+                  alt="Posición incorrecta"
+                  className="w-full h-full object-cover opacity-40 blur-sm"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[50%] h-[60%] border-4 border-red-500 rounded-full transform rotate-12 shadow-lg" />
+                </div>
+                <div className="absolute top-4 left-4 right-4 bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-bold text-center">
+                  ❌ INCORRECTO
+                </div>
+                <div className="absolute inset-x-4 bottom-4 bg-black/60 text-white px-3 py-2 rounded-lg text-xs text-center">
+                  Muy lejos o girado
+                </div>
               </div>
             </div>
 
@@ -112,7 +134,7 @@ export default function Instructions() {
                 Volver
               </Button>
               <Button
-                onClick={() => navigate("/captura-reposo")}
+                onClick={() => navigate("/captura")}
                 className="flex-1 py-6 text-lg font-display font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
               >
                 Entendido, Continuar

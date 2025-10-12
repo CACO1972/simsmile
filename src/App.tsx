@@ -6,8 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SmileAnalysisProvider } from "./contexts/SmileAnalysisContext";
 import Landing from "./pages/Landing";
 import Instructions from "./pages/Instructions";
-import CaptureRest from "./pages/CaptureRest";
-import CaptureSmile from "./pages/CaptureSmile";
+import Capture from "./pages/Capture";
 import Processing from "./pages/Processing";
 import Contact from "./pages/Contact";
 import Results from "./pages/Results";
@@ -25,8 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/instrucciones" element={<Instructions />} />
-            <Route path="/captura-reposo" element={<CaptureRest />} />
-            <Route path="/captura-sonrisa" element={<CaptureSmile />} />
+            <Route path="/captura" element={<Capture />} />
             <Route path="/procesando" element={<Processing />} />
             <Route path="/contacto" element={<Contact />} />
             <Route path="/resultados" element={<Results />} />

@@ -62,7 +62,7 @@ export default function Processing() {
   useEffect(() => {
     // Proteger ruta
     if (!restImage || !smileImage) {
-      navigate("/captura-reposo");
+      navigate("/captura");
       return;
     }
 
@@ -188,7 +188,7 @@ export default function Processing() {
           </p>
           <div className="flex gap-3">
             <button
-              onClick={() => navigate("/captura-reposo")}
+              onClick={() => navigate("/captura")}
               className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90"
             >
               Volver a Intentar
@@ -206,99 +206,97 @@ export default function Processing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-background overflow-hidden relative flex items-center justify-center p-4">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" 
+             style={{ top: '10%', left: '10%', animationDuration: '3s' }} />
+        <div className="absolute w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" 
+             style={{ bottom: '10%', right: '10%', animationDuration: '4s', animationDelay: '1s' }} />
+        <div className="absolute w-64 h-64 bg-primary/30 rounded-full blur-2xl animate-pulse" 
+             style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', animationDuration: '5s' }} />
+      </div>
+
+      <div className="relative z-10 max-w-2xl w-full">
         {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">Paso 4 de 6</span>
-            <span className="text-sm font-medium text-primary">67%</span>
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-display font-bold text-muted-foreground">Paso 3 de 5</span>
+            <span className="text-sm font-display font-bold text-primary">{Math.round((currentStep + 1) / steps.length * 100)}%</span>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full transition-all" style={{ width: '67%' }} />
+          <div className="w-full bg-muted/50 backdrop-blur-sm rounded-full h-4 overflow-hidden border-2 border-border">
+            <div 
+              className="bg-gradient-to-r from-primary via-accent to-primary h-full rounded-full transition-all duration-1000 shadow-lg shadow-primary/50 animate-pulse" 
+              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }} 
+            />
           </div>
         </div>
 
-        {/* Main Card */}
-        <div className="bg-card rounded-3xl border border-border p-8 shadow-2xl">
-          {/* Animated Icon */}
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center animate-pulse">
-                <svg className="w-12 h-12 text-primary animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
+        {/* Main Content */}
+        <div className="text-center space-y-8">
+          {/* Animated Icon - Disruptive design */}
+          <div className="flex justify-center">
+            <div className="relative w-40 h-40">
+              {/* Orbiting circles */}
+              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '3s' }}>
+                <div className="w-4 h-4 bg-primary rounded-full absolute top-0 left-1/2 -translate-x-1/2" />
               </div>
-              <div className="absolute inset-0 w-24 h-24 bg-primary/20 rounded-full animate-ping"></div>
+              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '4s', animationDirection: 'reverse' }}>
+                <div className="w-4 h-4 bg-accent rounded-full absolute bottom-0 left-1/2 -translate-x-1/2" />
+              </div>
+              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '5s' }}>
+                <div className="w-4 h-4 bg-primary rounded-full absolute top-1/2 right-0 -translate-y-1/2" />
+              </div>
+              
+              {/* Center icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/50 animate-pulse transform rotate-12">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Pulsing rings */}
+              <div className="absolute inset-0 border-4 border-primary/30 rounded-full animate-ping" />
+              <div className="absolute inset-4 border-4 border-accent/30 rounded-full animate-ping" style={{ animationDelay: '0.5s' }} />
             </div>
           </div>
 
-          {/* Title */}
-          <h1 className="text-3xl font-bold text-center text-foreground mb-3">
-            Analizando tu Sonrisa
-          </h1>
-          <p className="text-center text-muted-foreground mb-8">
-            Nuestra IA está procesando tus fotos...
-          </p>
+          {/* Title with gradient */}
+          <div>
+            <h1 className="text-5xl md:text-6xl font-display font-black mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-pulse">
+              Analizando tu Sonrisa
+            </h1>
+            <p className="text-xl text-muted-foreground font-medium">
+              {steps[currentStep]?.text || "Procesando..."}
+            </p>
+          </div>
 
-          {/* Steps */}
-          <div className="space-y-4">
-            {steps.map((step, index) => (
+          {/* Step indicators - Minimal dots */}
+          <div className="flex justify-center gap-3 py-4">
+            {steps.map((_, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
+                className={`rounded-full transition-all duration-500 ${
                   index === currentStep
-                    ? "bg-primary/10 border border-primary/20"
+                    ? "w-12 h-3 bg-gradient-to-r from-primary to-accent shadow-lg shadow-primary/50"
                     : index < currentStep
-                    ? "bg-green-500/10 border border-green-500/20"
-                    : "bg-muted/30 border border-transparent"
+                    ? "w-3 h-3 bg-green-500 shadow-md"
+                    : "w-3 h-3 bg-muted"
                 }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    index === currentStep
-                      ? "bg-primary text-primary-foreground"
-                      : index < currentStep
-                      ? "bg-green-600 dark:bg-green-500 text-white"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {index < currentStep ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <span className="text-sm font-bold">{index + 1}</span>
-                  )}
-                </div>
-                <span
-                  className={`text-sm font-medium ${
-                    index === currentStep
-                      ? "text-foreground"
-                      : index < currentStep
-                      ? "text-green-700 dark:text-green-400"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {step.text}
-                </span>
-                {index === currentStep && (
-                  <div className="ml-auto">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              />
             ))}
           </div>
 
-          {/* Fun Fact */}
-          <div className="mt-8 p-4 bg-accent/20 rounded-lg border border-accent">
-            <p className="text-sm text-center text-foreground">
-              <strong>💡 Sabías que...</strong> Una sonrisa saludable puede mejorar tu confianza hasta en un 80%
+          {/* Fun messages rotating */}
+          <div className="bg-card/50 backdrop-blur-lg rounded-2xl border-2 border-border p-6 shadow-xl">
+            <p className="text-lg text-foreground font-medium">
+              {currentStep === 0 && "🤖 Cargando inteligencia artificial..."}
+              {currentStep === 1 && "👁️ Detectando características faciales..."}
+              {currentStep === 2 && "📊 Calculando parámetros dentales..."}
+              {currentStep === 3 && "✨ Creando tu nueva sonrisa..."}
+              {currentStep === 4 && "🎉 Casi listo..."}
             </p>
           </div>
         </div>
