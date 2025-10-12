@@ -16,6 +16,7 @@ const IALab = () => {
   const [step, setStep] = useState<Step>("hero");
   const [restImage, setRestImage] = useState<string>("");
   const [smileImage, setSmileImage] = useState<string>("");
+  const [idealImage, setIdealImage] = useState<string>("");
   const [analysis, setAnalysis] = useState<string>("");
   const [metrics, setMetrics] = useState<any>(null);
   const [contactData, setContactData] = useState<any>(null);
@@ -62,8 +63,9 @@ const IALab = () => {
 
       if (error) throw error;
 
-      // Actualizar con la imagen simulada y métricas
+      // Actualizar con las imágenes simuladas y métricas
       setSmileImage(data.simulatedImage);
+      setIdealImage(data.idealImage);
       setAnalysis(analysisText);
       setMetrics(calculatedMetrics);
       setStep("contact");
@@ -98,6 +100,7 @@ const IALab = () => {
         <ResultsSection
           restImage={restImage}
           smileImage={smileImage}
+          idealImage={idealImage}
           analysis={analysis}
           metrics={metrics}
           contactEmail={contactData?.email || ""}

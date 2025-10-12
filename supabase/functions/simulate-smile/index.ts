@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, metrics } = await req.json();
+    const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
@@ -44,7 +44,7 @@ serve(async (req) => {
     corrections.push('blanquear dientes manteniendo apariencia natural');
     corrections.push('igualar tamaños y proporciones de dientes según estándares estéticos');
 
-    const prompt = `Eres un experto en simulación dental. Edita esta fotografía de sonrisa aplicando las siguientes correcciones estéticas de forma natural y realista:
+    const correctionPrompt = `Eres un experto en simulación dental. Edita esta fotografía de sonrisa aplicando las siguientes correcciones estéticas de forma natural y realista:
 
 ${corrections.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
@@ -56,7 +56,37 @@ IMPORTANTE:
 - La encía debe verse saludable y proporcionada
 - Mantén la iluminación y sombras originales`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Construir prompt de recomendaciones
+    const faceDescriptions = [];
+    if (faceAnalysis?.faceShape) {
+      faceDescriptions.push(`forma facial ${faceAnalysis.faceShape}`);
+    }
+    if (faceAnalysis?.gender) {
+      faceDescriptions.push(`perfil ${faceAnalysis.gender}`);
+    }
+    
+    const teethShapeRec = smileRecommendations?.find((r: any) => r.type === 'teeth_shape')?.suggestion || 'armónica con proporciones naturales';
+    const teethSizeRec = smileRecommendations?.find((r: any) => r.type === 'teeth_size')?.suggestion || 'proporcional al rostro';
+    const smileWidthRec = smileRecommendations?.find((r: any) => r.type === 'smile_width')?.suggestion || 'equilibrado y natural';
+    
+    const recommendationPrompt = `Eres un experto en diseño de sonrisa. Basándote en la imagen corregida anterior, crea una simulación de sonrisa IDEAL considerando:
+
+ANÁLISIS FACIAL:
+${faceDescriptions.length > 0 ? faceDescriptions.map((r, i) => `${i + 1}. ${r}`).join('\n') : 'Perfil facial analizado'}
+
+RECOMENDACIONES DE DISEÑO:
+${smileRecommendations?.map((r: any, i: number) => `${i + 1}. ${r.suggestion}`).join('\n') || 'Diseño personalizado según proporciones'}
+
+IMPORTANTE:
+- Aplica la forma de dientes recomendada: ${teethShapeRec}
+- Ajusta el tamaño según recomendación: ${teethSizeRec}
+- Configura el ancho de sonrisa ideal: ${smileWidthRec}
+- Mantén naturalidad y armonía facial
+- Los dientes deben verse profesionales pero naturales
+- Color blanco natural, no artificial`;
+
+    // Primera simulación: correcciones
+    const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
@@ -68,7 +98,7 @@ IMPORTANTE:
           {
             role: 'user',
             content: [
-              { type: 'text', text: prompt },
+              { type: 'text', text: correctionPrompt },
               {
                 type: 'image_url',
                 image_url: { url: imageBase64 }
@@ -80,36 +110,76 @@ IMPORTANTE:
       }),
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!correctionResponse.ok) {
+      if (correctionResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Límite de uso excedido, intenta más tarde.' }), 
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
+      if (correctionResponse.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Créditos agotados. Recarga tu cuenta.' }), 
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
+      const errorText = await correctionResponse.text();
+      console.error('AI Gateway error (correction):', correctionResponse.status, errorText);
       return new Response(
         JSON.stringify({ error: 'Error en IA' }), 
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const data = await response.json();
-    const simulatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const correctionData = await correctionResponse.json();
+    const correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-    if (!simulatedImage) {
-      throw new Error('No se generó imagen simulada');
+    if (!correctedImage) {
+      throw new Error('No se generó imagen corregida');
     }
 
+    // Segunda simulación: diseño ideal basado en recomendaciones
+    const idealResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash-image-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: recommendationPrompt },
+              {
+                type: 'image_url',
+                image_url: { url: correctedImage }
+              }
+            ]
+          }
+        ],
+        modalities: ['image', 'text']
+      }),
+    });
+
+    if (!idealResponse.ok) {
+      console.error('AI Gateway error (ideal):', idealResponse.status);
+      // Si falla la segunda simulación, devolvemos solo la corregida
+      return new Response(
+        JSON.stringify({ simulatedImage: correctedImage, idealImage: correctedImage }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const idealData = await idealResponse.json();
+    const idealImage = idealData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
     return new Response(
-      JSON.stringify({ simulatedImage }), 
+      JSON.stringify({ 
+        simulatedImage: correctedImage,
+        idealImage: idealImage || correctedImage
+      }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
     

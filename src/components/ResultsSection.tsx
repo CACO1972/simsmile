@@ -10,6 +10,7 @@ import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type Smil
 interface ResultsSectionProps {
   restImage: string;
   smileImage: string;
+  idealImage: string;
   analysis: string;
   metrics: any;
   contactEmail: string;
@@ -18,6 +19,7 @@ interface ResultsSectionProps {
 export const ResultsSection = ({
   restImage,
   smileImage,
+  idealImage,
   analysis,
   metrics,
   contactEmail,
@@ -118,12 +120,12 @@ export const ResultsSection = ({
           Tu Análisis de Sonrisa
         </h2>
 
-        {/* Before/After Comparison */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        {/* Before/After Comparison - 3 columns */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-gold to-lavender rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
             <div className="relative bg-card border border-border rounded-lg p-4">
-              <h3 className="text-xl font-heading font-bold mb-4 text-center">Antes</h3>
+              <h3 className="text-lg font-heading font-bold mb-4 text-center">Antes</h3>
               <img src={restImage} alt="Antes" className="w-full rounded-lg" />
             </div>
           </div>
@@ -131,12 +133,12 @@ export const ResultsSection = ({
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-lavender to-gold rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
             <div className="relative bg-card border border-border rounded-lg p-4">
-              <h3 className="text-xl font-heading font-bold mb-4 text-center">Después (Simulación)</h3>
+              <h3 className="text-lg font-heading font-bold mb-4 text-center">Corrección</h3>
               <div className="relative">
                 <img 
                   ref={imgRef}
                   src={smileImage} 
-                  alt="Después" 
+                  alt="Corrección" 
                   className="w-full rounded-lg"
                   onLoad={handleImageLoad}
                   style={{ display: overlayType ? 'none' : 'block' }}
@@ -180,6 +182,19 @@ export const ResultsSection = ({
                   Análisis Sonrisa
                 </Button>
               </div>
+            </div>
+          </div>
+
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-gold via-lavender to-gold rounded-lg blur opacity-30 group-hover:opacity-60 transition duration-300" />
+            <div className="relative bg-card border-2 border-gold/50 rounded-lg p-4">
+              <h3 className="text-lg font-heading font-bold mb-4 text-center bg-gradient-to-r from-gold to-lavender bg-clip-text text-transparent">
+                Diseño Ideal Recomendado
+              </h3>
+              <img src={idealImage} alt="Diseño Ideal" className="w-full rounded-lg" />
+              <p className="text-xs text-muted-foreground mt-3 text-center">
+                Basado en tus proporciones faciales y recomendaciones profesionales
+              </p>
             </div>
           </div>
         </div>
