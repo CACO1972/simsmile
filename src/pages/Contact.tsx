@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import simsmileLogo from "@/assets/simsmile-logo.png";
 
 const contactSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
@@ -83,6 +84,11 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Logo sutil en esquina */}
+      <div className="fixed top-4 left-4 z-10">
+        <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
+      </div>
+      
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Progress */}
         <div className="mb-8">

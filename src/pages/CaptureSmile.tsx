@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CameraCapture } from "@/components/ia-lab/CameraCapture";
 import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
 import { Button } from "@/components/ui/button";
+import simsmileLogo from "@/assets/simsmile-logo.png";
 
 export default function CaptureSmile() {
   const navigate = useNavigate();
@@ -29,6 +30,11 @@ export default function CaptureSmile() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Logo sutil en esquina */}
+      <div className="fixed top-4 left-4 z-10">
+        <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
+      </div>
+      
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Progress */}
         <div className="mb-8">

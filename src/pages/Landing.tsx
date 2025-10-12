@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
 import logo from "@/assets/logo.png";
+import simsmileLogo from "@/assets/simsmile-logo.png";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -14,6 +15,11 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background flex items-center">
+      {/* Logo sutil en esquina */}
+      <div className="fixed top-4 left-4 z-10">
+        <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
+      </div>
+      
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Logo y Header */}

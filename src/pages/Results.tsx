@@ -6,6 +6,7 @@ import { ImageComparison } from "@/components/ia-lab/ImageComparison";
 import { SimulationControls } from "@/components/ia-lab/SimulationControls";
 import { toast } from "sonner";
 import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
+import simsmileLogo from "@/assets/simsmile-logo.png";
 
 export default function Results() {
   const navigate = useNavigate();
@@ -322,6 +323,11 @@ export default function Results() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Logo sutil en esquina */}
+      <div className="fixed top-4 left-4 z-10">
+        <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
+      </div>
+      
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Progress */}
         <div className="mb-8">

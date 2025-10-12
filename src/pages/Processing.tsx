@@ -4,6 +4,7 @@ import { useSmileAnalysis } from "@/contexts/SmileAnalysisContext";
 import { computeMetrics } from "@/lib/metrics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import simsmileLogo from "@/assets/simsmile-logo.png";
 
 async function loadFaceTask() {
   const vision = await (window as any).FilesetResolver.forVisionTasks(
@@ -207,6 +208,11 @@ export default function Processing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
+      {/* Logo sutil en esquina */}
+      <div className="fixed top-4 left-4 z-10">
+        <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
+      </div>
+      
       <div className="max-w-2xl w-full">
         {/* Progress Bar */}
         <div className="mb-8">

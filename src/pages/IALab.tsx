@@ -9,6 +9,7 @@ import { ImageUpload } from "@/components/ia-lab/ImageUpload";
 import { MetricsDisplay } from "@/components/ia-lab/MetricsDisplay";
 import { SimulationControls } from "@/components/ia-lab/SimulationControls";
 import { ImageComparison } from "@/components/ia-lab/ImageComparison";
+import simsmileLogo from "@/assets/simsmile-logo.png";
 
 async function loadFaceTask() {
   const vision = await (window as any).FilesetResolver.forVisionTasks(
@@ -184,6 +185,11 @@ export default function IALab() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Logo sutil en esquina */}
+      <div className="fixed top-4 left-4 z-50">
+        <img src={simsmileLogo} alt="SimSmile" className="h-12 w-12 opacity-60 hover:opacity-100 transition-opacity" />
+      </div>
+      
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-start justify-between flex-wrap gap-4">
