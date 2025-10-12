@@ -18,25 +18,67 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
   const [capturedImage, setCapturedImage] = useState<string>("");
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
 
-  const startCamera = async () => {
+  const startCamera = async (mode: "user" | "environment" = facingMode) => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
+      // Stop any existing stream before starting a new one
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
       }
-      
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        console.error("getUserMedia not supported in this browser");
+        alert("Tu navegador no soporta acceso a la cámara. Intenta con otro navegador o actualiza.");
+        return;
+      }
+
+      const constraintsPrimary: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: mode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      };
+
+      const constraintsFallback: MediaStreamConstraints = {
+        video: true,
+        audio: false,
+      };
+
+      let mediaStream: MediaStream | null = null;
+
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraintsPrimary);
+      } catch (err) {
+        console.warn("Primary constraints failed, trying fallback", err);
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraintsFallback);
+      }
+
+      if (videoRef.current && mediaStream) {
+        videoRef.current.srcObject = mediaStream;
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn("Video play() was prevented by the browser", playErr);
+        }
+      }
+
+      setFacingMode(mode);
       setStream(mediaStream);
       setIsCameraActive(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error accessing camera:", error);
-      alert("No se pudo acceder a la cámara. Por favor, verifica los permisos.");
+      const msg =
+        error?.name === "NotAllowedError"
+          ? "Permiso denegado. Activa el acceso a la cámara en los ajustes del navegador."
+          : error?.name === "NotFoundError"
+          ? "No se encontró una cámara disponible en este dispositivo."
+          : "No se pudo acceder a la cámara. Verifica permisos o intenta con otro navegador.";
+      alert(msg);
     }
   };
+
+  const handleStartCamera = () => startCamera();
 
   const stopCamera = () => {
     if (stream) {
@@ -67,9 +109,8 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
   };
 
   const switchCamera = async () => {
-    stopCamera();
-    setFacingMode(prev => prev === "user" ? "environment" : "user");
-    await startCamera();
+    const newMode = facingMode === "user" ? "environment" : "user";
+    await startCamera(newMode);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +152,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button
-                  onClick={startCamera}
+                  onClick={handleStartCamera}
                   size="lg"
                   className="w-full h-24"
                   variant="default"
