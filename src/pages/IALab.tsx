@@ -3,6 +3,7 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { computeMetrics, drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
+import CameraCapture from "@/components/CameraCapture";
 
 // Carga dinámica de MediaPipe Tasks desde CDN (sin tocar package.json)
 async function loadFaceTask() {
@@ -56,6 +57,14 @@ export default function IALab() {
     const r = new FileReader();
     r.onload = () => (kind === "rest" ? setRestB64 : setSmileB64)(r.result as string);
     r.readAsDataURL(f);
+  };
+
+  const handleRestCapture = (imageBase64: string) => {
+    setRestB64(imageBase64);
+  };
+
+  const handleSmileCapture = (imageBase64: string) => {
+    setSmileB64(imageBase64);
   };
 
   const analyze = async () => {
@@ -186,35 +195,19 @@ export default function IALab() {
             </CardTitle>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Foto en reposo</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => onFile(e, "rest")} 
-                  className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
-                />
-                {restB64 && (
-                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-                    <img src={restB64} alt="reposo" className="w-full h-64 object-contain" />
-                  </div>
-                )}
-              </div>
+            <div className="grid gap-6">
+              <CameraCapture
+                onCapture={handleRestCapture}
+                title="Foto en reposo"
+                description="Toma o sube una foto con expresión neutral"
+              />
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Foto sonriendo</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => onFile(e, "smile")} 
-                  className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+              <div className="border-t border-border pt-6">
+                <CameraCapture
+                  onCapture={handleSmileCapture}
+                  title="Foto sonriendo"
+                  description="Toma o sube una foto con tu mejor sonrisa"
                 />
-                {smileB64 && (
-                  <div className="rounded-xl overflow-hidden border border-border bg-muted/30">
-                    <img src={smileB64} alt="sonrisa" className="w-full h-64 object-contain" />
-                  </div>
-                )}
               </div>
 
               <Button 
