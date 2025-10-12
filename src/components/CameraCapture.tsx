@@ -103,9 +103,9 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
     ctx.drawImage(video, 0, 0);
     const imageData = canvas.toDataURL("image/jpeg", 0.9);
     
+    stopCamera();
     setCapturedImage(imageData);
     onCapture(imageData);
-    stopCamera();
   };
 
   const switchCamera = async () => {
