@@ -133,7 +133,7 @@ export const ResultsSection = ({
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-lavender to-gold rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
             <div className="relative bg-card border border-border rounded-lg p-4">
-              <h3 className="text-lg font-heading font-bold mb-4 text-center">Corrección</h3>
+              <h3 className="text-lg font-heading font-bold mb-4 text-center">Simulación IA</h3>
               <div className="relative">
                 <img 
                   ref={imgRef}
@@ -199,21 +199,6 @@ export const ResultsSection = ({
           </div>
         </div>
 
-        {/* Analysis Text */}
-        <div className="relative group mb-8">
-          <div className="absolute -inset-1 bg-gradient-to-r from-gold via-lavender to-gold rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-300" />
-          <div className="relative bg-card/80 backdrop-blur border border-border rounded-lg p-8">
-            <h3 className="text-2xl font-heading font-bold mb-6 bg-gradient-to-r from-gold to-lavender bg-clip-text text-transparent">
-              📋 Análisis Facial Completo y Recomendaciones
-            </h3>
-            <div className="prose prose-invert max-w-none">
-              <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed bg-background/50 p-6 rounded-lg border border-border/50">
-                {analysis}
-              </pre>
-            </div>
-          </div>
-        </div>
-
         {/* Interactive Controls */}
         <div className="bg-card border border-border rounded-lg p-8 mb-8">
           <h3 className="text-2xl font-heading font-bold mb-6">Ajustes Interactivos</h3>
@@ -267,6 +252,21 @@ export const ResultsSection = ({
               <p className="text-sm text-muted-foreground">
                 Ajusta el tono de blanco de tus dientes (máx ±10%)
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Analysis Text - Más compacto */}
+        <div className="relative group mb-8">
+          <div className="absolute -inset-1 bg-gradient-to-r from-gold via-lavender to-gold rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-300" />
+          <div className="relative bg-card/80 backdrop-blur border border-border rounded-lg p-6">
+            <h3 className="text-xl font-heading font-bold mb-4 bg-gradient-to-r from-gold to-lavender bg-clip-text text-transparent">
+              📋 Análisis Facial
+            </h3>
+            <div className="prose prose-invert max-w-none">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed bg-background/50 p-4 rounded-lg border border-border/50 max-h-60 overflow-y-auto">
+                {analysis}
+              </pre>
             </div>
           </div>
         </div>
