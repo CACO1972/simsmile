@@ -29,7 +29,7 @@ export default function Contact() {
   // Proteger ruta
   useEffect(() => {
     if (!analysisId) {
-      navigate("/captura-reposo");
+      navigate("/captura");
     }
   }, [analysisId, navigate]);
 
