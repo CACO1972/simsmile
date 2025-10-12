@@ -22,8 +22,8 @@ export default function Landing() {
             <div className="mb-8">
               <img 
                 src={logo} 
-                alt="Logo" 
-                className="w-32 h-32 mx-auto"
+                alt="SimSmile Logo" 
+                className="w-64 h-64 mx-auto"
               />
             </div>
             
