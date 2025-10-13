@@ -31,7 +31,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           className="w-80 md:w-[40rem] lg:w-[48rem] mx-auto mb-1 animate-fade-in"
         />
         
-        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight mb-3">
+        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight mb-6">
           IA Poderosa,
           <br />
           <span className="bg-gradient-to-r from-[hsl(270,100%,85%)] via-[hsl(280,90%,75%)] to-[hsl(260,85%,80%)] bg-clip-text text-transparent">
@@ -39,11 +39,11 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </span>
         </h1>
         
-        <p className="text-xl md:text-2xl lg:text-3xl text-white/80 font-light max-w-3xl leading-relaxed mb-4">
+        <p className="text-xl md:text-2xl lg:text-3xl text-white/80 font-light max-w-3xl leading-relaxed mb-6">
           Descubre el potencial de tu sonrisa con nuestro simulador de inteligencia artificial avanzado
         </p>
 
-        <p className="text-2xl md:text-3xl text-white/90 font-light mb-8">
+        <p className="text-2xl md:text-3xl text-white/90 font-light mb-10">
           📸 Con solo tomarte una selfie
         </p>
 
@@ -63,7 +63,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </Button>
         </div>
 
-        <p className="text-base md:text-lg text-white/40 font-light italic mt-10">
+        <p className="text-base md:text-lg text-white/40 font-light italic mt-16">
           Powered by Clínica Miró
         </p>
       </div>
