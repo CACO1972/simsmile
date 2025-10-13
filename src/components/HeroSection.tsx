@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import logoMain from "@/assets/simsmile-logo-main.png";
+import logoMain from "@/assets/simsmile-logo-minimal.png";
 
 interface HeroSectionProps {
   onStart: () => void;
