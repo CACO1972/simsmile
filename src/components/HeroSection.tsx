@@ -28,10 +28,10 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-80 md:w-[40rem] lg:w-[48rem] mx-auto mb-5 animate-fade-in"
+          className="w-80 md:w-[40rem] lg:w-[48rem] mx-auto mb-2 animate-fade-in"
         />
         
-        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight mb-4">
+        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight mb-3">
           IA Poderosa,
           <br />
           <span className="bg-gradient-to-r from-[hsl(270,100%,85%)] via-[hsl(280,90%,75%)] to-[hsl(260,85%,80%)] bg-clip-text text-transparent">
