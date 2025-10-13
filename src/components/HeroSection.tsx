@@ -90,7 +90,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         </svg>
       </div>
 
-      <div className="text-center z-10 max-w-3xl">
+      <div className="text-center z-10 max-w-3xl mb-32">
         <h1 className="text-5xl md:text-7xl font-heading font-bold mb-6 bg-gradient-to-r from-gold via-lavender to-gold bg-clip-text text-transparent">
           SimSmile
         </h1>
@@ -100,6 +100,10 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
           Análisis facial avanzado y simulación de diseño de sonrisa en segundos
         </p>
+      </div>
+
+      {/* Botón posicionado debajo del círculo rojo */}
+      <div className="absolute bottom-[15%] right-[20%] z-10">
         <Button
           size="lg"
           onClick={onStart}
