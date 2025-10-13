@@ -28,15 +28,23 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-48 md:w-64 mx-auto mb-12 animate-fade-in"
+          className="w-64 md:w-80 mx-auto mb-4 animate-fade-in"
         />
+        
+        <p className="text-lg md:text-xl text-foreground/70 mb-8 font-light tracking-wide">
+          Simulador de Sonrisa Inteligente
+        </p>
         
         <p className="text-xl md:text-2xl text-foreground/80 mb-6 font-light">
           Descubre el potencial de tu sonrisa con inteligencia artificial
         </p>
         
-        <p className="text-base md:text-lg text-muted-foreground font-light">
+        <p className="text-base md:text-lg text-muted-foreground font-light mb-8">
           Análisis facial avanzado y simulación de diseño de sonrisa en segundos
+        </p>
+
+        <p className="text-sm md:text-base text-muted-foreground/60 font-light italic">
+          Powered by Clínica Miró
         </p>
       </div>
 
