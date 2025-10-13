@@ -39,44 +39,27 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </span>
         </h1>
         
-        <p className="text-sm md:text-lg lg:text-xl text-white/80 font-light max-w-2xl leading-relaxed mb-6">
+        <p className="text-sm md:text-lg lg:text-xl text-white/80 font-light max-w-2xl leading-relaxed mb-8">
           Descubre el potencial de tu sonrisa con nuestro simulador de inteligencia artificial avanzado
         </p>
-
-        {/* Process Steps */}
-        <div className="flex flex-wrap justify-center items-center gap-3 md:gap-5 mb-5 text-white/70">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white text-sm">1</div>
-            <span className="text-xs md:text-base">Fotografía</span>
-          </div>
-          <div className="text-xl text-white/50">→</div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white text-sm">2</div>
-            <span className="text-xs md:text-base">Análisis IA</span>
-          </div>
-          <div className="text-xl text-white/50">→</div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white text-sm">3</div>
-            <span className="text-xs md:text-base">Resultado</span>
-          </div>
-        </div>
-
-        <div className="inline-block px-4 py-1.5 md:px-6 md:py-2 rounded-full bg-white/10 text-white text-xs md:text-base font-semibold mb-6 border border-white/20">
-          ⚡ Gratis por Tiempo Limitado - Aprovecha Ahora
-        </div>
 
         <div>
           <Button
             size="lg"
             onClick={onStart}
-            className="text-base md:text-lg px-10 py-5 md:px-16 md:py-7 bg-gradient-to-r from-[hsl(270,90%,65%)] via-[hsl(280,85%,60%)] to-[hsl(265,80%,65%)] hover:from-[hsl(270,90%,70%)] hover:via-[hsl(280,85%,65%)] hover:to-[hsl(265,80%,70%)] text-white font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)]"
+            className="text-base md:text-lg px-10 py-5 md:px-16 md:py-7 bg-gradient-to-r from-[hsl(270,90%,65%)] via-[hsl(280,85%,60%)] to-[hsl(265,80%,65%)] hover:from-[hsl(270,90%,70%)] hover:via-[hsl(280,85%,65%)] hover:to-[hsl(265,80%,70%)] text-white font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)] flex flex-col items-center gap-1"
           >
-            <Sparkles className="mr-2 md:mr-3" />
-            Comenzar Análisis Gratis
+            <span className="flex items-center">
+              <Sparkles className="mr-2 md:mr-3" />
+              Comenzar Análisis Gratis
+            </span>
+            <span className="text-xs md:text-sm font-normal opacity-90">
+              ⚡ Gratis por Tiempo Limitado - Aprovecha Ahora
+            </span>
           </Button>
         </div>
 
-        <p className="text-xs md:text-sm text-white/40 font-light italic mt-6">
+        <p className="text-xs md:text-sm text-white/40 font-light italic mt-8">
           Powered by Clínica Miró
         </p>
       </div>
