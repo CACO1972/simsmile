@@ -1,17 +1,20 @@
 import { Facebook, Instagram, Mail, Globe } from "lucide-react";
 import { Logo } from "./Logo";
+import miroLogo from "@/assets/clinica-miro-logo.png";
 
 export const Footer = () => {
   return (
     <footer className="bg-card border-t border-border py-8 mt-16">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col items-center md:items-start gap-2">
-            <Logo size="md" />
-            <p className="text-xs text-muted-foreground text-center md:text-left">
-              <span className="font-semibold">Powered by Clínica Miró</span>
-              <br />
-              Desarrollo de IA con propiedad intelectual y patente chilena
+          <div className="flex flex-col items-center md:items-start gap-3">
+            <Logo size="lg" />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Powered by</span>
+              <img src={miroLogo} alt="Clínica Miró" className="h-6" />
+            </div>
+            <p className="text-xs text-muted-foreground text-center md:text-left max-w-xs">
+              Inteligencia Artificial protegida con propiedad intelectual y patente chilena
             </p>
           </div>
           

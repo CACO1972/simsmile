@@ -4,15 +4,15 @@ export const LoadingAnimation = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
       <div className="absolute top-8 left-8">
-        <Logo size="sm" className="opacity-50" />
+        <Logo size="md" className="opacity-50" />
       </div>
 
       {/* Orbital circles animation */}
       <div className="relative">
-        <div className="w-64 h-64 relative">
+        <div className="w-80 h-80 relative">
           {/* Center logo */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <Logo size="lg" />
+            <Logo size="xl" />
           </div>
 
           {/* Orbiting circles */}

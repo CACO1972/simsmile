@@ -10,7 +10,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
       <div className="absolute top-8 left-8">
-        <Logo size="md" className="opacity-70" />
+        <Logo size="lg" className="opacity-70" />
       </div>
       
       {/* Orbital circles animation */}

@@ -3,6 +3,7 @@ import { Check, X, Camera } from "lucide-react";
 import { Logo } from "./Logo";
 import correctPhotoExample from "@/assets/correct-photo-example.jpg";
 import incorrectPhotoExample from "@/assets/incorrect-photo-example.jpg";
+import miroLogo from "@/assets/clinica-miro-logo.png";
 
 interface InstructionsSectionProps {
   onContinue: () => void;
@@ -12,7 +13,7 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
   return (
     <div className="min-h-screen flex flex-col px-4 py-8">
       <div className="absolute top-8 left-8">
-        <Logo size="lg" />
+        <Logo size="xl" />
       </div>
 
       <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center">
@@ -101,11 +102,15 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
             Entendido, Continuar
           </Button>
           
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            <span className="font-semibold">Powered by Clínica Miró</span>
-            <br />
-            Desarrollo de Inteligencia Artificial con propiedad intelectual y patente chilena
-          </p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-sm text-muted-foreground">Powered by</span>
+              <img src={miroLogo} alt="Clínica Miró" className="h-8" />
+            </div>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Inteligencia Artificial protegida con propiedad intelectual y patente chilena
+            </p>
+          </div>
         </div>
       </div>
     </div>
