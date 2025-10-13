@@ -62,7 +62,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         </div>
 
         <div className="inline-block px-6 py-2 rounded-full bg-white/10 text-white font-semibold mb-8 border border-white/20">
-          ✨ 100% Gratuito
+          ⚡ Gratis por Tiempo Limitado - Aprovecha Ahora
         </div>
 
         <div>
