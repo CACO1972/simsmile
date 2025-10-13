@@ -28,7 +28,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-80 md:w-[40rem] lg:w-[48rem] mx-auto mb-2 animate-fade-in"
+          className="w-80 md:w-[40rem] lg:w-[48rem] mx-auto mb-1 animate-fade-in"
         />
         
         <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight mb-3">
