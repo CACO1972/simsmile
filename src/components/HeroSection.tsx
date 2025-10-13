@@ -24,14 +24,14 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center justify-center text-center z-10 max-w-5xl w-full">
+      <div className="flex flex-col items-center justify-center text-center z-10 max-w-5xl w-full py-4">
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-96 md:w-[40rem] lg:w-[48rem] mx-auto mb-6 animate-fade-in"
+          className="w-64 md:w-96 lg:w-[32rem] mx-auto mb-4 animate-fade-in"
         />
         
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-5">
+        <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-3">
           IA Poderosa,
           <br />
           <span className="bg-gradient-to-r from-[hsl(270,100%,85%)] via-[hsl(280,90%,75%)] to-[hsl(260,85%,80%)] bg-clip-text text-transparent">
@@ -39,29 +39,29 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </span>
         </h1>
         
-        <p className="text-lg md:text-xl lg:text-2xl text-white/80 font-light max-w-3xl leading-relaxed mb-8">
+        <p className="text-sm md:text-lg lg:text-xl text-white/80 font-light max-w-2xl leading-relaxed mb-6">
           Descubre el potencial de tu sonrisa con nuestro simulador de inteligencia artificial avanzado
         </p>
 
         {/* Process Steps */}
-        <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-8 text-white/70">
+        <div className="flex flex-wrap justify-center items-center gap-3 md:gap-5 mb-5 text-white/70">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">1</div>
-            <span className="text-sm md:text-base">Fotografía</span>
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white text-sm">1</div>
+            <span className="text-xs md:text-base">Fotografía</span>
           </div>
-          <div className="text-2xl text-white/50">→</div>
+          <div className="text-xl text-white/50">→</div>
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">2</div>
-            <span className="text-sm md:text-base">Análisis IA</span>
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white text-sm">2</div>
+            <span className="text-xs md:text-base">Análisis IA</span>
           </div>
-          <div className="text-2xl text-white/50">→</div>
+          <div className="text-xl text-white/50">→</div>
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">3</div>
-            <span className="text-sm md:text-base">Resultado</span>
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white text-sm">3</div>
+            <span className="text-xs md:text-base">Resultado</span>
           </div>
         </div>
 
-        <div className="inline-block px-6 py-2 rounded-full bg-white/10 text-white font-semibold mb-8 border border-white/20">
+        <div className="inline-block px-4 py-1.5 md:px-6 md:py-2 rounded-full bg-white/10 text-white text-xs md:text-base font-semibold mb-6 border border-white/20">
           ⚡ Gratis por Tiempo Limitado - Aprovecha Ahora
         </div>
 
@@ -69,14 +69,14 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           <Button
             size="lg"
             onClick={onStart}
-            className="text-lg px-16 py-7 bg-gradient-to-r from-[hsl(270,90%,65%)] via-[hsl(280,85%,60%)] to-[hsl(265,80%,65%)] hover:from-[hsl(270,90%,70%)] hover:via-[hsl(280,85%,65%)] hover:to-[hsl(265,80%,70%)] text-white font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)]"
+            className="text-base md:text-lg px-10 py-5 md:px-16 md:py-7 bg-gradient-to-r from-[hsl(270,90%,65%)] via-[hsl(280,85%,60%)] to-[hsl(265,80%,65%)] hover:from-[hsl(270,90%,70%)] hover:via-[hsl(280,85%,65%)] hover:to-[hsl(265,80%,70%)] text-white font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)]"
           >
-            <Sparkles className="mr-3" />
+            <Sparkles className="mr-2 md:mr-3" />
             Comenzar Análisis Gratis
           </Button>
         </div>
 
-        <p className="text-sm md:text-base text-white/40 font-light italic mt-12">
+        <p className="text-xs md:text-sm text-white/40 font-light italic mt-6">
           Powered by Clínica Miró
         </p>
       </div>
