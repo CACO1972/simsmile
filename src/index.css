@@ -41,6 +41,7 @@ All colors MUST be HSL.
     --gold: 52 83% 39%;
     --lavender: 260 60% 75%;
     --lavender-foreground: 225 80% 10%;
+    --lavender-soft: 260 40% 95%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 225 80% 10%;
@@ -84,6 +85,7 @@ All colors MUST be HSL.
     --gold: 52 83% 45%;
     --lavender: 260 60% 75%;
     --lavender-foreground: 225 80% 4%;
+    --lavender-soft: 260 30% 15%;
 
     --sidebar-background: 225 70% 8%;
     --sidebar-foreground: 260 60% 75%;

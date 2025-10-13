@@ -8,7 +8,7 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden bg-[hsl(var(--lavender-soft))]">
       
       {/* Subtle background animation */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
