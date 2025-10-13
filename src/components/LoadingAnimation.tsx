@@ -15,15 +15,15 @@ export const LoadingAnimation = () => {
             <Logo size="xl" />
           </div>
 
-          {/* Orbiting circles */}
+          {/* Orbiting circles with SimSmile colors and glow */}
           <div className="absolute inset-0 animate-[spin_3s_linear_infinite]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gold" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-[#3DD6B4] shadow-[0_0_20px_rgba(61,214,180,0.8)] animate-pulse" />
           </div>
           <div className="absolute inset-4 animate-[spin_4s_linear_infinite_reverse]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-lavender" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-[#FDB913] shadow-[0_0_20px_rgba(253,185,19,0.8)] animate-pulse" />
           </div>
           <div className="absolute inset-8 animate-[spin_5s_linear_infinite]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-primary" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-[#E91E84] shadow-[0_0_20px_rgba(233,30,132,0.8)] animate-pulse" />
           </div>
         </div>
       </div>

@@ -13,11 +13,22 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <Logo size="lg" className="opacity-70" />
       </div>
       
-      {/* Orbital circles animation */}
+      {/* Orbital circles animation with SimSmile colors */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full border-2 border-lavender/20 animate-[spin_20s_linear_infinite]" />
-        <div className="absolute top-1/3 right-1/3 w-48 h-48 rounded-full border-2 border-gold/20 animate-[spin_25s_linear_infinite_reverse]" />
-        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 rounded-full border-2 border-lavender/20 animate-[spin_30s_linear_infinite]" />
+        {/* Teal circle - top left */}
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full border-4 border-[#3DD6B4]/30 animate-[spin_15s_linear_infinite] shadow-[0_0_30px_rgba(61,214,180,0.3)]">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#3DD6B4] animate-pulse shadow-[0_0_20px_rgba(61,214,180,0.8)]" />
+        </div>
+        
+        {/* Gold circle - top right */}
+        <div className="absolute top-1/3 right-1/3 w-48 h-48 rounded-full border-4 border-[#FDB913]/30 animate-[spin_20s_linear_infinite_reverse] shadow-[0_0_30px_rgba(253,185,19,0.3)]">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#FDB913] animate-pulse shadow-[0_0_20px_rgba(253,185,19,0.8)]" />
+        </div>
+        
+        {/* Magenta circle - bottom right */}
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 rounded-full border-4 border-[#E91E84]/30 animate-[spin_18s_linear_infinite] shadow-[0_0_30px_rgba(233,30,132,0.3)]">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#E91E84] animate-pulse shadow-[0_0_20px_rgba(233,30,132,0.8)]" />
+        </div>
       </div>
 
       <div className="text-center z-10 max-w-3xl">
