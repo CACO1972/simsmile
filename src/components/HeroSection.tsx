@@ -24,11 +24,11 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Logo y contenido principal */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center z-10 max-w-2xl w-full">
+      <div className="flex-1 flex flex-col items-center justify-center text-center z-10 max-w-3xl w-full">
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-64 md:w-80 mx-auto mb-4 animate-fade-in"
+          className="w-80 md:w-[32rem] lg:w-[36rem] mx-auto mb-8 animate-fade-in"
         />
         
         <p className="text-lg md:text-xl text-foreground/70 mb-8 font-light tracking-wide">

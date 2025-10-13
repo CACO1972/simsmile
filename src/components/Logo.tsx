@@ -1,4 +1,4 @@
-import logo from "@/assets/simsmile-isotipo.png";
+import logo from "@/assets/simsmile-logo-minimal.png";
 
 interface LogoProps {
   className?: string;
