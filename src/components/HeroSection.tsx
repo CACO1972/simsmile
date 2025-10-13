@@ -8,7 +8,7 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-8 md:pt-16 relative overflow-hidden bg-gradient-to-b from-[#1a0b2e] via-[#2d1b4e] to-[#3d2863]">
+    <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-4 md:pt-8 relative overflow-hidden bg-gradient-to-b from-[#1a0b2e] via-[#2d1b4e] to-[#3d2863]">
       
       {/* Main gradient glow effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -28,10 +28,10 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-72 md:w-[36rem] lg:w-[42rem] mx-auto mb-6 animate-fade-in"
+          className="w-80 md:w-[40rem] lg:w-[48rem] mx-auto mb-5 animate-fade-in"
         />
         
-        <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-4">
+        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight mb-4">
           IA Poderosa,
           <br />
           <span className="bg-gradient-to-r from-[hsl(270,100%,85%)] via-[hsl(280,90%,75%)] to-[hsl(260,85%,80%)] bg-clip-text text-transparent">
@@ -39,11 +39,11 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </span>
         </h1>
         
-        <p className="text-base md:text-xl lg:text-2xl text-white/80 font-light max-w-3xl leading-relaxed mb-3">
+        <p className="text-xl md:text-2xl lg:text-3xl text-white/80 font-light max-w-3xl leading-relaxed mb-4">
           Descubre el potencial de tu sonrisa con nuestro simulador de inteligencia artificial avanzado
         </p>
 
-        <p className="text-lg md:text-2xl text-white/90 font-light mb-8">
+        <p className="text-2xl md:text-3xl text-white/90 font-light mb-8">
           📸 Con solo tomarte una selfie
         </p>
 
@@ -51,19 +51,19 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           <Button
             size="lg"
             onClick={onStart}
-            className="text-lg md:text-xl px-12 py-6 md:px-16 md:py-7 bg-gradient-to-r from-[hsl(270,90%,65%)] via-[hsl(280,85%,60%)] to-[hsl(265,80%,65%)] hover:from-[hsl(270,90%,70%)] hover:via-[hsl(280,85%,65%)] hover:to-[hsl(265,80%,70%)] text-white font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)] flex flex-col items-center gap-1"
+            className="text-xl md:text-2xl px-14 py-7 md:px-20 md:py-9 bg-gradient-to-r from-[hsl(270,90%,65%)] via-[hsl(280,85%,60%)] to-[hsl(265,80%,65%)] hover:from-[hsl(270,90%,70%)] hover:via-[hsl(280,85%,65%)] hover:to-[hsl(265,80%,70%)] text-white font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)] flex flex-col items-center gap-1"
           >
             <span className="flex items-center">
               <Sparkles className="mr-3" />
               Comenzar Análisis Gratis
             </span>
-            <span className="text-sm md:text-base font-normal opacity-90">
+            <span className="text-base md:text-lg font-normal opacity-90">
               ⚡ Gratis por Tiempo Limitado - Aprovecha Ahora
             </span>
           </Button>
         </div>
 
-        <p className="text-sm md:text-base text-white/40 font-light italic mt-10">
+        <p className="text-base md:text-lg text-white/40 font-light italic mt-10">
           Powered by Clínica Miró
         </p>
       </div>
