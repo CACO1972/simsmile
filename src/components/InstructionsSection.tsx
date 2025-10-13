@@ -108,7 +108,9 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
               <img src={miroLogo} alt="Clínica Miró" className="h-8" />
             </div>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              IP y Patent Pending de Dr. Carlos Montoya
+              © 2025 Dr. Carlos Montoya. Todos los derechos reservados.
+              <br />
+              IP y Patent Pending
             </p>
           </div>
         </div>

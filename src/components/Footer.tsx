@@ -14,7 +14,9 @@ export const Footer = () => {
               <img src={miroLogo} alt="Clínica Miró" className="h-6" />
             </div>
             <p className="text-xs text-muted-foreground text-center md:text-left max-w-xs">
-              IP y Patent Pending de Dr. Carlos Montoya
+              © 2025 Dr. Carlos Montoya. Todos los derechos reservados.
+              <br />
+              IP y Patent Pending
             </p>
           </div>
           
