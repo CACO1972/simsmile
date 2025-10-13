@@ -8,99 +8,42 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden">
       
-      {/* Orbital circles animation with connecting geometric patterns */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Background circles with connecting lines via pseudo-elements */}
+      {/* Subtle background animation */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-1/4 left-1/4 w-32 h-32">
-          <div className="relative w-full h-full rounded-full border-4 border-[#3DD6B4]/30 animate-[spin_15s_linear_infinite] shadow-[0_0_30px_rgba(61,214,180,0.3)]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#3DD6B4] animate-pulse shadow-[0_0_20px_rgba(61,214,180,0.8)]" />
-          </div>
+          <div className="relative w-full h-full rounded-full border-2 border-[#3DD6B4]/20 animate-[spin_20s_linear_infinite]" />
         </div>
         
         <div className="absolute bottom-1/4 right-1/4 w-40 h-40">
-          <div className="relative w-full h-full rounded-full border-4 border-[#E91E84]/30 animate-[spin_18s_linear_infinite] shadow-[0_0_30px_rgba(233,30,132,0.3)]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#E91E84] animate-pulse shadow-[0_0_20px_rgba(233,30,132,0.8)]" />
-          </div>
+          <div className="relative w-full h-full rounded-full border-2 border-[#E91E84]/20 animate-[spin_25s_linear_infinite_reverse]" />
         </div>
-
-        {/* SVG for connecting lines forming triangular patterns */}
-        <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
-          <defs>
-            <linearGradient id="heroGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3DD6B4" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#FDB913" stopOpacity="0.1" />
-            </linearGradient>
-            <linearGradient id="heroGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FDB913" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#E91E84" stopOpacity="0.1" />
-            </linearGradient>
-            <linearGradient id="heroGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#E91E84" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#3DD6B4" stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
-          
-          {/* Animated lines connecting the circles */}
-          <line
-            x1="25%"
-            y1="25%"
-            x2="66%"
-            y2="33%"
-            stroke="url(#heroGradient1)"
-            strokeWidth="2"
-            className="animate-[pulse_3s_ease-in-out_infinite]"
-          >
-            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite" />
-          </line>
-          
-          <line
-            x1="66%"
-            y1="33%"
-            x2="75%"
-            y2="75%"
-            stroke="url(#heroGradient2)"
-            strokeWidth="2"
-            className="animate-[pulse_3s_ease-in-out_infinite]"
-          >
-            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite" />
-          </line>
-          
-          <line
-            x1="75%"
-            y1="75%"
-            x2="25%"
-            y2="25%"
-            stroke="url(#heroGradient3)"
-            strokeWidth="2"
-            className="animate-[pulse_3s_ease-in-out_infinite]"
-          >
-            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="5s" repeatCount="indefinite" />
-          </line>
-        </svg>
       </div>
 
-      <div className="text-center z-10 max-w-3xl mb-32">
+      {/* Logo y contenido principal */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center z-10 max-w-2xl w-full">
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-64 md:w-96 mx-auto mb-8"
+          className="w-48 md:w-64 mx-auto mb-12 animate-fade-in"
         />
-        <p className="text-xl md:text-2xl text-muted-foreground mb-8">
+        
+        <p className="text-xl md:text-2xl text-foreground/80 mb-6 font-light">
           Descubre el potencial de tu sonrisa con inteligencia artificial
         </p>
-        <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+        
+        <p className="text-base md:text-lg text-muted-foreground font-light">
           Análisis facial avanzado y simulación de diseño de sonrisa en segundos
         </p>
       </div>
 
-      {/* Botón posicionado debajo del círculo rojo */}
-      <div className="absolute bottom-[15%] right-[20%] z-10">
+      {/* Botón en la parte inferior */}
+      <div className="z-10 pb-8">
         <Button
           size="lg"
           onClick={onStart}
-          className="text-lg px-8 py-6 bg-gradient-to-r from-gold to-primary hover:opacity-90 transition-opacity"
+          className="text-lg px-12 py-6 bg-gradient-to-r from-gold to-primary hover:opacity-90 transition-all hover:scale-105 shadow-lg"
         >
           <Sparkles className="mr-2" />
           Comenzar Análisis
