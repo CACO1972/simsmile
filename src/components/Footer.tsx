@@ -14,7 +14,7 @@ export const Footer = () => {
               <img src={miroLogo} alt="Clínica Miró" className="h-6" />
             </div>
             <p className="text-xs text-muted-foreground text-center md:text-left max-w-xs">
-              Inteligencia Artificial protegida con propiedad intelectual y patente chilena
+              IP y Patent Pending de Dr. Carlos Montoya
             </p>
           </div>
           

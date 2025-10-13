@@ -108,7 +108,7 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
               <img src={miroLogo} alt="Clínica Miró" className="h-8" />
             </div>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Inteligencia Artificial protegida con propiedad intelectual y patente chilena
+              IP y Patent Pending de Dr. Carlos Montoya
             </p>
           </div>
         </div>
