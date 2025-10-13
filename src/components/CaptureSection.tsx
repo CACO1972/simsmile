@@ -42,12 +42,12 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
-      <div className="absolute top-8 left-8">
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
+      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
         <Logo size="sm" className="opacity-50" />
       </div>
 
-      <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center">
+      <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0">
         {step === "rest" && (
           <CameraCapture
             onCapture={handleRestCapture}

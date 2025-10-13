@@ -29,20 +29,20 @@ export const ContactSection = ({ onSubmit }: ContactSectionProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
-      <div className="absolute top-8 left-8">
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
+      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
         <Logo size="sm" className="opacity-50" />
       </div>
 
-      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center">
-        <h2 className="text-4xl md:text-5xl font-heading font-bold text-center mb-4">
+      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-center mb-4">
           Información de Contacto
         </h2>
-        <p className="text-center text-muted-foreground mb-8">
+        <p className="text-center text-muted-foreground mb-6 md:mb-8 text-sm md:text-base">
           Déjanos tus datos para enviarte el análisis completo
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-card border border-border rounded-lg p-8">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 bg-card border border-border rounded-lg p-6 md:p-8">
           <div>
             <Label htmlFor="name" className="flex items-center gap-2">
               <User className="h-4 w-4" />

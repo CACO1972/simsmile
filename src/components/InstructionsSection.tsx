@@ -11,16 +11,16 @@ interface InstructionsSectionProps {
 
 export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
-      <div className="absolute top-8 left-8">
-        <Logo size="xl" />
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
+      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
+        <Logo size="md" className="md:w-auto" />
       </div>
 
-      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center">
-        <h2 className="text-4xl md:text-5xl font-heading font-bold text-center mb-4">
+      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-center mb-4">
           Instrucciones para el Análisis
         </h2>
-        <p className="text-center text-muted-foreground mb-12">
+        <p className="text-center text-muted-foreground mb-8 md:mb-12 text-sm md:text-base">
           Sigue estas recomendaciones para obtener los mejores resultados
         </p>
 

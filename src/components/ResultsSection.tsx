@@ -110,30 +110,30 @@ export const ResultsSection = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8">
-      <div className="absolute top-8 left-8">
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
+      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
         <Logo size="sm" className="opacity-50" />
       </div>
 
-      <div className="max-w-6xl mx-auto w-full">
-        <h2 className="text-4xl md:text-5xl font-heading font-bold text-center mb-8">
+      <div className="max-w-6xl mx-auto w-full mt-4 md:mt-0">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-center mb-6 md:mb-8">
           Tu Análisis de Sonrisa
         </h2>
 
         {/* Before/After Comparison - 3 columns */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-gold to-lavender rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-            <div className="relative bg-card border border-border rounded-lg p-4">
-              <h3 className="text-lg font-heading font-bold mb-4 text-center">Antes</h3>
+            <div className="relative bg-card border border-border rounded-lg p-3 md:p-4">
+              <h3 className="text-base md:text-lg font-heading font-bold mb-3 md:mb-4 text-center">Antes</h3>
               <img src={restImage} alt="Antes" className="w-full rounded-lg" />
             </div>
           </div>
 
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-lavender to-gold rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-            <div className="relative bg-card border border-border rounded-lg p-4">
-              <h3 className="text-lg font-heading font-bold mb-4 text-center">Simulación IA</h3>
+            <div className="relative bg-card border border-border rounded-lg p-3 md:p-4">
+              <h3 className="text-base md:text-lg font-heading font-bold mb-3 md:mb-4 text-center">Simulación IA</h3>
               <div className="relative">
                 <img 
                   ref={imgRef}

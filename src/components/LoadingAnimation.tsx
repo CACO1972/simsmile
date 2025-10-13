@@ -3,13 +3,13 @@ import { OrbitalAnimation } from "./OrbitalAnimation";
 
 export const LoadingAnimation = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute top-8 left-8">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
+      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
         <Logo size="md" className="opacity-50" />
       </div>
 
       {/* Orbital circles animation with connecting lines */}
-      <div className="relative">
+      <div className="relative mt-4 md:mt-0">
         <OrbitalAnimation size="large" />
         
         {/* Center logo */}
@@ -18,11 +18,11 @@ export const LoadingAnimation = () => {
         </div>
       </div>
 
-      <div className="mt-12 text-center">
-        <h2 className="text-2xl font-heading font-bold mb-2">
+      <div className="mt-8 md:mt-12 text-center">
+        <h2 className="text-xl md:text-2xl font-heading font-bold mb-2">
           Analizando tu Sonrisa
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-sm md:text-base text-muted-foreground">
           Nuestro sistema de IA está procesando tus imágenes...
         </p>
       </div>
