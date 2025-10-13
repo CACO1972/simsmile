@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HeroSection } from "@/components/HeroSection";
 import { InstructionsSection } from "@/components/InstructionsSection";
 import { CaptureSection } from "@/components/CaptureSection";
@@ -20,6 +20,11 @@ const IALab = () => {
   const [analysis, setAnalysis] = useState<string>("");
   const [metrics, setMetrics] = useState<any>(null);
   const [contactData, setContactData] = useState<any>(null);
+
+  // Scroll to top whenever step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [step]);
 
   const handleCapture = async (rest: string, smile: string) => {
     setRestImage(rest);
