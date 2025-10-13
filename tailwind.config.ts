@@ -89,6 +89,17 @@ export default {
             height: "0",
           },
         },
+        float: {
+          "0%, 100%": {
+            transform: "translateY(0) translateX(0)",
+          },
+          "33%": {
+            transform: "translateY(-20px) translateX(10px)",
+          },
+          "66%": {
+            transform: "translateY(10px) translateX(-10px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

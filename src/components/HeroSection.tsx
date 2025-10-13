@@ -10,15 +10,17 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden bg-[hsl(var(--lavender-soft))]">
       
-      {/* Subtle background animation */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-32 h-32">
-          <div className="relative w-full h-full rounded-full border-2 border-[#3DD6B4]/20 animate-[spin_20s_linear_infinite]" />
-        </div>
-        
-        <div className="absolute bottom-1/4 right-1/4 w-40 h-40">
-          <div className="relative w-full h-full rounded-full border-2 border-[#E91E84]/20 animate-[spin_25s_linear_infinite_reverse]" />
-        </div>
+      {/* Animated gradient overlay */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-lavender/20 via-transparent to-primary/10 animate-[pulse_8s_ease-in-out_infinite]" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-lavender/15 animate-[pulse_10s_ease-in-out_infinite_reverse]" />
+      </div>
+      
+      {/* Floating particles effect */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-primary/30 to-transparent rounded-full blur-3xl animate-[float_15s_ease-in-out_infinite]" />
+        <div className="absolute top-2/3 right-1/3 w-40 h-40 bg-gradient-to-br from-lavender/40 to-transparent rounded-full blur-3xl animate-[float_20s_ease-in-out_infinite_reverse]" />
+        <div className="absolute bottom-1/4 left-1/2 w-36 h-36 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl animate-[float_18s_ease-in-out_infinite]" />
       </div>
 
       {/* Logo y contenido principal */}
