@@ -24,14 +24,14 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center justify-center text-center z-10 max-w-5xl w-full space-y-8">
+      <div className="flex flex-col items-center justify-center text-center z-10 max-w-5xl w-full">
         <img 
           src={logoMain} 
           alt="SimSmile" 
-          className="w-96 md:w-[40rem] lg:w-[48rem] mx-auto animate-fade-in"
+          className="w-96 md:w-[40rem] lg:w-[48rem] mx-auto mb-6 animate-fade-in"
         />
         
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-5">
           IA Poderosa,
           <br />
           <span className="bg-gradient-to-r from-[hsl(270,100%,85%)] via-[hsl(280,90%,75%)] to-[hsl(260,85%,80%)] bg-clip-text text-transparent">
@@ -39,11 +39,33 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </span>
         </h1>
         
-        <p className="text-lg md:text-xl lg:text-2xl text-white/80 font-light max-w-3xl leading-relaxed">
+        <p className="text-lg md:text-xl lg:text-2xl text-white/80 font-light max-w-3xl leading-relaxed mb-8">
           Descubre el potencial de tu sonrisa con nuestro simulador de inteligencia artificial avanzado
         </p>
 
-        <div className="pt-4">
+        {/* Process Steps */}
+        <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-8 text-white/70">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">1</div>
+            <span className="text-sm md:text-base">Fotografía</span>
+          </div>
+          <div className="text-2xl text-white/50">→</div>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">2</div>
+            <span className="text-sm md:text-base">Análisis IA</span>
+          </div>
+          <div className="text-2xl text-white/50">→</div>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">3</div>
+            <span className="text-sm md:text-base">Resultado</span>
+          </div>
+        </div>
+
+        <div className="inline-block px-6 py-2 rounded-full bg-white/10 text-white font-semibold mb-8 border border-white/20">
+          ✨ 100% Gratuito
+        </div>
+
+        <div>
           <Button
             size="lg"
             onClick={onStart}
@@ -54,23 +76,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-8 md:gap-16 pt-12">
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-white mb-1">3x</div>
-            <div className="text-sm md:text-base text-white/60">Más Rápido</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-white mb-1">99.9%</div>
-            <div className="text-sm md:text-base text-white/60">Precisión</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-white mb-1">10K+</div>
-            <div className="text-sm md:text-base text-white/60">Análisis Realizados</div>
-          </div>
-        </div>
-
-        <p className="text-sm md:text-base text-white/40 font-light italic pt-8">
+        <p className="text-sm md:text-base text-white/40 font-light italic mt-12">
           Powered by Clínica Miró
         </p>
       </div>
