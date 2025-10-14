@@ -1,144 +1,42 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, TrendingUp, Users, Award } from "lucide-react";
-import logoMain from "@/assets/simsmile-logo-minimal.png";
-
-
+import { Sparkles } from "lucide-react";
+import logoMain from "@/assets/simsmile-logo-main.png";
 interface HeroSectionProps {
   onStart: () => void;
 }
-
-export const HeroSection = ({ onStart }: HeroSectionProps) => {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-8 md:pt-12 relative overflow-hidden bg-background">
+export const HeroSection = ({
+  onStart
+}: HeroSectionProps) => {
+  return <div className="min-h-screen flex flex-col items-center justify-between px-4 py-12 relative overflow-hidden bg-[hsl(var(--lavender-soft))]">
       
-      {/* Animated gradient background effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
-        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
-      </div>
-
-      {/* Stats bar at top */}
-      <div className="w-full max-w-6xl mb-8 md:mb-12 z-10">
-        <div className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-8 text-xs md:text-sm">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            <span className="text-foreground/80">93.24% Precisión</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="text-foreground/80">$57M+ Valoración</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <Award className="h-4 w-4 text-primary" />
-            <span className="text-foreground/80 uppercase text-xs">Excellence</span>
-          </div>
+      {/* Subtle background animation */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32">
+          <div className="relative w-full h-full rounded-full border-2 border-[#3DD6B4]/20 animate-[spin_20s_linear_infinite]" />
         </div>
-      </div>
-
-      {/* Main content grid */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-8 md:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-12">
         
-        {/* Left side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-6 md:space-y-8">
-          <img 
-            src={logoMain} 
-            alt="SimSmile" 
-            className="w-64 md:w-80 lg:w-96 mx-auto lg:mx-0 mb-4 animate-fade-in opacity-60"
-          />
-          
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
-            Visualiza tu
-            <br />
-            <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              Sonrisa Perfecta
-            </span>
-          </h1>
-          
-          <p className="text-base md:text-lg lg:text-xl text-muted-foreground font-normal max-w-xl leading-relaxed">
-            Descubre cómo podrías lucir con una sonrisa perfecta. Nuestra tecnología de simulación avanzada te permite ver tu transformación antes de comenzar cualquier tratamiento.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Button
-              size="lg"
-              onClick={onStart}
-              className="text-base md:text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all hover:scale-105 shadow-lg shadow-primary/50 hover:shadow-primary/70"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              Empezar Ahora
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-base md:text-lg px-8 py-6 border-border hover:bg-card/50 text-foreground font-medium rounded-lg transition-all"
-            >
-              Contáctanos
-            </Button>
-          </div>
-        </div>
-
-        {/* Right side - Visual accent */}
-        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center">
-          <div className="relative w-80 h-80 md:w-96 md:h-96">
-            {/* Animated gradient orbs */}
-            <div className="absolute inset-0 bg-primary/30 blur-[120px] rounded-full animate-pulse" />
-            <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-accent/40 blur-[80px] rounded-full" />
-            <div className="absolute bottom-1/4 left-1/4 w-48 h-48 bg-secondary/30 blur-[90px] rounded-full animate-pulse" />
-          </div>
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40">
+          <div className="relative w-full h-full rounded-full border-2 border-[#E91E84]/20 animate-[spin_25s_linear_infinite_reverse]" />
         </div>
       </div>
 
-      {/* Bottom section with value props */}
-      <div className="w-full max-w-6xl z-10 mb-12">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Tecnología Avanzada de
-            <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Simulación Dental
-            </span>
-          </h2>
-          <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
-            Utilizamos inteligencia artificial avanzada para crear simulaciones precisas de tu sonrisa ideal. 
-            Visualiza tu transformación de forma instantánea y realista.
-          </p>
-        </div>
-
-        {/* Stats grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-              95%+
-            </div>
-            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
-              Precisión
-            </div>
-          </div>
-          
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-              Instantáneo
-            </div>
-            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
-              Resultados
-            </div>
-          </div>
-          
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-              100%
-            </div>
-            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
-              Seguro
-            </div>
-          </div>
-        </div>
+      {/* Logo y contenido principal */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center z-10 max-w-2xl w-full">
+        
+        
+        
+        
+        <p className="text-base md:text-lg text-muted-foreground font-light">
+          Análisis facial avanzado y simulación de diseño de sonrisa en segundos
+        </p>
       </div>
 
-      <p className="text-xs md:text-sm text-muted-foreground/40 font-light italic z-10 mb-8">
-        Powered by Clínica Miró
-      </p>
-    </div>
-  );
+      {/* Botón en la parte inferior */}
+      <div className="z-10 pb-8">
+        <Button size="lg" onClick={onStart} className="text-lg px-12 py-6 bg-gradient-to-r from-gold to-primary hover:opacity-90 transition-all hover:scale-105 shadow-lg">
+          <Sparkles className="mr-2" />
+          Comenzar Análisis
+        </Button>
+      </div>
+    </div>;
 };
