@@ -51,7 +51,49 @@ const handler = async (req: Request): Promise<Response> => {
     if (!clinicEmailResponse.ok) {
       const errorData = await clinicEmailResponse.text();
       console.error("Resend API error:", errorData);
-      throw new Error(`Error sending email to clinic: ${errorData}`);
+
+      // Fallback: domain not verified -> use Resend sandbox to send to account email
+      if (
+        errorData.includes("domain is not verified") ||
+        errorData.includes("only send testing emails")
+      ) {
+        const fallbackResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: "SimSmile <onboarding@resend.dev>",
+            to: ["admin@clinicamiro.cl"],
+            reply_to: "administracion@clinicamiro.cl",
+            subject: `[Fallback] Nuevo contacto de SimSmile - ${name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Nuevo contacto desde SimSmile (Fallback Sandbox)</h2>
+                <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <p><strong>Nombre:</strong> ${name}</p>
+                  <p><strong>Email:</strong> ${email}</p>
+                  <p><strong>Teléfono:</strong> ${phone}</p>
+                  <p><strong>Mensaje:</strong></p>
+                  <p style="white-space: pre-wrap;">${message}</p>
+                </div>
+                <p style="color:#666; font-size:12px">Motivo fallback: ${errorData}</p>
+              </div>
+            `,
+          }),
+        });
+
+        if (!fallbackResponse.ok) {
+          const fbText = await fallbackResponse.text();
+          console.error("Resend fallback error:", fbText);
+          throw new Error(`Error sending email via fallback: ${fbText}`);
+        }
+
+        console.warn("Email enviado con fallback a admin@clinicamiro.cl (sandbox)");
+      } else {
+        throw new Error(`Error sending email to clinic: ${errorData}`);
+      }
     }
 
     // Email de confirmación al usuario
