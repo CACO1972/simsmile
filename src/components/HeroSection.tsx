@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import logoSimSmile from "@/assets/simsmile-logo-official.png";
+import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 
 
