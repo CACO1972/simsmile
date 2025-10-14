@@ -22,74 +22,81 @@ serve(async (req) => {
     // Construir prompt basado en las métricas
     const corrections = [];
     
-    if (metrics.smileArc === 'invertido' || metrics.smileArc === 'plano') {
+    if (metrics.smileArc === 'inverso' || metrics.smileArc === 'plano') {
       corrections.push('mejorar el arco de sonrisa para que sea consonante');
     }
     
-    if (metrics.gingival.class === 'excesiva') {
+    if (metrics.gingival.class === 'excesiva' || metrics.gingival.class === 'alta') {
       corrections.push('reducir la exposición gingival excesiva');
     }
     
-    if (Math.abs(metrics.midline.mm) > 2) {
-      corrections.push(`corregir la línea media dental desviada ${metrics.midline.mm.toFixed(1)}mm hacia ${metrics.midline.side}`);
+    if (metrics.midline.mm > 2) {
+      corrections.push(`corregir la línea media dental desviada ${metrics.midline.mm.toFixed(1)}mm`);
     }
     
     if (metrics.buccalRatio < 0.1 || metrics.buccalRatio > 0.3) {
       corrections.push('optimizar el corredor bucal');
     }
 
-    // Agregar correcciones de dientes faltantes/desalineados
-    corrections.push('agregar dientes faltantes con forma y color natural');
-    corrections.push('enderezar y alinear dientes torcidos o desalineados');
-    corrections.push('blanquear dientes manteniendo apariencia natural');
-    corrections.push('igualar tamaños y proporciones de dientes según estándares estéticos');
+    // Agregar correcciones de dientes
+    if (smileRecommendations?.missingTeeth) {
+      corrections.push('agregar dientes faltantes con forma y color natural');
+    }
+    if (faceAnalysis?.teethAlignment === 'desalineado') {
+      corrections.push('enderezar y alinear dientes torcidos o desalineados sutilmente');
+    }
 
-    const correctionPrompt = `Eres un experto en simulación dental. Edita esta fotografía de sonrisa aplicando las siguientes correcciones estéticas de forma natural y realista:
+    const correctionPrompt = `You are an expert in dental photo editing. Edit this smile photo to apply these aesthetic corrections naturally and realistically. CRITICAL: You must maintain the SAME PERSON - do not change the face, age, or identity.
 
+Corrections to apply:
 ${corrections.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
-IMPORTANTE: 
-- Mantén la naturalidad de la imagen
-- Los cambios deben ser sutiles pero visibles
-- Respeta la estructura facial original
-- Usa tonos de dientes naturales (no blanco artificial)
-- La encía debe verse saludable y proporcionada
-- Mantén la iluminación y sombras originales`;
+IMPORTANT: 
+- Keep the EXACT SAME person, face structure, and facial features
+- Maintain the original lighting, shadows, and background
+- Changes should be subtle but visible
+- Use natural tooth tones (not artificial white)
+- The gums should look healthy and proportionate
+- DO NOT change the person's age, gender, or facial features
+- ONLY edit the teeth and smile area`;
 
     // Construir prompt de recomendaciones
     const faceDescriptions = [];
     if (faceAnalysis?.faceShape) {
-      faceDescriptions.push(`forma facial ${faceAnalysis.faceShape}`);
+      faceDescriptions.push(`face shape: ${faceAnalysis.faceShape}`);
     }
     if (faceAnalysis?.gender) {
-      faceDescriptions.push(`perfil ${faceAnalysis.gender}`);
+      faceDescriptions.push(`profile: ${faceAnalysis.gender}`);
     }
     
-    const teethShapeRec = smileRecommendations?.teethShape || 'armónica con proporciones naturales';
-    const teethSizeRec = smileRecommendations?.teethSize || 'proporcional al rostro';
-    const smileWidthRec = smileRecommendations?.smileWidth || 'equilibrado y natural';
-    const gingivalRec = smileRecommendations?.gingivalDisplay || 'exposición gingival adecuada';
+    const teethShapeRec = smileRecommendations?.teethShape || 'harmonious with natural proportions';
+    const teethSizeRec = smileRecommendations?.teethSize || 'proportional to the face';
+    const smileWidthRec = smileRecommendations?.smileWidth || 'balanced and natural';
+    const gingivalRec = smileRecommendations?.gingivalDisplay || 'adequate gingival exposure';
     
-    const recommendationPrompt = `Eres un experto en diseño de sonrisa. Basándote en la imagen corregida anterior, crea una simulación de sonrisa IDEAL considerando:
+    const recommendationPrompt = `You are an expert in smile design. Based on the corrected image, create an IDEAL smile simulation. CRITICAL: You must maintain the SAME PERSON - do not change the face, age, or identity.
 
-ANÁLISIS FACIAL:
-${faceDescriptions.length > 0 ? faceDescriptions.map((r, i) => `${i + 1}. ${r}`).join('\n') : 'Perfil facial analizado'}
+FACIAL ANALYSIS:
+${faceDescriptions.length > 0 ? faceDescriptions.join(', ') : 'Analyzed facial profile'}
 
-RECOMENDACIONES DE DISEÑO:
-1. Forma de dientes: ${teethShapeRec}
-2. Tamaño de dientes: ${teethSizeRec}
-3. Ancho de sonrisa: ${smileWidthRec}
-4. Exposición gingival: ${gingivalRec}
+DESIGN RECOMMENDATIONS:
+1. Tooth shape: ${teethShapeRec}
+2. Tooth size: ${teethSizeRec}
+3. Smile width: ${smileWidthRec}
+4. Gingival exposure: ${gingivalRec}
 
-RATIONALE: ${smileRecommendations?.rationale || 'Diseño personalizado según proporciones faciales'}
+RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions'}
 
-IMPORTANTE:
-- Aplica la forma de dientes recomendada: ${teethShapeRec}
-- Ajusta el tamaño según recomendación: ${teethSizeRec}
-- Configura el ancho de sonrisa ideal: ${smileWidthRec}
-- Mantén naturalidad y armonía facial
-- Los dientes deben verse profesionales pero naturales
-- Color blanco natural, no artificial`;
+IMPORTANT:
+- Keep the EXACT SAME person, face structure, and facial features
+- Apply the recommended tooth shape: ${teethShapeRec}
+- Adjust size according to recommendation: ${teethSizeRec}
+- Configure ideal smile width: ${smileWidthRec}
+- Maintain naturalness and facial harmony
+- Teeth should look professional but natural
+- Natural white color, not artificial
+- DO NOT change the person's age, gender, or facial features
+- ONLY enhance the teeth and smile area`;
 
     // Primera simulación: correcciones
     const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
