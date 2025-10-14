@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import logoMain from "@/assets/clinica-miro-logo-white.png";
+import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 
 
 interface HeroSectionProps {
@@ -31,7 +32,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-8 md:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-12">
         
         {/* Left side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-6 md:space-y-8">
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-8 md:space-y-12">
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
             Visualiza tu
@@ -58,20 +59,18 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               size="lg"
               variant="outline"
               className="text-base md:text-lg px-8 py-6 border-border hover:bg-card/50 text-foreground font-medium rounded-lg transition-all"
+              asChild
             >
-              Contáctanos
+              <a href="https://www.clinicamiro.cl" target="_blank" rel="noopener noreferrer">
+                Contáctanos
+              </a>
             </Button>
           </div>
         </div>
 
-        {/* Right side - Visual accent */}
-        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center">
-          <div className="relative w-80 h-80 md:w-96 md:h-96">
-            {/* Animated gradient orbs */}
-            <div className="absolute inset-0 bg-primary/30 blur-[120px] rounded-full animate-pulse" />
-            <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-accent/40 blur-[80px] rounded-full" />
-            <div className="absolute bottom-1/4 left-1/4 w-48 h-48 bg-secondary/30 blur-[90px] rounded-full animate-pulse" />
-          </div>
+        {/* Right side - Smile Transformation Video */}
+        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[400px] md:min-h-[500px]">
+          <SmileTransformationAnimation />
         </div>
       </div>
 
