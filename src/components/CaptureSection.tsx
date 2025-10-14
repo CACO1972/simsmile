@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import CameraCapture from "./CameraCapture";
 import { ArrowRight } from "lucide-react";
 import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
-import guiaFotoRostroCompleto from "@/assets/guia-foto-rostro-completo.jpg";
+import guiaFotoRostroCompleto from "@/assets/guia-foto-rostro-completo-editada.jpg";
 
 interface CaptureSectionProps {
   onCapture: (restImage: string, smileImage: string) => void;
