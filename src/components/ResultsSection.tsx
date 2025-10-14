@@ -270,13 +270,6 @@ export const ResultsSection = ({
                 </div>
               ))}
             </div>
-            <Button 
-              variant="outline" 
-              className="w-full mt-6"
-              onClick={() => setShowMetricsDetail(!showMetricsDetail)}
-            >
-              {showMetricsDetail ? "Ocultar" : "Ver"} Detalles Técnicos
-            </Button>
           </Card>
 
           {/* Análisis profesional */}
@@ -292,23 +285,6 @@ export const ResultsSection = ({
           </Card>
         </div>
 
-        {showMetricsDetail && metrics && (
-          <Card className="bg-card/30 backdrop-blur border-primary/30 p-6 mb-12">
-            <h4 className="text-xl font-heading font-bold mb-4">Detalles Técnicos Completos</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <p><strong>Arco de Sonrisa:</strong> {metrics.smileArc}</p>
-                <p><strong>Exposición Gingival:</strong> {metrics.gingival?.mm}mm ({metrics.gingival?.class})</p>
-                <p><strong>Línea Media Dental:</strong> {metrics.midline?.mm}mm ({metrics.midline?.side})</p>
-              </div>
-              <div className="space-y-2">
-                <p><strong>Línea Media Facial:</strong> {metrics.facialMidline?.mm}mm</p>
-                <p><strong>Ratio Bucal:</strong> {(metrics.buccalRatio * 100).toFixed(1)}%</p>
-                <p><strong>Proporciones Faciales:</strong> {metrics.facialProportions?.isBalanced ? "Balanceadas" : "Desbalanceadas"}</p>
-              </div>
-            </div>
-          </Card>
-        )}
 
         {/* Botones de acción */}
         <div className="flex flex-wrap gap-4 justify-center mb-12">
