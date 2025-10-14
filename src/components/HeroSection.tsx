@@ -58,12 +58,12 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </div>
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-foreground leading-tight tracking-tight">
-            Smart{" "}
+            Transforma{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              Solutions
+              Tu Sonrisa
             </span>
             <br />
-            for Growth
+            con IA
           </h1>
           
           <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
@@ -126,12 +126,12 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           
           <div>
             <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-              Technology{" "}
+              Tecnología{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                That
+                Que Impulsa
               </span>
               <br />
-              Drives Result
+              Resultados
             </h2>
           </div>
 
@@ -183,12 +183,12 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
               <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                Future{" "}
+                El Futuro{" "}
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Ready Tech
+                  de tu Sonrisa
                 </span>
                 <br />
-                for Business
+                Hoy Mismo
               </h2>
               <p className="text-muted-foreground mb-6">
                 Transforma tu sonrisa con la tecnología más avanzada del mercado. Resultados instantáneos y precisos.
