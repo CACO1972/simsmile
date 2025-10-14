@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Share2, Mail, Download, Eye, CheckCircle2, ArrowRight } from "lucide-react";
+import { Share2, Mail, Download, Eye, CheckCircle2, ArrowRight, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
 import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 import { Card } from "@/components/ui/card";
+import { WaitlistModal } from "./WaitlistModal";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -27,14 +28,15 @@ export const ResultsSection = ({
   const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
   const [showAnalysisOverlay, setShowAnalysisOverlay] = useState(false);
   const [showSmileAnalysis, setShowSmileAnalysis] = useState(false);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const handleDownloadReport = () => {
-    // Crear un PDF o imagen con los resultados
-    toast.success("Descargando reporte...");
-    // Aquí iría la lógica real de descarga
+    // Feature bloqueada para versión gratuita
+    setShowWaitlistModal(true);
+    toast.info("Descarga de reportes disponible en versión Premium");
   };
 
   const handleShare = async () => {
@@ -140,15 +142,15 @@ export const ResultsSection = ({
       <div className="max-w-7xl mx-auto w-full z-10">
         {/* Header con título y badge */}
         <div className="text-center mb-8 md:mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-4 animate-fade-in">
             <CheckCircle2 className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium text-primary">Análisis Completado</span>
+            <span className="text-sm font-medium text-primary">Análisis Completado - Versión Gratuita</span>
           </div>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-heading font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-heading font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
             Tu Nuevo Diseño de Sonrisa
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Análisis profesional basado en IA y recomendaciones personalizadas
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in">
+            Análisis básico basado en IA - Actualiza a Premium para análisis completo
           </p>
         </div>
 
@@ -515,15 +517,49 @@ export const ResultsSection = ({
         </div>
 
 
+        {/* Premium Features CTA */}
+        <div className="mb-12 bg-gradient-to-br from-primary/10 via-accent/5 to-card/30 backdrop-blur-sm border border-primary/30 rounded-xl p-8 animate-fade-in">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/40 mb-3">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold text-primary">PRÓXIMAMENTE</span>
+              </div>
+              <h3 className="text-2xl md:text-3xl font-heading font-bold mb-2">
+                ¿Quieres más? Desbloquea el Análisis Completo
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Accede a análisis facial profesional con 478 puntos, reportes PDF, simulaciones ilimitadas y más
+              </p>
+              <ul className="text-sm text-muted-foreground space-y-1 mb-4 md:mb-0">
+                <li>✓ Análisis cefalométrico completo</li>
+                <li>✓ Métricas DSD profesionales</li>
+                <li>✓ Reportes descargables para tu dentista</li>
+              </ul>
+            </div>
+            <Button 
+              size="lg" 
+              className="gap-2 text-lg px-8 py-6 hover-scale"
+              onClick={() => setShowWaitlistModal(true)}
+            >
+              <Sparkles className="h-5 w-5" />
+              Únete a la Lista de Espera
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
         {/* Botones de acción */}
         <div className="flex flex-wrap gap-4 justify-center mb-12">
           <Button size="lg" onClick={handleShare} variant="outline" className="gap-2">
             <Share2 className="h-5 w-5" />
             Compartir
           </Button>
-          <Button size="lg" onClick={handleDownloadReport} variant="outline" className="gap-2">
+          <Button size="lg" onClick={handleDownloadReport} variant="outline" className="gap-2 relative">
+            <Lock className="h-4 w-4 absolute -top-1 -right-1 text-primary" />
             <Download className="h-5 w-5" />
             Descargar PDF
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">Premium</span>
           </Button>
           <Button size="lg" className="gap-2" asChild>
             <a href={`mailto:${contactEmail}`}>
@@ -531,6 +567,16 @@ export const ResultsSection = ({
               Reenviar por Email
             </a>
           </Button>
+        </div>
+
+        {/* Medical Disclaimer */}
+        <div className="mb-8 bg-muted/30 backdrop-blur-sm border border-border/50 rounded-lg p-6">
+          <p className="text-xs text-muted-foreground text-center leading-relaxed">
+            <strong className="text-foreground">Aviso Médico:</strong> Este análisis es una herramienta de screening y orientación inicial. 
+            No reemplaza la evaluación clínica profesional de un dentista u ortodoncista certificado. 
+            Los resultados mostrados son simulaciones generadas por IA y pueden variar del resultado clínico real. 
+            Siempre consulta con un profesional dental antes de tomar decisiones sobre tratamiento.
+          </p>
         </div>
 
         {/* Contact CTA */}
@@ -552,6 +598,8 @@ export const ResultsSection = ({
           </Button>
         </div>
       </div>
+
+      <WaitlistModal open={showWaitlistModal} onOpenChange={setShowWaitlistModal} />
     </div>
   );
 };

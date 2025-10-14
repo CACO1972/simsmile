@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { HeroSection } from "@/components/HeroSection";
 import { InstructionsSection } from "@/components/InstructionsSection";
 import { CaptureSection } from "@/components/CaptureSection";
@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
+import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 type Step = "hero" | "instructions" | "capture" | "loading" | "contact" | "results";
 
@@ -20,6 +21,35 @@ const IALab = () => {
   const [analysis, setAnalysis] = useState<string>("");
   const [metrics, setMetrics] = useState<any>(null);
   const [contactData, setContactData] = useState<any>(null);
+  const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
+
+  // Initialize MediaPipe Face Landmarker
+  useEffect(() => {
+    const initializeFaceLandmarker = async () => {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+        
+        const faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+            delegate: "GPU"
+          },
+          runningMode: "IMAGE",
+          numFaces: 1
+        });
+        
+        faceLandmarkerRef.current = faceLandmarker;
+        console.log("MediaPipe Face Landmarker initialized successfully");
+      } catch (error) {
+        console.error("Error initializing Face Landmarker:", error);
+        toast.error("Error al inicializar el sistema de análisis facial");
+      }
+    };
+
+    initializeFaceLandmarker();
+  }, []);
 
   // Scroll to top whenever step changes
   useEffect(() => {
@@ -33,19 +63,53 @@ const IALab = () => {
     track({ name: "photos_captured" });
 
     try {
+      if (!faceLandmarkerRef.current) {
+        throw new Error("Face Landmarker not initialized");
+      }
+
       // Importar funciones de análisis
       const { computeMetrics, analyzeFaceCharacteristics, generateSmileRecommendations, generateAnalysisText } = await import("@/lib/metrics");
       
-      // Calcular métricas reales (aquí usamos datos simulados, pero deberían venir del análisis real de landmarks)
-      const mockRestLandmarks = Array(478).fill(null).map(() => ({ x: Math.random(), y: Math.random() }));
-      const mockSmileLandmarks = Array(478).fill(null).map(() => ({ x: Math.random(), y: Math.random() }));
-      
-      const calculatedMetrics = computeMetrics({
-        restLm: mockRestLandmarks,
-        smileLm: mockSmileLandmarks,
-        imgW: 800,
-        imgH: 800
+      // Convertir base64 a HTMLImageElement para análisis
+      const smileImg = new Image();
+      await new Promise((resolve, reject) => {
+        smileImg.onload = resolve;
+        smileImg.onerror = reject;
+        smileImg.src = smile;
       });
+
+      const restImg = new Image();
+      await new Promise((resolve, reject) => {
+        restImg.onload = resolve;
+        restImg.onerror = reject;
+        restImg.src = rest;
+      });
+
+      // Detectar landmarks REALES con MediaPipe
+      const smileResults = faceLandmarkerRef.current.detect(smileImg);
+      const restResults = faceLandmarkerRef.current.detect(restImg);
+
+      if (!smileResults.faceLandmarks || smileResults.faceLandmarks.length === 0) {
+        throw new Error("No se detectó rostro en la imagen de sonrisa");
+      }
+
+      if (!restResults.faceLandmarks || restResults.faceLandmarks.length === 0) {
+        throw new Error("No se detectó rostro en la imagen de reposo");
+      }
+
+      // Convertir landmarks de MediaPipe al formato esperado
+      const smileLandmarks = smileResults.faceLandmarks[0];
+      const restLandmarks = restResults.faceLandmarks[0];
+      
+      // Calcular métricas REALES
+      const calculatedMetrics = computeMetrics({
+        restLm: restLandmarks,
+        smileLm: smileLandmarks,
+        imgW: smileImg.width,
+        imgH: smileImg.height
+      });
+
+      console.log("Métricas calculadas:", calculatedMetrics);
 
       // Analizar características faciales
       const faceAnalysis = analyzeFaceCharacteristics(calculatedMetrics);
@@ -77,7 +141,7 @@ const IALab = () => {
       
     } catch (error) {
       console.error("Error processing smile:", error);
-      toast.error("Error al procesar la imagen. Por favor intenta de nuevo.");
+      toast.error(error instanceof Error ? error.message : "Error al procesar la imagen. Por favor intenta de nuevo.");
       setStep("capture");
     }
   };
