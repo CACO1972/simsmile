@@ -3,7 +3,7 @@ import miroLogo from "@/assets/clinica-miro-logo-white.png";
 
 export const Footer = () => {
   return (
-    <footer className="bg-card border-t border-border py-4 md:py-6 mt-4 md:mt-8">
+    <footer className="bg-card border-t border-border py-4 md:py-6 mt-0">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col items-center md:items-start gap-3">
