@@ -20,43 +20,49 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Logo oficial */}
-      <div className="w-full max-w-6xl mb-8 md:mb-10 z-10 flex flex-col items-center gap-2">
+      <div className="w-full max-w-6xl mb-12 md:mb-16 z-10 flex flex-col items-center gap-4">
         <img 
           src={logoSimSmile} 
           alt="SimSmile" 
-          className="w-64 md:w-80 lg:w-96 animate-fade-in"
+          className="w-72 md:w-96 lg:w-[28rem] animate-fade-in drop-shadow-2xl"
         />
-        <p className="text-sm md:text-base text-muted-foreground/60 font-light">
-          Desarrollado por Clínica Miró
-        </p>
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-base md:text-lg lg:text-xl text-muted-foreground font-medium tracking-wide">
+            Desarrollado por
+          </p>
+          <p className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
+            Clínica Miró
+          </p>
+        </div>
       </div>
 
       {/* Main content grid */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-8 md:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-12">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-12 md:gap-16 text-center lg:text-left z-10 max-w-7xl w-full mb-16">
         
         {/* Left side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-8 md:space-y-12">
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-10 md:space-y-14">
           
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-foreground leading-[1.1] tracking-tight animate-fade-in">
             Visualiza tu
             <br />
-            <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-lg animate-[fade-in_0.8s_ease-out]">
               Sonrisa Perfecta
             </span>
           </h1>
           
-          <p className="text-base md:text-lg lg:text-xl text-muted-foreground font-normal max-w-xl leading-relaxed">
+          <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-normal max-w-xl leading-relaxed animate-[fade-in_0.6s_ease-out_0.2s_both]">
             Descubre cómo podrías lucir con una sonrisa perfecta. Nuestra tecnología de simulación avanzada te permite ver tu transformación antes de comenzar cualquier tratamiento.
           </p>
 
-          <div className="flex flex-col items-center lg:items-start gap-3 mt-4">
-            <div className="flex items-center gap-4 text-sm md:text-base text-muted-foreground">
-              <span className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
-                <Sparkles className="h-4 w-4 text-primary" />
-                100% Gratis
+          <div className="flex flex-col items-center lg:items-start gap-4 mt-2 animate-[fade-in_0.6s_ease-out_0.4s_both]">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-base md:text-lg">
+              <span className="flex items-center gap-2 bg-primary/15 px-5 py-3 rounded-full border-2 border-primary/30 backdrop-blur-sm hover:scale-105 transition-transform">
+                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                <span className="font-semibold">100% Gratis</span>
               </span>
-              <span className="flex items-center gap-2 bg-accent/10 px-4 py-2 rounded-full border border-accent/20">
-                📸 Solo una selfie
+              <span className="flex items-center gap-2 bg-accent/15 px-5 py-3 rounded-full border-2 border-accent/30 backdrop-blur-sm hover:scale-105 transition-transform">
+                <span className="text-2xl">📸</span>
+                <span className="font-semibold">Solo una selfie</span>
               </span>
             </div>
           </div>
@@ -64,60 +70,61 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           <Button
             size="lg"
             onClick={onStart}
-            className="text-base md:text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all hover:scale-105 shadow-lg shadow-primary/50 hover:shadow-primary/70 mt-6"
+            className="text-lg md:text-xl px-10 py-7 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold rounded-xl transition-all hover:scale-110 shadow-2xl shadow-primary/60 hover:shadow-primary/80 mt-8 animate-[fade-in_0.6s_ease-out_0.6s_both] border-2 border-primary/20"
           >
-            <Sparkles className="mr-2 h-5 w-5" />
+            <Sparkles className="mr-3 h-6 w-6 animate-pulse" />
             Empezar Ahora
           </Button>
         </div>
 
         {/* Right side - Smile Transformation Video */}
-        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[400px] md:min-h-[500px]">
+        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[450px] md:min-h-[550px] animate-[fade-in_0.8s_ease-out_0.3s_both]">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl blur-3xl animate-pulse" />
           <SmileTransformationAnimation />
         </div>
       </div>
 
       {/* Bottom section with value props */}
-      <div className="w-full max-w-6xl z-10 mb-12">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+      <div className="w-full max-w-6xl z-10 mb-16 animate-[fade-in_0.8s_ease-out_0.8s_both]">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-foreground mb-6 leading-tight">
             Tecnología Avanzada de
             <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent drop-shadow-lg">
               Simulación Dental
             </span>
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base md:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed">
             Utilizamos inteligencia artificial avanzada para crear simulaciones precisas de tu sonrisa ideal. 
             Visualiza tu transformación de forma instantánea y realista.
           </p>
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+          <div className="bg-gradient-to-br from-card/80 to-card/50 backdrop-blur-md border-2 border-primary/30 rounded-2xl p-8 text-center hover:border-primary/60 transition-all hover:scale-110 hover:shadow-2xl hover:shadow-primary/30 group">
+            <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform">
               95%+
             </div>
-            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
+            <div className="text-sm md:text-base lg:text-lg text-muted-foreground uppercase tracking-wider font-semibold">
               Precisión
             </div>
           </div>
           
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+          <div className="bg-gradient-to-br from-card/80 to-card/50 backdrop-blur-md border-2 border-accent/30 rounded-2xl p-8 text-center hover:border-accent/60 transition-all hover:scale-110 hover:shadow-2xl hover:shadow-accent/30 group">
+            <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform">
               Instantáneo
             </div>
-            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
+            <div className="text-sm md:text-base lg:text-lg text-muted-foreground uppercase tracking-wider font-semibold">
               Resultados
             </div>
           </div>
           
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+          <div className="bg-gradient-to-br from-card/80 to-card/50 backdrop-blur-md border-2 border-secondary/30 rounded-2xl p-8 text-center hover:border-secondary/60 transition-all hover:scale-110 hover:shadow-2xl hover:shadow-secondary/30 group">
+            <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent mb-3 group-hover:scale-110 transition-transform">
               100%
             </div>
-            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
+            <div className="text-sm md:text-base lg:text-lg text-muted-foreground uppercase tracking-wider font-semibold">
               Seguro
             </div>
           </div>
