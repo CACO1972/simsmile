@@ -29,7 +29,7 @@ export const ContactSection = ({ onSubmit }: ContactSectionProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 pb-2 md:pb-4 relative overflow-hidden bg-background">
       {/* Animated gradient background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
