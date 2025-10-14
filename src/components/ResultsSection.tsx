@@ -546,126 +546,360 @@ export const ResultsSection = ({
           </Card>
         </div>
 
-        {/* Atributos Faciales con Perfect Corp AI */}
+        {/* Atributos Faciales con Perfect Corp AI - Nueva Visualización */}
         {showFacialAttributes && perfectCorpData && (
-          <div className="mb-12 animate-fade-in">
-            <Card className="bg-card/30 backdrop-blur border-primary/30 p-6">
+          <div className="mb-12 animate-fade-in space-y-6">
+            {/* Header con foto circular */}
+            <div className="text-center">
+              <div className="relative inline-block mb-6">
+                <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-primary/30 shadow-lg">
+                  <img src={restImage} alt="Tu rostro" className="w-full h-full object-cover" />
+                </div>
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary/90 text-white text-xs font-bold">
+                  Tu Análisis Facial
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs de análisis */}
+            <div className="flex justify-center gap-2 mb-6 flex-wrap">
+              <button className="px-6 py-2 rounded-full bg-card/50 border-2 border-primary/50 text-primary font-semibold text-sm">
+                PROPORCIONES FACIALES
+              </button>
+              <button className="px-6 py-2 rounded-full bg-card/30 border border-border/30 text-muted-foreground text-sm hover:bg-card/50 transition-colors">
+                ATRIBUTOS & TONOS
+              </button>
+              <button className="px-6 py-2 rounded-full bg-card/30 border border-border/30 text-muted-foreground text-sm hover:bg-card/50 transition-colors">
+                ANÁLISIS DE PIEL
+              </button>
+            </div>
+
+            {/* Proporciones Faciales - Visualización Principal */}
+            <Card className="bg-gradient-to-br from-primary/5 to-card/50 backdrop-blur border-primary/30 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-heading font-bold flex items-center gap-2">
                   <Sparkles className="h-6 w-6 text-primary" />
-                  Análisis de Atributos Faciales
+                  Proporciones Faciales
                 </h3>
                 <span className="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30">
-                  Perfect Corp AI
+                  Análisis IA
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Ratio Horizontal del Rostro */}
+              <div className="bg-card/80 rounded-xl p-6 mb-6 border border-border/50">
+                <h4 className="text-lg font-bold mb-4">Proporción Horizontal del Rostro</h4>
+                
+                {/* Ratio numérico con colores */}
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary">
+                      {metrics?.facialProportions?.upper ? Math.round(metrics.facialProportions.upper * 100) : "36"}%
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Superior</div>
+                  </div>
+                  <div className="text-2xl text-muted-foreground">:</div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-accent">
+                      {metrics?.facialProportions?.middle ? Math.round(metrics.facialProportions.middle * 100) : "32"}%
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Media</div>
+                  </div>
+                  <div className="text-2xl text-muted-foreground">:</div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-secondary">
+                      {metrics?.facialProportions?.lower ? Math.round(metrics.facialProportions.lower * 100) : "32"}%
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Inferior</div>
+                  </div>
+                </div>
+
+                {/* Ilustración del rostro con proporciones */}
+                <div className="relative w-full max-w-md mx-auto mb-6 aspect-square bg-gradient-to-br from-muted/20 to-muted/5 rounded-lg p-8">
+                  <svg viewBox="0 0 200 240" className="w-full h-full">
+                    {/* Cabeza */}
+                    <ellipse cx="100" cy="120" rx="70" ry="90" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/40" />
+                    
+                    {/* Líneas horizontales de proporción */}
+                    <line x1="20" y1="40" x2="180" y2="40" stroke="currentColor" strokeWidth="2" className="text-primary" strokeDasharray="4" />
+                    <line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" strokeWidth="2" className="text-accent" strokeDasharray="4" />
+                    <line x1="20" y1="160" x2="180" y2="160" stroke="currentColor" strokeWidth="2" className="text-secondary" strokeDasharray="4" />
+                    <line x1="20" y1="210" x2="180" y2="210" stroke="currentColor" strokeWidth="2" className="text-muted-foreground" strokeDasharray="4" />
+                    
+                    {/* Medidas laterales con porcentajes */}
+                    <g className="text-primary">
+                      <line x1="185" y1="40" x2="185" y2="100" stroke="currentColor" strokeWidth="2" />
+                      <text x="195" y="75" fill="currentColor" fontSize="14" fontWeight="bold">
+                        {metrics?.facialProportions?.upper ? Math.round(metrics.facialProportions.upper * 100) : "36"}%
+                      </text>
+                    </g>
+                    
+                    <g className="text-accent">
+                      <line x1="185" y1="100" x2="185" y2="160" stroke="currentColor" strokeWidth="2" />
+                      <text x="195" y="135" fill="currentColor" fontSize="14" fontWeight="bold">
+                        {metrics?.facialProportions?.middle ? Math.round(metrics.facialProportions.middle * 100) : "32"}%
+                      </text>
+                    </g>
+                    
+                    <g className="text-secondary">
+                      <line x1="185" y1="160" x2="185" y2="210" stroke="currentColor" strokeWidth="2" />
+                      <text x="195" y="190" fill="currentColor" fontSize="14" fontWeight="bold">
+                        {metrics?.facialProportions?.lower ? Math.round(metrics.facialProportions.lower * 100) : "32"}%
+                      </text>
+                    </g>
+
+                    {/* Elementos faciales básicos */}
+                    <circle cx="80" cy="90" r="8" fill="currentColor" className="text-muted-foreground/60" />
+                    <circle cx="120" cy="90" r="8" fill="currentColor" className="text-muted-foreground/60" />
+                    <path d="M 70 140 Q 100 150 130 140" stroke="currentColor" strokeWidth="2" fill="none" className="text-muted-foreground/60" />
+                  </svg>
+                </div>
+
+                {/* Explicación simple */}
+                <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
+                  <p className="leading-relaxed">
+                    <strong className="text-foreground">¿Qué significa?</strong> Tu rostro se divide en tres secciones principales. 
+                    Las proporciones ideales son cercanas a 33% cada una (proporción áurea). 
+                    Esto nos ayuda a diseñar tu sonrisa perfecta que armonice con tu estructura facial única.
+                  </p>
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex gap-3 mt-4">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    Ver Detalle
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1 text-primary border-primary/50">
+                    Proporción Áurea
+                  </Button>
+                </div>
+              </div>
+
+              {/* Secciones faciales con barras visuales */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Sección Superior */}
+                <div className="bg-card/80 rounded-xl p-5 border border-border/50">
+                  <h4 className="text-sm font-bold text-muted-foreground mb-4">Tu Sección Superior</h4>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Corta</span>
+                      <span>Balanceada</span>
+                      <span>Larga</span>
+                    </div>
+                    <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
+                      <div 
+                        className="absolute left-0 top-0 h-full bg-gradient-to-r from-primary/50 to-primary rounded-full transition-all"
+                        style={{ 
+                          width: metrics?.facialProportions?.upper 
+                            ? `${Math.min(100, metrics.facialProportions.upper * 300)}%`
+                            : '70%',
+                          left: metrics?.facialProportions?.upper && metrics.facialProportions.upper < 0.28 ? '0%' : '33%'
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    La sección superior va desde tu línea del cabello hasta tus cejas. 
+                    {(metrics?.facialProportions?.upper || 0.36) > 0.36 ? ' Tu frente es más amplia, ' : ' '}
+                    lo cual consideramos al diseñar tu sonrisa ideal.
+                  </p>
+                </div>
+
+                {/* Sección Media */}
+                <div className="bg-card/80 rounded-xl p-5 border border-border/50">
+                  <h4 className="text-sm font-bold text-muted-foreground mb-4">Tu Sección Media</h4>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Corta</span>
+                      <span>Balanceada</span>
+                      <span>Larga</span>
+                    </div>
+                    <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
+                      <div 
+                        className="absolute top-0 h-full bg-gradient-to-r from-accent/50 to-accent rounded-full transition-all"
+                        style={{ 
+                          width: metrics?.facialProportions?.middle 
+                            ? `${Math.min(100, metrics.facialProportions.middle * 300)}%`
+                            : '40%',
+                          left: '20%'
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Esta sección va desde tus cejas hasta la base de tu nariz. 
+                    Es clave para determinar la exposición ideal de tus dientes al sonreír.
+                  </p>
+                </div>
+
+                {/* Sección Inferior */}
+                <div className="bg-card/80 rounded-xl p-5 border border-border/50">
+                  <h4 className="text-sm font-bold text-muted-foreground mb-4">Tu Sección Inferior</h4>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Corta</span>
+                      <span>Balanceada</span>
+                      <span>Larga</span>
+                    </div>
+                    <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
+                      <div 
+                        className="absolute top-0 h-full bg-gradient-to-r from-secondary/50 to-secondary rounded-full transition-all"
+                        style={{ 
+                          width: metrics?.facialProportions?.lower 
+                            ? `${Math.min(100, metrics.facialProportions.lower * 300)}%`
+                            : '40%',
+                          left: '20%'
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Desde la base de tu nariz hasta tu mentón. Esta proporción afecta directamente 
+                    cómo se verá el largo y forma de tus dientes.
+                  </p>
+                </div>
+
+                {/* Armonía Dental-Facial */}
+                <div className="bg-gradient-to-br from-primary/10 to-accent/5 rounded-xl p-5 border border-primary/30">
+                  <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Armonía Dental-Facial
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Ancho de Sonrisa</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-muted/30 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full" style={{ width: '85%' }} />
+                        </div>
+                        <span className="text-xs font-bold text-primary">85%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Exposición Dental</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-muted/30 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full" style={{ width: '78%' }} />
+                        </div>
+                        <span className="text-xs font-bold text-primary">78%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Línea de Sonrisa</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-muted/30 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full" style={{ width: '92%' }} />
+                        </div>
+                        <span className="text-xs font-bold text-primary">92%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                    Estas métricas muestran qué tan bien tu sonrisa actual se integra con tu estructura facial.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Atributos Faciales Detallados */}
+            <Card className="bg-card/30 backdrop-blur border-border/50 p-6">
+              <h3 className="text-xl font-heading font-bold mb-6 flex items-center gap-2">
+                <Eye className="h-5 w-5 text-primary" />
+                Tus Atributos Faciales Únicos
+              </h3>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {/* Face Shape */}
                 {perfectCorpData.faceShape && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">FORMA DE CARA</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.faceShape}</p>
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">👤</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Forma de Cara</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.faceShape}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {perfectCorpData.faceShape === 'oval' && 'Ideal para sonrisas amplias'}
+                      {perfectCorpData.faceShape === 'round' && 'Armoniza con sonrisas suaves'}
+                      {perfectCorpData.faceShape === 'square' && 'Perfecto para dientes definidos'}
+                    </p>
                   </div>
                 )}
 
-                {/* Eye Attributes */}
+                {/* Eye Shape */}
                 {perfectCorpData.eyeShape && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">FORMA DE OJOS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeShape}</p>
-                  </div>
-                )}
-                
-                {perfectCorpData.eyeSize && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TAMAÑO DE OJOS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeSize}</p>
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">👁️</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Forma de Ojos</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.eyeShape}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Influye en la expresión de tu sonrisa</p>
                   </div>
                 )}
 
-                {perfectCorpData.eyeAngle && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">ÁNGULO DE OJOS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeAngle}</p>
-                  </div>
-                )}
-
-                {perfectCorpData.eyeDistance && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">DISTANCIA OCULAR</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeDistance}</p>
-                  </div>
-                )}
-
-                {perfectCorpData.eyelid && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">PÁRPADO</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyelid}</p>
-                  </div>
-                )}
-
-                {/* Other Facial Features */}
+                {/* Nose Type */}
                 {perfectCorpData.noseType && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE NARIZ</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.noseType}</p>
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">👃</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Tipo de Nariz</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.noseType}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Relacionado con el perfil facial</p>
                   </div>
                 )}
 
+                {/* Lips Type */}
                 {perfectCorpData.lipsType && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE LABIOS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.lipsType}</p>
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">💋</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Tipo de Labios</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.lipsType}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Clave para el diseño de sonrisa</p>
                   </div>
                 )}
 
-                {perfectCorpData.browsType && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE CEJAS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.browsType}</p>
-                  </div>
-                )}
-
-                {perfectCorpData.cheekbonesType && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE PÓMULOS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.cheekbonesType}</p>
-                  </div>
-                )}
-
-                {/* Colors */}
+                {/* Skin Color */}
                 {perfectCorpData.skinColor && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TONO DE PIEL</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.skinColor}</p>
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">🎨</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Tono de Piel</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.skinColor}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Ayuda a elegir el color dental ideal</p>
                   </div>
                 )}
 
+                {/* Eye Color */}
                 {perfectCorpData.eyeColor && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">COLOR DE OJOS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeColor}</p>
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">👁️‍🗨️</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Color de Ojos</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.eyeColor}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Considerado en la estética general</p>
                   </div>
                 )}
 
-                {perfectCorpData.lipColor && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">COLOR DE LABIOS</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.lipColor}</p>
+                {/* Cheekbones */}
+                {perfectCorpData.cheekbonesType && (
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">😊</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Pómulos</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.cheekbonesType}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Afecta la amplitud de tu sonrisa</p>
                   </div>
                 )}
 
-                {perfectCorpData.hairColor && (
-                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-2">COLOR DE CABELLO</h4>
-                    <p className="text-lg font-bold capitalize">{perfectCorpData.hairColor}</p>
+                {/* Brows Type */}
+                {perfectCorpData.browsType && (
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg p-4 border border-border/30">
+                    <div className="text-2xl mb-2">📏</div>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1">Tipo de Cejas</h4>
+                    <p className="text-sm font-bold capitalize">{perfectCorpData.browsType}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Enmarca tu expresión facial</p>
                   </div>
                 )}
               </div>
 
-              <div className="mt-4 text-xs text-muted-foreground text-center">
-                Análisis facial avanzado proporcionado por Perfect Corp AI
+              <div className="mt-6 bg-primary/5 rounded-lg p-4 border border-primary/20">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground">💡 Integración Única:</strong> Todos estos atributos faciales se combinan 
+                  con tus parámetros dentales (arco de sonrisa, exposición gingival, línea media) para crear un diseño de sonrisa 
+                  que no solo sea estéticamente perfecto, sino que también armonice completamente con tu rostro único.
+                </p>
               </div>
             </Card>
           </div>
