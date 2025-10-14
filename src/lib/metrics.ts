@@ -136,9 +136,6 @@ export function drawMidlineOverlay(
   lm: any[],
   m: SmileMetrics
 ) {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
-
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
 
@@ -147,27 +144,31 @@ export function drawMidlineOverlay(
   const nose = lm[1];
   const noseBridge = lm[168];
   const mouthL = lm[61], mouthR = lm[291];
+  const upperLip = lm[13];
   
-  // Línea Media Facial (Rosa brillante)
+  // Calcular línea media facial (centro de la cara)
   const facialCenterX = ((forehead.x + noseBridge.x + nose.x + chin.x) / 4) * w;
+  
+  // Calcular línea media dental (centro entre incisivos centrales, estimado por centro de labio superior)
+  const dentalCenterX = upperLip.x * w;
+  
+  // Línea Media Facial (Rosa brillante - vertical completa)
   ctx.strokeStyle = "#ec4899";
   ctx.lineWidth = 3;
   ctx.setLineDash([]);
   ctx.beginPath();
-  ctx.moveTo(facialCenterX, forehead.y * h - 20);
-  ctx.lineTo(facialCenterX, chin.y * h + 20);
+  ctx.moveTo(facialCenterX, Math.max(0, forehead.y * h - 30));
+  ctx.lineTo(facialCenterX, Math.min(h, chin.y * h + 30));
   ctx.stroke();
 
-  // Línea Media Dental (Azul brillante punteado)
-  const dentalCenterX = ((mouthL.x + mouthR.x) / 2) * w;
+  // Línea Media Dental (Azul brillante - desde nariz hasta mentón)
   ctx.strokeStyle = "#3b82f6";
   ctx.lineWidth = 3;
-  ctx.setLineDash([10, 5]);
+  ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(dentalCenterX, nose.y * h);
   ctx.lineTo(dentalCenterX, chin.y * h);
   ctx.stroke();
-  ctx.setLineDash([]);
 
   // Etiqueta compacta
   const deviation = m.midlineCoincidence.deviation;
@@ -187,9 +188,6 @@ export function drawProportionsOverlay(
   lm: any[],
   m: SmileMetrics
 ) {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
-
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
 
@@ -203,18 +201,22 @@ export function drawProportionsOverlay(
   const foreheadY = forehead.y * h;
   const chinY = chin.y * h;
   
-  // Líneas horizontales más visibles
+  // Líneas horizontales más visibles y completas
   ctx.strokeStyle = "#3b82f6";
   ctx.lineWidth = 2;
+  ctx.setLineDash([]);
+  
+  const leftX = w * 0.1;
+  const rightX = w * 0.9;
   
   [foreheadY, browY, noseBaseY, chinY].forEach(y => {
     ctx.beginPath();
-    ctx.moveTo(50, y);
-    ctx.lineTo(w - 50, y);
+    ctx.moveTo(leftX, y);
+    ctx.lineTo(rightX, y);
     ctx.stroke();
   });
 
-  // Etiquetas en el lateral
+  // Etiquetas en el lateral derecho
   const labels = [
     { y: (foreheadY + browY) / 2, text: `${m.facialProportions.upperThird.toFixed(0)}%` },
     { y: (browY + noseBaseY) / 2, text: `${m.facialProportions.middleThird.toFixed(0)}%` },
@@ -237,34 +239,47 @@ export function drawSmileOverlay(
   lm: any[],
   m: SmileMetrics
 ) {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
-
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
 
   const mouthL = lm[61], mouthR = lm[291];
-  const upperLip = lm[13];
+  const upperLip = lm[13], lowerLip = lm[14];
+  const upperGum = lm[12]; // Punto superior encima del labio
   
-  // Puntos clave
+  // Puntos clave de la sonrisa (comisuras y centro)
   ctx.fillStyle = "#ec4899";
-  [61, 291, 13, 14].forEach(i => {
+  [61, 291, 13].forEach(i => {
     const p = lm[i];
     ctx.beginPath();
-    ctx.arc(p.x * w, p.y * h, 5, 0, Math.PI * 2);
+    ctx.arc(p.x * w, p.y * h, 6, 0, Math.PI * 2);
     ctx.fill();
   });
 
-  // Curva de arco de sonrisa
+  // Línea horizontal del arco de sonrisa (conectando comisuras)
   ctx.strokeStyle = "#ec4899";
   ctx.lineWidth = 3;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(mouthL.x * w, mouthL.y * h);
+  ctx.lineTo(mouthR.x * w, mouthR.y * h);
+  ctx.stroke();
+
+  // Curva de arco de sonrisa (parabólica desde comisuras pasando por labio superior)
+  const midY = upperLip.y * h;
+  const cornerY = (mouthL.y + mouthR.y) / 2 * h;
+  const arcHeight = midY - cornerY;
+  
+  ctx.strokeStyle = "#ec4899";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 3]);
   ctx.beginPath();
   ctx.moveTo(mouthL.x * w, mouthL.y * h);
   ctx.quadraticCurveTo(
-    upperLip.x * w, upperLip.y * h - 10,
+    (mouthL.x + mouthR.x) / 2 * w, midY - Math.abs(arcHeight) * 0.3,
     mouthR.x * w, mouthR.y * h
   );
   ctx.stroke();
+  ctx.setLineDash([]);
 
   // Etiqueta de exposición gingival
   ctx.fillStyle = "rgba(0,0,0,0.75)";

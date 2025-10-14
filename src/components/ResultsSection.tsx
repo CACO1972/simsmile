@@ -97,13 +97,20 @@ export const ResultsSection = ({
 
     const metricsToUse: SmileMetrics = metrics;
 
-    // Configurar canvas para que coincida con la imagen
-    canvas.width = img.naturalWidth || img.width;
-    canvas.height = img.naturalHeight || img.height;
+    // Configurar canvas con dimensiones naturales de la imagen
+    const naturalWidth = img.naturalWidth || img.width;
+    const naturalHeight = img.naturalHeight || img.height;
+    
+    canvas.width = naturalWidth;
+    canvas.height = naturalHeight;
+    
+    // Limpiar canvas
+    ctx.clearRect(0, 0, naturalWidth, naturalHeight);
     
     // Dibujar la imagen primero
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, naturalWidth, naturalHeight);
 
+    // Aplicar el overlay correspondiente
     if (type === "midline") {
       drawMidlineOverlay(ctx, img, landmarks, metricsToUse);
     } else if (type === "proportions") {
@@ -348,9 +355,7 @@ export const ResultsSection = ({
                 />
                 <canvas
                   ref={canvasRef}
-                  width={800}
-                  height={800}
-                  className="w-full h-full"
+                  className="absolute inset-0 w-full h-full object-contain"
                   style={{ display: overlayType ? 'block' : 'none' }}
                 />
                 
