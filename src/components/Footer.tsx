@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Mail, Globe } from "lucide-react";
-import simsmileLogo from "@/assets/simsmile-logo-official.png";
+import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
 
 export const Footer = () => {
   return (
