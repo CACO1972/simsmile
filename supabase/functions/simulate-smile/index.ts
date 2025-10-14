@@ -15,9 +15,133 @@ serve(async (req) => {
     const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations } = await req.json();
     const PERFECT_CORP_CLIENT_ID = Deno.env.get('PERFECT_CORP_CLIENT_ID');
     const PERFECT_CORP_CLIENT_SECRET = Deno.env.get('PERFECT_CORP_CLIENT_SECRET');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!PERFECT_CORP_CLIENT_ID || !PERFECT_CORP_CLIENT_SECRET) {
-      throw new Error('Perfect Corp API keys not configured');
+      console.warn('Perfect Corp API keys not configured, skipping facial analysis');
+    }
+    
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // 1. Autenticación con Perfect Corp (si está disponible)
+    let perfectCorpFaceData = null;
+    if (PERFECT_CORP_CLIENT_ID && PERFECT_CORP_CLIENT_SECRET) {
+      try {
+        // Generar id_token para autenticación Perfect Corp
+        const timestamp = Date.now();
+        const encoder = new TextEncoder();
+        const data = encoder.encode(`client_id=${PERFECT_CORP_CLIENT_ID}&timestamp=${timestamp}`);
+        
+        // Crear hash simple (Perfect Corp usa RSA pero para demo usamos base64)
+        const idToken = btoa(String.fromCharCode(...data));
+        
+        const authResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            client_id: PERFECT_CORP_CLIENT_ID,
+            id_token: idToken
+          }),
+        });
+
+        if (authResponse.ok) {
+          const authData = await authResponse.json();
+          const accessToken = authData.result?.access_token;
+
+          if (accessToken) {
+            // 2. Crear archivo para análisis facial
+            const fileResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.1/file/face-attr-analysis', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                files: [{
+                  content_type: 'image/jpeg',
+                  file_name: 'face_analysis.jpg'
+                }]
+              }),
+            });
+
+            if (fileResponse.ok) {
+              const fileData = await fileResponse.json();
+              const fileInfo = fileData.result?.files?.[0];
+              
+              if (fileInfo) {
+                // 3. Subir imagen al URL proporcionado
+                const uploadUrl = fileInfo.requests?.[0]?.url;
+                if (uploadUrl) {
+                  // Convertir base64 a blob
+                  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+                  const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+                  
+                  await fetch(uploadUrl, {
+                    method: fileInfo.requests[0].method,
+                    headers: fileInfo.requests[0].headers,
+                    body: binaryData
+                  });
+
+                  // 4. Ejecutar tarea de análisis facial
+                  const taskResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.0/task/face-attr-analysis', {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      request_id: 0,
+                      payload: {
+                        file_id: fileInfo.file_id
+                      }
+                    }),
+                  });
+
+                  if (taskResponse.ok) {
+                    const taskData = await taskResponse.json();
+                    const taskId = taskData.result?.task_id;
+                    
+                    // 5. Polling para obtener resultado
+                    let attempts = 0;
+                    while (attempts < 10) {
+                      await new Promise(resolve => setTimeout(resolve, 2000));
+                      
+                      const statusResponse = await fetch(
+                        `https://yce-api-01.perfectcorp.com/s2s/v1.0/task/face-attr-analysis?task_id=${encodeURIComponent(taskId)}`,
+                        {
+                          headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                          }
+                        }
+                      );
+
+                      if (statusResponse.ok) {
+                        const statusData = await statusResponse.json();
+                        if (statusData.result?.status === 'success') {
+                          perfectCorpFaceData = statusData.result?.result;
+                          console.log('Perfect Corp facial analysis:', perfectCorpFaceData);
+                          break;
+                        } else if (statusData.result?.status === 'error') {
+                          console.error('Perfect Corp analysis failed:', statusData.result?.error_code);
+                          break;
+                        }
+                      }
+                      attempts++;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (perfectError) {
+        console.error('Perfect Corp API error:', perfectError);
+        // Continuar sin datos de Perfect Corp
+      }
     }
 
     // Construir prompt basado en las métricas
@@ -99,25 +223,37 @@ IMPORTANT:
 - DO NOT change the person's age, gender, or facial features
 - ONLY enhance the teeth and smile area`;
 
-    // Primera simulación con Perfect Corp API
-    const correctionResponse = await fetch('https://api.perfectcorp.com/v1/smile-design', {
+    // Usar datos de Perfect Corp si están disponibles, sino usar los del análisis local
+    const enhancedFaceAnalysis = perfectCorpFaceData ? {
+      ...faceAnalysis,
+      skinTone: perfectCorpFaceData.skin_color,
+      eyeColor: perfectCorpFaceData.eye_color_name,
+      lipColor: perfectCorpFaceData.lip_color,
+      hairColor: perfectCorpFaceData.hair_color_name
+    } : faceAnalysis;
+
+    // Primera simulación: correcciones con Lovable AI
+    const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'X-Client-ID': PERFECT_CORP_CLIENT_ID,
-        'X-Client-Secret': PERFECT_CORP_CLIENT_SECRET,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        image: imageBase64,
-        adjustments: {
-          smileArc: metrics.smileArc !== 'consonante',
-          gingivalDisplay: metrics.gingival.class === 'excesiva' || metrics.gingival.class === 'alta',
-          midlineCorrection: metrics.midline.mm > 2,
-          buccalCorridor: metrics.buccalRatio < 0.1 || metrics.buccalRatio > 0.3,
-          teethAlignment: faceAnalysis?.teethAlignment === 'desalineado',
-          missingTeeth: smileRecommendations?.missingTeeth || false
-        },
-        mode: 'correction'
+        model: 'google/gemini-2.5-flash-image-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: correctionPrompt },
+              {
+                type: 'image_url',
+                image_url: { url: imageBase64 }
+              }
+            ]
+          }
+        ],
+        modalities: ['image', 'text']
       }),
     });
 
@@ -143,32 +279,64 @@ IMPORTANT:
     }
 
     const correctionData = await correctionResponse.json();
-    let correctedImage = correctionData.result?.image || correctionData.image;
+    let correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!correctedImage) {
-      console.warn('No se generó imagen corregida desde Perfect Corp, uso imagen original como fallback');
+      console.warn('No se generó imagen corregida desde IA, uso imagen original como fallback');
       correctedImage = imageBase64;
     }
 
-    // Segunda simulación: diseño ideal con Perfect Corp API
-    const idealResponse = await fetch('https://api.perfectcorp.com/v1/smile-design', {
+    // Segunda simulación: diseño ideal con Lovable AI y datos de Perfect Corp
+    const enhancedRecommendationPrompt = `You are an expert in smile design. Based on the corrected image, create an IDEAL smile simulation. CRITICAL: You must maintain the SAME PERSON - do not change the face, age, or identity.
+
+FACIAL ANALYSIS${perfectCorpFaceData ? ' (Enhanced with Perfect Corp AI)' : ''}:
+${faceDescriptions.length > 0 ? faceDescriptions.join(', ') : 'Analyzed facial profile'}
+${perfectCorpFaceData ? `
+- Skin tone: ${perfectCorpFaceData.skin_color}
+- Eye color: ${perfectCorpFaceData.eye_color_name}
+- Lip color: ${perfectCorpFaceData.lip_color}
+- Hair color: ${perfectCorpFaceData.hair_color_name}` : ''}
+
+DESIGN RECOMMENDATIONS:
+1. Tooth shape: ${teethShapeRec}
+2. Tooth size: ${teethSizeRec}
+3. Smile width: ${smileWidthRec}
+4. Gingival exposure: ${gingivalRec}
+
+RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions and color harmony'}
+
+IMPORTANT:
+- Keep the EXACT SAME person, face structure, and facial features
+- Apply the recommended tooth shape: ${teethShapeRec}
+- Adjust size according to recommendation: ${teethSizeRec}
+- Configure ideal smile width: ${smileWidthRec}
+- Use natural tooth color that harmonizes with skin tone and lip color
+- Maintain naturalness and facial harmony
+- Teeth should look professional but natural
+- DO NOT change the person's age, gender, or facial features
+- ONLY enhance the teeth and smile area`;
+
+    const idealResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'X-Client-ID': PERFECT_CORP_CLIENT_ID,
-        'X-Client-Secret': PERFECT_CORP_CLIENT_SECRET,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        image: correctedImage,
-        design: {
-          teethShape: smileRecommendations?.teethShape,
-          teethSize: smileRecommendations?.teethSize,
-          smileWidth: smileRecommendations?.smileWidth,
-          gingivalDisplay: smileRecommendations?.gingivalDisplay,
-          faceShape: faceAnalysis?.faceShape,
-          gender: faceAnalysis?.gender
-        },
-        mode: 'ideal'
+        model: 'google/gemini-2.5-flash-image-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: enhancedRecommendationPrompt },
+              {
+                type: 'image_url',
+                image_url: { url: correctedImage }
+              }
+            ]
+          }
+        ],
+        modalities: ['image', 'text']
       }),
     });
 
@@ -176,18 +344,29 @@ IMPORTANT:
       console.error('AI Gateway error (ideal):', idealResponse.status);
       // Si falla la segunda simulación, devolvemos solo la corregida
       return new Response(
-        JSON.stringify({ simulatedImage: correctedImage, idealImage: correctedImage }), 
+        JSON.stringify({ 
+          simulatedImage: correctedImage, 
+          idealImage: correctedImage,
+          faceAnalysis: enhancedFaceAnalysis 
+        }), 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const idealData = await idealResponse.json();
-    const idealImage = idealData.result?.image || idealData.image;
+    const idealImage = idealData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     return new Response(
       JSON.stringify({ 
         simulatedImage: correctedImage,
-        idealImage: idealImage || correctedImage
+        idealImage: idealImage || correctedImage,
+        faceAnalysis: enhancedFaceAnalysis,
+        perfectCorpData: perfectCorpFaceData ? {
+          skinColor: perfectCorpFaceData.skin_color,
+          eyeColor: perfectCorpFaceData.eye_color_name,
+          lipColor: perfectCorpFaceData.lip_color,
+          hairColor: perfectCorpFaceData.hair_color_name
+        } : null
       }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
