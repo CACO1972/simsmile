@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import logoMain from "@/assets/clinica-miro-logo-white.png";
+import logoSimSmile from "@/assets/simsmile-logo-full.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 
 
@@ -19,12 +20,22 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      {/* Logo at top - larger and centered */}
-      <div className="w-full max-w-6xl mb-12 md:mb-16 z-10 flex justify-center">
+      {/* Logos at top - balanced branding */}
+      <div className="w-full max-w-6xl mb-12 md:mb-16 z-10 flex flex-col items-center gap-6">
         <img 
           src={logoMain} 
           alt="Clínica Miró" 
           className="w-80 md:w-96 lg:w-[500px] animate-fade-in"
+        />
+        <div className="flex items-center gap-3 text-muted-foreground/40">
+          <div className="h-px w-8 bg-muted-foreground/20" />
+          <span className="text-xs md:text-sm font-light">Powered by</span>
+          <div className="h-px w-8 bg-muted-foreground/20" />
+        </div>
+        <img 
+          src={logoSimSmile} 
+          alt="SimSmile" 
+          className="w-48 md:w-56 lg:w-64 animate-fade-in opacity-90"
         />
       </div>
 
@@ -121,9 +132,6 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         </div>
       </div>
 
-      <p className="text-xs md:text-sm text-muted-foreground/40 font-light italic z-10 mb-8">
-        Powered by Clínica Miró
-      </p>
     </div>
   );
 };

@@ -1,5 +1,4 @@
-import transformationVideo from "@/assets/smile-transformation.mp4";
-import transformationVideo2 from "@/assets/smile-transformation-2.mp4";
+import transformationVideo from "@/assets/smile-transformation-unified.mp4";
 
 export const SmileTransformationAnimation = () => {
   return (
@@ -9,9 +8,8 @@ export const SmileTransformationAnimation = () => {
       <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-accent/30 blur-[60px] rounded-full" />
       <div className="absolute bottom-1/4 left-1/4 w-40 h-40 bg-secondary/20 blur-[70px] rounded-full animate-pulse" />
       
-      {/* Video containers - stacked vertically */}
-      <div className="relative z-10 w-full max-w-md lg:max-w-lg flex flex-col gap-4 md:gap-6">
-        {/* First video */}
+      {/* Single unified video */}
+      <div className="relative z-10 w-full max-w-md lg:max-w-lg">
         <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 backdrop-blur-sm border border-primary/20">
           <video
             autoPlay
@@ -22,24 +20,6 @@ export const SmileTransformationAnimation = () => {
             style={{ aspectRatio: '1/1' }}
           >
             <source src={transformationVideo} type="video/mp4" />
-            Tu navegador no soporta el video.
-          </video>
-          
-          {/* Overlay gradient for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/10 via-transparent to-transparent pointer-events-none" />
-        </div>
-
-        {/* Second video */}
-        <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-accent/30 backdrop-blur-sm border border-accent/20">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-            style={{ aspectRatio: '1/1' }}
-          >
-            <source src={transformationVideo2} type="video/mp4" />
             Tu navegador no soporta el video.
           </video>
           
