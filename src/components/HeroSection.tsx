@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, TrendingUp, Users, Award } from "lucide-react";
 import logoMain from "@/assets/simsmile-logo-minimal.png";
-import hero3D from "@/assets/hero-3d-tooth.png";
+
 
 interface HeroSectionProps {
   onStart: () => void;
@@ -48,18 +48,15 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           />
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
-            Bienvenido a la
+            Visualiza tu
             <br />
             <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              Revolución de la
-              <br />
-              Tecnología Inteligente
+              Sonrisa Perfecta
             </span>
           </h1>
           
           <p className="text-base md:text-lg lg:text-xl text-muted-foreground font-normal max-w-xl leading-relaxed">
-            Nuestra misión es aprovechar el poder de la IA para potenciar la transformación facial que mejora programas pioneros y soluciones innovadoras. 
-            Con un equipo de expertos dedicados, ofrecemos...
+            Descubre cómo podrías lucir con una sonrisa perfecta. Nuestra tecnología de simulación avanzada te permite ver tu transformación antes de comenzar cualquier tratamiento.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -81,18 +78,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </div>
         </div>
 
-        {/* Right side - 3D visual */}
-        <div className="relative w-full max-w-lg lg:max-w-none">
-          <div className="relative">
-            {/* Glow effect behind image */}
-            <div className="absolute inset-0 bg-primary/30 blur-[100px] rounded-full" />
-            
-            {/* 3D Tooth image */}
-            <img 
-              src={hero3D} 
-              alt="Tecnología IA Dental" 
-              className="relative w-full h-auto drop-shadow-2xl animate-float"
-            />
+        {/* Right side - Visual accent */}
+        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center">
+          <div className="relative w-80 h-80 md:w-96 md:h-96">
+            {/* Animated gradient orbs */}
+            <div className="absolute inset-0 bg-primary/30 blur-[120px] rounded-full animate-pulse" />
+            <div className="absolute top-1/4 right-1/4 w-40 h-40 bg-accent/40 blur-[80px] rounded-full" />
+            <div className="absolute bottom-1/4 left-1/4 w-48 h-48 bg-secondary/30 blur-[90px] rounded-full animate-pulse" />
           </div>
         </div>
       </div>
@@ -101,15 +93,15 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       <div className="w-full max-w-6xl z-10 mb-12">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Descubre Soluciones de IA
+            Tecnología Avanzada de
             <br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              de Vanguardia
+              Simulación Dental
             </span>
           </h2>
           <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
-            Nuestra misión es aprovechar el poder de la IA para impulsar la transformación empresarial que 
-            mejora programas pioneros y soluciones innovadoras. Con un equipo de expertos...
+            Utilizamos inteligencia artificial avanzada para crear simulaciones precisas de tu sonrisa ideal. 
+            Visualiza tu transformación de forma instantánea y realista.
           </p>
         </div>
 
@@ -117,28 +109,28 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
           <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
             <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-              89.2K+
+              95%+
             </div>
             <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
-              Clientes Activos
+              Precisión
             </div>
           </div>
           
           <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
             <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-              700+
+              Instantáneo
             </div>
             <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
-              Proyectos IA
+              Resultados
             </div>
           </div>
           
           <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
             <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-              3.12K+
+              100%
             </div>
             <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
-              Integraciones
+              Seguro
             </div>
           </div>
         </div>
