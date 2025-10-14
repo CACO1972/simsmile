@@ -134,49 +134,87 @@ Respond with a JSON object:
       );
     }
 
-    // 2. Análisis facial profundo con Lovable AI
-    console.log('🔍 Realizando análisis facial completo...');
-    const facialAnalysisPrompt = `You are a facial analysis expert. Analyze this face photo and provide comprehensive measurements.
+    // 2. Análisis facial REAL con mediciones sobre la imagen
+    console.log('🔍 Realizando análisis facial con mediciones reales...');
+    const facialAnalysisPrompt = `You are a professional facial analysis expert. Analyze this photo by taking REAL MEASUREMENTS on the image.
 
-Calculate these facial proportions and ratios:
+CRITICAL INSTRUCTIONS:
+- Use actual pixel measurements and proportions from THIS specific image
+- DO NOT give generic or average values
+- Measure the ACTUAL distances and ratios visible in the photo
+- Compare EACH measurement with the Golden Ratio (1.618) and aesthetic ideals
+- Provide a simple explanation for each measurement
 
-FACE STRUCTURE:
-1. Horizontal Ratio - Divide face into 3 horizontal sections (upper, middle, lower thirds)
-2. Vertical Ratio - Divide face into 5 vertical sections from top to bottom
-3. Face Aspect Ratio - Ratio of face height to width
-4. Eye Distance - Spacing between eyes (narrow/balanced/wide)
-5. Eye Width - Individual eye width (narrow/balanced/wide)  
-6. Eye Aspect Ratio - Height to width ratio of eyes
+MEASUREMENTS TO TAKE:
 
-NOSE & MOUTH:
-7. Nose Aspect Ratio - Nose height to width
-8. Nose Width to Mouth Width Ratio
-9. Nose to Lip to Chin Ratio
-10. Upper Lip to Lower Lip Ratio
-11. Mouth Width relative to face width
+1. FACE HORIZONTAL RATIO (Face Thirds Rule):
+   - Measure: hairline to eyebrows (upper), eyebrows to nose tip (middle), nose tip to chin (lower)
+   - Ideal: 33.3% each (equal thirds)
+   - Golden Ratio comparison: should be harmonious
+   - Explain: if balanced or which section is longer/shorter
 
-OVERALL SYMMETRY:
-12. Face symmetry score (0-100)
-13. Golden ratio proximity for key measurements
+2. FACE VERTICAL RATIO (Fifths Rule):
+   - Measure: divide face width into 5 equal sections
+   - Ideal: each section should be 20% of face width
+   - Explain: spacing between features
 
-Provide measurements as percentages and ratios where applicable.
+3. FACE ASPECT RATIO:
+   - Measure: face height ÷ face width
+   - Golden Ratio ideal: 1.618
+   - Explain: how close to golden ratio
 
-Respond with a JSON object:
+4. EYE DISTANCE:
+   - Measure: distance between inner eye corners
+   - Ideal: should equal one eye width
+   - Explain: if eyes are close-set, ideal, or wide-set
+
+5. EYE ASPECT RATIO:
+   - Measure: eye height ÷ eye width for each eye
+   - Ideal: approximately 0.35-0.40
+   - Explain: eye shape (almond, round, narrow)
+
+6. NOSE TO MOUTH WIDTH RATIO:
+   - Measure: nose width at base ÷ mouth width
+   - Golden Ratio ideal: 0.618 (nose should be 61.8% of mouth width)
+   - Explain: proportion balance
+
+Respond with JSON including measurements AND simple explanations:
 {
-  "horizontal_ratio": {"upper": number, "middle": number, "lower": number},
-  "vertical_ratio": [number, number, number, number, number],
-  "face_aspect_ratio": number,
-  "eye_distance": {"value": number, "category": "narrow|balanced|wide"},
-  "eye_width": {"value": number, "category": "narrow|balanced|wide"},
-  "eye_aspect_ratio": number,
-  "nose_aspect_ratio": number,
-  "nose_to_mouth_width": number,
-  "nose_lip_chin_ratio": number,
-  "upper_lower_lip_ratio": number,
-  "mouth_width_percentage": number,
-  "symmetry_score": number,
-  "golden_ratio_score": number,
-  "overall_balance": "excellent|good|fair|needs_improvement"
+  "horizontal_ratio": {
+    "upper": number (percentage),
+    "middle": number (percentage),
+    "lower": number (percentage),
+    "explanation": "simple explanation comparing to 33% ideal",
+    "golden_ratio_comparison": "how it relates to golden ratio"
+  },
+  "vertical_ratio": {
+    "sections": [number, number, number, number, number],
+    "explanation": "simple explanation about facial width balance"
+  },
+  "face_aspect_ratio": {
+    "value": number,
+    "golden_ratio_ideal": 1.618,
+    "difference": number (how far from golden ratio),
+    "explanation": "simple explanation if face is more oval/round/long"
+  },
+  "eye_distance": {
+    "value": number,
+    "category": "narrow|ideal|wide",
+    "explanation": "simple explanation about eye spacing"
+  },
+  "eye_aspect_ratio": {
+    "value": number,
+    "explanation": "simple explanation about eye shape"
+  },
+  "nose_to_mouth_ratio": {
+    "value": number,
+    "golden_ratio_ideal": 0.618,
+    "difference": number,
+    "explanation": "simple explanation about nose-mouth proportion"
+  },
+  "symmetry_score": number (0-100),
+  "overall_golden_ratio_score": number (0-100, how close overall proportions are to golden ratio),
+  "overall_assessment": "brief simple summary"
 }`;
 
     const facialResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -186,7 +224,7 @@ Respond with a JSON object:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
         messages: [
           {
             role: 'user',
