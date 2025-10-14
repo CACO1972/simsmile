@@ -320,14 +320,23 @@ IMPORTANT:
 - DO NOT change the person's age, gender, or facial features
 - ONLY enhance the teeth and smile area`;
 
-    // Usar datos de Perfect Corp si están disponibles, sino usar los del análisis local
-    const enhancedFaceAnalysis = perfectCorpFaceData ? {
-      ...faceAnalysis,
-      skinTone: perfectCorpFaceData.skin_color,
+    // Preparar datos de Perfect Corp para respuesta
+    const perfectCorpDataForResponse = perfectCorpFaceData ? {
+      skinColor: perfectCorpFaceData.skin_color,
       eyeColor: perfectCorpFaceData.eye_color_name,
       lipColor: perfectCorpFaceData.lip_color,
-      hairColor: perfectCorpFaceData.hair_color_name
-    } : faceAnalysis;
+      hairColor: perfectCorpFaceData.hair_color_name,
+      faceShape: perfectCorpFaceData.face_shape,
+      eyeShape: perfectCorpFaceData.eye_shape,
+      eyeSize: perfectCorpFaceData.eye_size,
+      eyeAngle: perfectCorpFaceData.eye_angle,
+      eyeDistance: perfectCorpFaceData.eye_distance,
+      eyelid: perfectCorpFaceData.eyelid,
+      noseType: perfectCorpFaceData.nose_type,
+      lipsType: perfectCorpFaceData.lips_type,
+      browsType: perfectCorpFaceData.brows_type,
+      cheekbonesType: perfectCorpFaceData.cheekbones_type
+    } : null;
 
     // Primera simulación: correcciones con Lovable AI
     const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -444,7 +453,8 @@ IMPORTANT:
         JSON.stringify({ 
           simulatedImage: correctedImage, 
           idealImage: correctedImage,
-          faceAnalysis: enhancedFaceAnalysis 
+          faceAnalysis: faceAnalysis,
+          perfectCorpData: perfectCorpDataForResponse
         }), 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -457,29 +467,8 @@ IMPORTANT:
       JSON.stringify({ 
         simulatedImage: correctedImage,
         idealImage: idealImage || correctedImage,
-        faceAnalysis: enhancedFaceAnalysis,
-        perfectCorpData: perfectCorpFaceData ? {
-          // Colores
-          skinColor: perfectCorpFaceData.skin_color,
-          eyeColor: perfectCorpFaceData.eye_color_name,
-          lipColor: perfectCorpFaceData.lip_color,
-          hairColor: perfectCorpFaceData.hair_color_name,
-          // Atributos faciales
-          faceShape: perfectCorpFaceData.face_shape,
-          // Ojos
-          eyeShape: perfectCorpFaceData.eye_shape,
-          eyeSize: perfectCorpFaceData.eye_size,
-          eyeAngle: perfectCorpFaceData.eye_angle,
-          eyeDistance: perfectCorpFaceData.eye_distance,
-          eyelid: perfectCorpFaceData.eyelid,
-          // Otros rasgos
-          noseType: perfectCorpFaceData.nose_type,
-          lipsType: perfectCorpFaceData.lips_type,
-          browsType: perfectCorpFaceData.brows_type,
-          cheekbonesType: perfectCorpFaceData.cheekbones_type,
-          // Datos raw completos para uso avanzado
-          raw: perfectCorpFaceData
-        } : null
+        faceAnalysis: faceAnalysis,
+        perfectCorpData: perfectCorpDataForResponse
       }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

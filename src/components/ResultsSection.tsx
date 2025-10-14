@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Share2, Mail, Download, Eye, CheckCircle2, ArrowRight, Sparkles, Lock } from "lucide-react";
+import { Share2, Mail, Download, CheckCircle2, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
-import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
 import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 import { Card } from "@/components/ui/card";
 import { WaitlistModal } from "./WaitlistModal";
 import { SmileCustomizer } from "./SmileCustomizer";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -44,12 +44,11 @@ export const ResultsSection = ({
   contactEmail,
   perfectCorpData,
 }: ResultsSectionProps) => {
-  const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [customizedImage, setCustomizedImage] = useState<string | null>(null);
-  
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const [showFullscreen, setShowFullscreen] = useState(false);
+  const [showBeforeAfter, setShowBeforeAfter] = useState(false);
+  const [beforeAfterPosition, setBeforeAfterPosition] = useState(50);
 
   const handleCustomizedSimulation = (newImage: string) => {
     setCustomizedImage(newImage);
@@ -82,51 +81,6 @@ export const ResultsSection = ({
     }
   };
 
-  const drawOverlay = (type: "midline" | "proportions" | "smile") => {
-    const canvas = canvasRef.current;
-    const img = imgRef.current;
-    if (!canvas || !img) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    if (!landmarks || !metrics) {
-      console.error("No hay landmarks o métricas disponibles para el overlay");
-      toast.error("No se pueden mostrar overlays sin análisis completo");
-      return;
-    }
-
-    const metricsToUse: SmileMetrics = metrics;
-
-    const naturalWidth = img.naturalWidth || img.width;
-    const naturalHeight = img.naturalHeight || img.height;
-    
-    canvas.width = naturalWidth;
-    canvas.height = naturalHeight;
-    
-    ctx.clearRect(0, 0, naturalWidth, naturalHeight);
-    ctx.drawImage(img, 0, 0, naturalWidth, naturalHeight);
-
-    if (type === "midline") {
-      drawMidlineOverlay(ctx, img, landmarks, metricsToUse);
-    } else if (type === "proportions") {
-      drawProportionsOverlay(ctx, img, landmarks, metricsToUse);
-    } else if (type === "smile") {
-      drawSmileOverlay(ctx, img, landmarks, metricsToUse);
-    }
-  };
-
-  useEffect(() => {
-    if (overlayType && imgRef.current?.complete) {
-      drawOverlay(overlayType);
-    }
-  }, [overlayType]);
-
-  const handleImageLoad = () => {
-    if (overlayType) {
-      drawOverlay(overlayType);
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
@@ -164,58 +118,91 @@ export const ResultsSection = ({
               ✨ Tu Sonrisa con Correcciones IA
             </h2>
             <p className="text-sm text-muted-foreground">
-              Línea media centrada • Arco de sonrisa mejorado • Proporciones balanceadas
+              Haz clic para ampliar • Comparar antes/después
             </p>
           </div>
           
-          <div className="max-w-md mx-auto aspect-square relative rounded-xl overflow-hidden border-2 border-primary/30 shadow-xl">
-            <img 
-              ref={imgRef}
-              src={customizedImage || smileImage} 
-              alt="Sonrisa corregida" 
-              className="w-full h-full object-cover"
-              onLoad={handleImageLoad}
-              style={{ display: overlayType ? 'none' : 'block' }}
-            />
-            <canvas
-              ref={canvasRef}
-              className="absolute inset-0 w-full h-full object-contain"
-              style={{ display: overlayType ? 'block' : 'none' }}
-            />
-          </div>
-
-          {/* Herramientas de análisis */}
-          <div className="mt-6 max-w-md mx-auto">
-            <p className="text-xs text-muted-foreground mb-3 text-center">Ver análisis técnico:</p>
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                size="sm"
-                variant={overlayType === "midline" ? "default" : "outline"}
-                onClick={() => setOverlayType(overlayType === "midline" ? null : "midline")}
-                className="gap-1 text-xs"
-              >
-                <Eye className="h-3 w-3" />
-                Medias
-              </Button>
-              <Button
-                size="sm"
-                variant={overlayType === "proportions" ? "default" : "outline"}
-                onClick={() => setOverlayType(overlayType === "proportions" ? null : "proportions")}
-                className="gap-1 text-xs"
-              >
-                <Eye className="h-3 w-3" />
-                Proporciones
-              </Button>
-              <Button
-                size="sm"
-                variant={overlayType === "smile" ? "default" : "outline"}
-                onClick={() => setOverlayType(overlayType === "smile" ? null : "smile")}
-                className="gap-1 text-xs"
-              >
-                <Eye className="h-3 w-3" />
-                Sonrisa
-              </Button>
+          <div className="max-w-md mx-auto space-y-4">
+            <div 
+              className="aspect-square relative rounded-xl overflow-hidden border-2 border-primary/30 shadow-xl cursor-pointer hover:border-primary/60 transition-all"
+              onClick={() => setShowFullscreen(true)}
+            >
+              <img 
+                src={customizedImage || smileImage} 
+                alt="Sonrisa corregida" 
+                className="w-full h-full object-cover"
+              />
             </div>
+
+            {/* Botón Comparar Antes/Después */}
+            <Button
+              onClick={() => setShowBeforeAfter(!showBeforeAfter)}
+              variant="outline"
+              className="w-full gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              {showBeforeAfter ? "Ocultar" : "Ver"} Antes / Después
+            </Button>
+
+            {/* Comparación Antes/Después */}
+            {showBeforeAfter && (
+              <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-accent/30 shadow-xl">
+                {/* Imagen Después */}
+                <img 
+                  src={customizedImage || smileImage}
+                  alt="Después"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                
+                {/* Imagen Antes con clip */}
+                <div 
+                  className="absolute inset-0 overflow-hidden"
+                  style={{ clipPath: `inset(0 ${100 - beforeAfterPosition}% 0 0)` }}
+                >
+                  <img 
+                    src={restImage}
+                    alt="Antes"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Divisor deslizante */}
+                <div 
+                  className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize z-10"
+                  style={{ left: `${beforeAfterPosition}%` }}
+                  onMouseDown={(e) => {
+                    const container = e.currentTarget.parentElement!;
+                    const handleMouseMove = (moveEvent: MouseEvent) => {
+                      const rect = container.getBoundingClientRect();
+                      const x = moveEvent.clientX - rect.left;
+                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                      setBeforeAfterPosition(percentage);
+                    };
+                    const handleMouseUp = () => {
+                      document.removeEventListener('mousemove', handleMouseMove);
+                      document.removeEventListener('mouseup', handleMouseUp);
+                    };
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                  }}
+                >
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center">
+                    <div className="flex gap-1">
+                      <div className="w-0.5 h-6 bg-primary"></div>
+                      <div className="w-0.5 h-6 bg-primary"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Etiquetas */}
+                <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  ANTES
+                </div>
+                <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  DESPUÉS
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -335,6 +322,27 @@ export const ResultsSection = ({
       </div>
 
       <WaitlistModal open={showWaitlistModal} onOpenChange={setShowWaitlistModal} />
+
+      {/* Modal Fullscreen */}
+      <Dialog open={showFullscreen} onOpenChange={setShowFullscreen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+            onClick={() => setShowFullscreen(false)}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+          <div className="w-full h-[95vh] flex items-center justify-center p-8">
+            <img 
+              src={customizedImage || smileImage}
+              alt="Sonrisa ampliada"
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
