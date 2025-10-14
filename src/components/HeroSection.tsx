@@ -20,13 +20,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Logo oficial */}
-      <div className="w-full max-w-6xl mb-8 md:mb-10 z-10 flex flex-col items-center gap-2">
+      <div className="w-full max-w-6xl mb-4 md:mb-6 z-10 flex flex-col items-center gap-3">
         <img 
           src={logoSimSmile} 
           alt="SimSmile" 
           className="w-64 md:w-80 lg:w-96 animate-fade-in"
         />
-        <p className="text-sm md:text-base text-muted-foreground/60 font-light">
+        <p className="text-base md:text-lg text-muted-foreground font-medium tracking-wide">
           Desarrollado por Clínica Miró
         </p>
       </div>
