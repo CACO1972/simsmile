@@ -45,7 +45,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             Descubre cómo podrías lucir con una sonrisa perfecta. Nuestra tecnología de simulación avanzada te permite ver tu transformación antes de comenzar cualquier tratamiento.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-8">
             <Button
               size="lg"
               onClick={onStart}
