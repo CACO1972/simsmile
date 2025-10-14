@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Share2, Mail, Download, Eye } from "lucide-react";
+import { Share2, Mail, Download, Eye, CheckCircle2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics, computeMetrics } from "@/lib/metrics";
+import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
 import simsmileLogo from "@/assets/simsmile-logo-official.png";
+import { Card } from "@/components/ui/card";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -24,16 +24,16 @@ export const ResultsSection = ({
   metrics,
   contactEmail,
 }: ResultsSectionProps) => {
-  const [teethSize, setTeethSize] = useState([0]);
-  const [teethWidth, setTeethWidth] = useState([0]);
-  const [teethWhiteness, setTeethWhiteness] = useState([0]);
   const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
+  const [showMetricsDetail, setShowMetricsDetail] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const handleEmailAnalysis = () => {
-    toast.success(`Análisis enviado a ${contactEmail}`);
+  const handleDownloadReport = () => {
+    // Crear un PDF o imagen con los resultados
+    toast.success("Descargando reporte...");
+    // Aquí iría la lógica real de descarga
   };
 
   const handleShare = async () => {
@@ -44,10 +44,15 @@ export const ResultsSection = ({
           text: "Mira mi simulación de sonrisa con SimSmile",
           url: window.location.href,
         });
+        toast.success("Compartido exitosamente");
       } catch (err) {
-        console.error("Error sharing:", err);
+        if ((err as Error).name !== 'AbortError') {
+          console.error("Error sharing:", err);
+          toast.error("Error al compartir");
+        }
       }
     } else {
+      navigator.clipboard.writeText(window.location.href);
       toast.success("Link copiado al portapapeles");
     }
   };
@@ -109,6 +114,14 @@ export const ResultsSection = ({
     }
   };
 
+  // Formatear métricas para mostrar
+  const metricsDisplay = metrics ? [
+    { label: "Arco de Sonrisa", value: metrics.smileArc || "N/A", ideal: "Consonante" },
+    { label: "Exposición Gingival", value: metrics.gingival?.class || "N/A", ideal: "Media (1-3mm)" },
+    { label: "Línea Media", value: metrics.midlineCoincidence?.status || "N/A", ideal: "Coincidente" },
+    { label: "Proporción Facial", value: metrics.facialProportions?.isBalanced ? "Balanceada" : "Desbalanceada", ideal: "Balanceada" },
+  ] : [];
+
   return (
     <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
       {/* Animated gradient background effects */}
@@ -119,35 +132,55 @@ export const ResultsSection = ({
       </div>
 
       {/* Logo at top */}
-      <div className="w-full mb-8 flex justify-center z-10">
-        <img src={simsmileLogo} alt="SimSmile" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+      <div className="w-full mb-6 flex justify-center z-10">
+        <img src={simsmileLogo} alt="SimSmile" className="w-40 md:w-56 opacity-70" />
       </div>
 
-      <div className="max-w-6xl mx-auto w-full mt-4 md:mt-0 z-10">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-center mb-6 md:mb-8">
-          Tu Análisis de Sonrisa
-        </h2>
-
-        {/* Before/After Comparison - 3 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-            <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 md:p-4">
-              <h3 className="text-base md:text-lg font-heading font-bold mb-3 md:mb-4 text-center">Antes</h3>
-              <img src={restImage} alt="Antes" className="w-full rounded-lg" />
-            </div>
+      <div className="max-w-7xl mx-auto w-full z-10">
+        {/* Header con título y badge */}
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-4">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium text-primary">Análisis Completado</span>
           </div>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-heading font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            Tu Nuevo Diseño de Sonrisa
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+            Análisis profesional basado en IA y recomendaciones personalizadas
+          </p>
+        </div>
 
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-accent to-primary rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-            <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 md:p-4">
-              <h3 className="text-base md:text-lg font-heading font-bold mb-3 md:mb-4 text-center">Simulación IA</h3>
-              <div className="relative">
+        {/* Comparación visual principal */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          {/* Imagen Original */}
+          <Card className="relative overflow-hidden group bg-card/30 backdrop-blur border-border/50">
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/5 to-transparent" />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-heading font-bold">Original</h3>
+                <span className="text-xs px-3 py-1 rounded-full bg-muted/50 text-muted-foreground">Antes</span>
+              </div>
+              <div className="aspect-square relative rounded-lg overflow-hidden border border-border/50">
+                <img src={restImage} alt="Foto original" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          </Card>
+
+          {/* Imagen con Correcciones IA */}
+          <Card className="relative overflow-hidden group bg-card/30 backdrop-blur border-primary/30">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-heading font-bold">Con Correcciones</h3>
+                <span className="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30">IA</span>
+              </div>
+              <div className="aspect-square relative rounded-lg overflow-hidden border border-primary/30">
                 <img 
                   ref={imgRef}
                   src={smileImage} 
-                  alt="Corrección" 
-                  className="w-full rounded-lg"
+                  alt="Con correcciones" 
+                  className="w-full h-full object-cover"
                   onLoad={handleImageLoad}
                   style={{ display: overlayType ? 'none' : 'block' }}
                 />
@@ -155,143 +188,143 @@ export const ResultsSection = ({
                   ref={canvasRef}
                   width={800}
                   height={800}
-                  className="w-full rounded-lg"
+                  className="w-full h-full"
                   style={{ display: overlayType ? 'block' : 'none' }}
                 />
               </div>
               
-              {/* Botones de overlay */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant={overlayType === "midline" ? "default" : "outline"}
-                  onClick={() => setOverlayType(overlayType === "midline" ? null : "midline")}
-                  className="gap-2"
-                >
-                  <Eye className="h-4 w-4" />
-                  Líneas Medias
-                </Button>
-                <Button
-                  size="sm"
-                  variant={overlayType === "proportions" ? "default" : "outline"}
-                  onClick={() => setOverlayType(overlayType === "proportions" ? null : "proportions")}
-                  className="gap-2"
-                >
-                  <Eye className="h-4 w-4" />
-                  Proporciones
-                </Button>
-                <Button
-                  size="sm"
-                  variant={overlayType === "smile" ? "default" : "outline"}
-                  onClick={() => setOverlayType(overlayType === "smile" ? null : "smile")}
-                  className="gap-2"
-                >
-                  <Eye className="h-4 w-4" />
-                  Análisis Sonrisa
-                </Button>
+              {/* Herramientas de análisis visual */}
+              <div className="mt-4 space-y-2">
+                <p className="text-xs text-muted-foreground mb-2">Herramientas de análisis:</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    size="sm"
+                    variant={overlayType === "midline" ? "default" : "outline"}
+                    onClick={() => setOverlayType(overlayType === "midline" ? null : "midline")}
+                    className="gap-1 text-xs h-8"
+                  >
+                    <Eye className="h-3 w-3" />
+                    Medias
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={overlayType === "proportions" ? "default" : "outline"}
+                    onClick={() => setOverlayType(overlayType === "proportions" ? null : "proportions")}
+                    className="gap-1 text-xs h-8"
+                  >
+                    <Eye className="h-3 w-3" />
+                    Proporciones
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={overlayType === "smile" ? "default" : "outline"}
+                    onClick={() => setOverlayType(overlayType === "smile" ? null : "smile")}
+                    className="gap-1 text-xs h-8"
+                  >
+                    <Eye className="h-3 w-3" />
+                    Sonrisa
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          </Card>
 
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-lg blur opacity-30 group-hover:opacity-60 transition duration-300" />
-            <div className="relative bg-card/50 backdrop-blur-sm border-2 border-primary/50 rounded-lg p-4">
-              <h3 className="text-lg font-heading font-bold mb-4 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Diseño Ideal Recomendado
-              </h3>
-              <img src={idealImage} alt="Diseño Ideal" className="w-full rounded-lg" />
-              <p className="text-xs text-muted-foreground mt-3 text-center">
-                Basado en tus proporciones faciales y recomendaciones profesionales
+          {/* Diseño Ideal */}
+          <Card className="relative overflow-hidden group bg-gradient-to-br from-primary/10 via-accent/5 to-card/30 backdrop-blur border-primary/50">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-lg blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-heading font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Diseño Ideal
+                </h3>
+                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30">Recomendado</span>
+              </div>
+              <div className="aspect-square relative rounded-lg overflow-hidden border-2 border-primary/30 ring-2 ring-primary/10">
+                <img src={idealImage} alt="Diseño ideal personalizado" className="w-full h-full object-cover" />
+              </div>
+              <p className="text-sm text-muted-foreground mt-4 text-center leading-relaxed">
+                Basado en tus proporciones faciales únicas y análisis profesional
               </p>
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Interactive Controls */}
-        <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-8 mb-8">
-          <h3 className="text-2xl font-heading font-bold mb-6">Ajustes Interactivos</h3>
-          <div className="space-y-6">
-            <div>
-              <Label className="mb-3 block">
-                Tamaño de Dientes: {teethSize[0] > 0 ? "+" : ""}{teethSize[0]}%
-              </Label>
-              <Slider
-                value={teethSize}
-                onValueChange={setTeethSize}
-                min={-10}
-                max={10}
-                step={1}
-                className="mb-2"
-              />
-              <p className="text-sm text-muted-foreground">
-                Ajusta el tamaño de tus dientes (máx ±10%)
-              </p>
+        {/* Métricas y Análisis */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          {/* Métricas clave */}
+          <Card className="bg-card/30 backdrop-blur border-border/50 p-6">
+            <h3 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
+              <CheckCircle2 className="h-6 w-6 text-primary" />
+              Métricas de Tu Sonrisa
+            </h3>
+            <div className="space-y-4">
+              {metricsDisplay.map((metric, index) => (
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/30">
+                  <div>
+                    <p className="font-medium text-sm">{metric.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Ideal: {metric.ideal}</p>
+                  </div>
+                  <span className="text-sm font-bold text-primary px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                    {metric.value}
+                  </span>
+                </div>
+              ))}
             </div>
+            <Button 
+              variant="outline" 
+              className="w-full mt-6"
+              onClick={() => setShowMetricsDetail(!showMetricsDetail)}
+            >
+              {showMetricsDetail ? "Ocultar" : "Ver"} Detalles Técnicos
+            </Button>
+          </Card>
 
-            <div>
-              <Label className="mb-3 block">
-                Ancho de Dientes: {teethWidth[0] > 0 ? "+" : ""}{teethWidth[0]}%
-              </Label>
-              <Slider
-                value={teethWidth}
-                onValueChange={setTeethWidth}
-                min={-10}
-                max={10}
-                step={1}
-                className="mb-2"
-              />
-              <p className="text-sm text-muted-foreground">
-                Ajusta el ancho de tus dientes (máx ±10%)
-              </p>
-            </div>
-
-            <div>
-              <Label className="mb-3 block">
-                Blancura: {teethWhiteness[0] > 0 ? "+" : ""}{teethWhiteness[0]}%
-              </Label>
-              <Slider
-                value={teethWhiteness}
-                onValueChange={setTeethWhiteness}
-                min={-5}
-                max={10}
-                step={1}
-                className="mb-2"
-              />
-              <p className="text-sm text-muted-foreground">
-                Ajusta el tono de blanco de tus dientes (máx ±10%)
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Analysis Text - Más compacto */}
-        <div className="relative group mb-8">
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-300" />
-          <div className="relative bg-card/80 backdrop-blur border border-border/50 rounded-lg p-6">
-            <h3 className="text-xl font-heading font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              📋 Análisis Facial
+          {/* Análisis profesional */}
+          <Card className="bg-card/30 backdrop-blur border-border/50 p-6">
+            <h3 className="text-2xl font-heading font-bold mb-6">
+              📋 Análisis Profesional
             </h3>
             <div className="prose prose-invert max-w-none">
-              <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed bg-background/50 p-4 rounded-lg border border-border/50 max-h-60 overflow-y-auto">
-                {analysis}
-              </pre>
+              <div className="text-sm text-muted-foreground leading-relaxed bg-muted/20 p-4 rounded-lg border border-border/30 max-h-80 overflow-y-auto custom-scrollbar">
+                <pre className="whitespace-pre-wrap font-sans">{analysis}</pre>
+              </div>
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4 justify-center mb-8">
-          <Button size="lg" onClick={handleEmailAnalysis} className="gap-2">
-            <Mail className="h-5 w-5" />
-            Enviar Análisis por Email
-          </Button>
-          <Button size="lg" variant="secondary" onClick={handleShare} className="gap-2">
+        {showMetricsDetail && metrics && (
+          <Card className="bg-card/30 backdrop-blur border-primary/30 p-6 mb-12">
+            <h4 className="text-xl font-heading font-bold mb-4">Detalles Técnicos Completos</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="space-y-2">
+                <p><strong>Arco de Sonrisa:</strong> {metrics.smileArc}</p>
+                <p><strong>Exposición Gingival:</strong> {metrics.gingival?.mm}mm ({metrics.gingival?.class})</p>
+                <p><strong>Línea Media Dental:</strong> {metrics.midline?.mm}mm ({metrics.midline?.side})</p>
+              </div>
+              <div className="space-y-2">
+                <p><strong>Línea Media Facial:</strong> {metrics.facialMidline?.mm}mm</p>
+                <p><strong>Ratio Bucal:</strong> {(metrics.buccalRatio * 100).toFixed(1)}%</p>
+                <p><strong>Proporciones Faciales:</strong> {metrics.facialProportions?.isBalanced ? "Balanceadas" : "Desbalanceadas"}</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Botones de acción */}
+        <div className="flex flex-wrap gap-4 justify-center mb-12">
+          <Button size="lg" onClick={handleShare} variant="outline" className="gap-2">
             <Share2 className="h-5 w-5" />
-            Compartir Resultados
+            Compartir
           </Button>
-          <Button size="lg" variant="outline" className="gap-2">
+          <Button size="lg" onClick={handleDownloadReport} variant="outline" className="gap-2">
             <Download className="h-5 w-5" />
-            Descargar Reporte
+            Descargar PDF
+          </Button>
+          <Button size="lg" className="gap-2" asChild>
+            <a href={`mailto:${contactEmail}`}>
+              <Mail className="h-5 w-5" />
+              Reenviar por Email
+            </a>
           </Button>
         </div>
 
