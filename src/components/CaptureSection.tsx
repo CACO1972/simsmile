@@ -99,14 +99,14 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
                 onClick={handleRestRetake}
                 variant="outline"
                 size="lg"
-                className="flex-1"
+                className="flex-1 border-2 hover:border-accent/50 hover:bg-accent/5 transition-all hover:scale-105"
               >
                 Tomar de Nuevo
               </Button>
               <Button
                 onClick={handleRestConfirm}
                 size="lg"
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105"
               >
                 Continuar
                 <ArrowRight className="h-5 w-5" />
@@ -168,14 +168,14 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
                 onClick={handleSmileRetake}
                 variant="outline"
                 size="lg"
-                className="flex-1"
+                className="flex-1 border-2 hover:border-accent/50 hover:bg-accent/5 transition-all hover:scale-105"
               >
                 Tomar de Nuevo
               </Button>
               <Button
                 onClick={handleSmileConfirm}
                 size="lg"
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 transition-all hover:scale-105"
               >
                 Analizar Sonrisa
                 <ArrowRight className="h-5 w-5" />

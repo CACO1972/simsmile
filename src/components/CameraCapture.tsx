@@ -154,21 +154,24 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
                 <Button
                   onClick={handleStartCamera}
                   size="lg"
-                  className="w-full h-24"
-                  variant="default"
+                  className="w-full h-28 bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl shadow-primary/30 hover:shadow-primary/40 transition-all hover:scale-105 border border-primary/20"
                 >
-                  <Camera className="mr-2 h-6 w-6" />
-                  <span className="text-lg">Usar Cámara</span>
+                  <div className="flex flex-col items-center gap-2">
+                    <Camera className="h-7 w-7" />
+                    <span className="text-lg font-semibold">Usar Cámara</span>
+                  </div>
                 </Button>
                 
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   size="lg"
-                  className="w-full h-24"
+                  className="w-full h-28 bg-gradient-to-br from-accent/10 to-accent/5 hover:from-accent/20 hover:to-accent/10 border-2 border-accent/30 hover:border-accent/50 shadow-md hover:shadow-lg transition-all hover:scale-105"
                   variant="outline"
                 >
-                  <Upload className="mr-2 h-6 w-6" />
-                  <span className="text-lg">Subir desde Galería</span>
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="h-7 w-7 text-accent" />
+                    <span className="text-lg font-semibold">Subir desde Galería</span>
+                  </div>
                 </Button>
               </div>
               
@@ -211,7 +214,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
                   onClick={switchCamera}
                   variant="outline"
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
                 >
                   <RotateCcw className="mr-2 h-5 w-5" />
                   Cambiar Cámara
@@ -220,7 +223,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
                 <Button
                   onClick={capturePhoto}
                   size="lg"
-                  className="flex-[2]"
+                  className="flex-[2] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105"
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Capturar Foto
@@ -248,7 +251,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
               onClick={retake}
               variant="outline"
               size="lg"
-              className="flex-1"
+              className="flex-1 border-2 hover:border-accent/50 hover:bg-accent/5 transition-all hover:scale-105"
             >
               <RotateCcw className="mr-2 h-5 w-5" />
               Tomar de Nuevo

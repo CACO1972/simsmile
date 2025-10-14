@@ -20,13 +20,20 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Logo oficial */}
-      <div className="w-full max-w-6xl mb-4 md:mb-6 z-10 flex flex-col items-center gap-3">
+      <div className="w-full max-w-6xl mb-6 md:mb-8 z-10 flex flex-col items-center gap-2">
         <img 
           src={logoSimSmile} 
           alt="SimSmile" 
           className="w-64 md:w-80 lg:w-96 animate-fade-in"
         />
-        <p className="text-base md:text-lg text-muted-foreground font-medium tracking-wide">
+        
+        {/* Subtexto principal prominente */}
+        <h2 className="text-lg md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent tracking-wide animate-fade-in">
+          Simulación de Sonrisa y Análisis Dentofacial
+        </h2>
+        
+        {/* Credencial de Clínica Miró más discreto */}
+        <p className="text-xs md:text-sm text-muted-foreground/70 font-light tracking-wide">
           Desarrollado por Clínica Miró
         </p>
       </div>
