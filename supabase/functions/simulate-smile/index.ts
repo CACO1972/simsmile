@@ -138,10 +138,11 @@ IMPORTANTE:
     }
 
     const correctionData = await correctionResponse.json();
-    const correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    let correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!correctedImage) {
-      throw new Error('No se generó imagen corregida');
+      console.warn('No se generó imagen corregida desde IA, uso imagen original como fallback');
+      correctedImage = imageBase64;
     }
 
     // Segunda simulación: diseño ideal basado en recomendaciones
