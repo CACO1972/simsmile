@@ -7,6 +7,7 @@ import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type Smil
 import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 import { Card } from "@/components/ui/card";
 import { WaitlistModal } from "./WaitlistModal";
+import { SmileCustomizer } from "./SmileCustomizer";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -49,9 +50,16 @@ export const ResultsSection = ({
   const [showSmileAnalysis, setShowSmileAnalysis] = useState(false);
   const [showFacialAttributes, setShowFacialAttributes] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [showCustomizer, setShowCustomizer] = useState(false);
+  const [customizedImage, setCustomizedImage] = useState<string | null>(null);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleCustomizedSimulation = (newImage: string) => {
+    setCustomizedImage(newImage);
+    toast.success("¡Sonrisa personalizada lista!");
+  };
 
   const handleDownloadReport = () => {
     // Feature bloqueada para versión gratuita
@@ -230,6 +238,13 @@ export const ResultsSection = ({
               <div className="aspect-square relative rounded-lg overflow-hidden border border-border/50">
                 <img src={restImage} alt="Foto original" className="w-full h-full object-cover" />
                 
+                {/* Etiqueta explicativa */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                  <p className="text-xs text-white/90">
+                    Tu sonrisa actual sin modificaciones
+                  </p>
+                </div>
+                
                 {/* Overlay de análisis facial actual */}
                 {showAnalysisOverlay && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-sm p-4 flex flex-col justify-end">
@@ -358,6 +373,15 @@ export const ResultsSection = ({
                   className="absolute inset-0 w-full h-full object-contain"
                   style={{ display: overlayType ? 'block' : 'none' }}
                 />
+                
+                {/* Etiqueta explicativa */}
+                {!overlayType && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                    <p className="text-xs text-white/90">
+                      ✓ Correcciones técnicas aplicadas: línea media centrada, arco de sonrisa mejorado, proporciones balanceadas
+                    </p>
+                  </div>
+                )}
                 
                 {/* Overlay de análisis facial mejorado */}
                 {showAnalysisOverlay && !overlayType && (
@@ -506,13 +530,80 @@ export const ResultsSection = ({
                 <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30">Recomendado</span>
               </div>
               <div className="aspect-square relative rounded-lg overflow-hidden border-2 border-primary/30 ring-2 ring-primary/10">
-                <img src={idealImage} alt="Diseño ideal personalizado" className="w-full h-full object-cover" />
+                <img src={customizedImage || idealImage} alt="Diseño ideal personalizado" className="w-full h-full object-cover" />
+                
+                {/* Etiqueta explicativa */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-primary/90 to-transparent p-3">
+                  <p className="text-xs text-white">
+                    ⭐ Diseño óptimo: proporciones áureas, estética facial perfecta, análisis IA de rasgos únicos
+                  </p>
+                </div>
               </div>
               <p className="text-sm text-muted-foreground mt-4 text-center leading-relaxed">
-                Basado en tus proporciones faciales únicas y análisis profesional
+                {customizedImage ? "Tu sonrisa personalizada según tus preferencias" : "Basado en tus proporciones faciales únicas y análisis profesional"}
               </p>
             </div>
           </Card>
+        </div>
+
+        {/* Explicación de Diferencias */}
+        <Card className="bg-gradient-to-br from-primary/5 to-accent/5 backdrop-blur border-primary/20 p-6 md:p-8 mb-12">
+          <h3 className="text-2xl font-heading font-bold mb-6 text-center">
+            ¿Qué diferencia hay entre cada imagen?
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center text-2xl">
+                1️⃣
+              </div>
+              <h4 className="font-bold text-lg">Original</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Tu sonrisa actual <strong>sin ninguna modificación</strong>. Sirve como punto de referencia para el análisis y muestra las características naturales de tu sonrisa.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-2xl border border-primary/30">
+                2️⃣
+              </div>
+              <h4 className="font-bold text-lg text-primary">Con Correcciones</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong>Correcciones técnicas y clínicas:</strong> línea media dental centrada, arco de sonrisa mejorado, exposición gingival optimizada. Son ajustes <strong>medibles y objetivos</strong> basados en estándares odontológicos.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-2xl border-2 border-primary/50">
+                3️⃣
+              </div>
+              <h4 className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Diseño Ideal
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong>Resultado estético óptimo:</strong> combina las correcciones técnicas con un análisis profundo de tus rasgos faciales únicos (forma de cara, proporciones, color de piel). Diseñado para <strong>armonizar perfectamente</strong> con tu rostro según principios de proporción áurea y estética dental.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Personalizador Interactivo */}
+        <div className="mb-12">
+          <Button
+            onClick={() => setShowCustomizer(!showCustomizer)}
+            variant={showCustomizer ? "default" : "outline"}
+            className="mx-auto flex gap-2 mb-6"
+            size="lg"
+          >
+            <Sparkles className="h-5 w-5" />
+            {showCustomizer ? "Ocultar" : "Mostrar"} Personalizador de Sonrisa
+          </Button>
+          
+          {showCustomizer && (
+            <div className="animate-fade-in">
+              <SmileCustomizer
+                baseImage={smileImage}
+                onSimulate={handleCustomizedSimulation}
+              />
+            </div>
+          )}
         </div>
 
         {/* Métricas y Análisis */}

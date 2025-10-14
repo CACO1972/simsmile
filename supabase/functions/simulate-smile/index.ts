@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations } = await req.json();
+    const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
     const PERFECT_CORP_CLIENT_ID = Deno.env.get('PERFECT_CORP_CLIENT_ID');
     const PERFECT_CORP_CLIENT_SECRET = Deno.env.get('PERFECT_CORP_CLIENT_SECRET');
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -23,6 +23,56 @@ serve(async (req) => {
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Si es una llamada de personalización (customPrompt presente)
+    if (customPrompt && image) {
+      console.log('Processing custom smile simulation with parameters:', customParameters);
+      
+      const customResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-image-preview',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: customPrompt },
+                {
+                  type: 'image_url',
+                  image_url: { url: image }
+                }
+              ]
+            }
+          ],
+          modalities: ['image', 'text']
+        }),
+      });
+
+      if (!customResponse.ok) {
+        const errorText = await customResponse.text();
+        console.error('Custom simulation error:', errorText);
+        throw new Error(`Custom simulation failed: ${customResponse.status} ${errorText}`);
+      }
+
+      const customData = await customResponse.json();
+      const customizedImage = customData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+      if (!customizedImage) {
+        throw new Error('No customized image received from AI');
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          customizedImage: customizedImage,
+          parameters: customParameters
+        }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // 1. Autenticación con Perfect Corp (si está disponible)
