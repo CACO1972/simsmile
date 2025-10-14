@@ -30,8 +30,8 @@ const handler = async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Clínica Dental Miro <admin@clinicamiro.cl>",
-        to: ["admin@clinicamiro.cl"],
+        from: "Clínica Dental Miro <administracion@clinicamiro.cl>",
+        to: ["administracion@clinicamiro.cl"],
         subject: `Nuevo contacto de SimSmile - ${name}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Clínica Dental Miro <admin@clinicamiro.cl>",
+        from: "Clínica Dental Miro <administracion@clinicamiro.cl>",
         to: [email],
         subject: "¡Hemos recibido tu mensaje!",
         html: `
