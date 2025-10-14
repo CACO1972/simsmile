@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, TrendingUp, Users, Award } from "lucide-react";
-import logoMain from "@/assets/simsmile-logo-minimal.png";
+import { Sparkles } from "lucide-react";
+import logoMain from "@/assets/clinica-miro-logo-white.png";
 
 
 interface HeroSectionProps {
@@ -18,22 +18,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      {/* Stats bar at top */}
-      <div className="w-full max-w-6xl mb-8 md:mb-12 z-10">
-        <div className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-8 text-xs md:text-sm">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            <span className="text-foreground/80">93.24% Precisión</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="text-foreground/80">$57M+ Valoración</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <Award className="h-4 w-4 text-primary" />
-            <span className="text-foreground/80 uppercase text-xs">Excellence</span>
-          </div>
-        </div>
+      {/* Logo at top - larger and centered */}
+      <div className="w-full max-w-6xl mb-12 md:mb-16 z-10 flex justify-center">
+        <img 
+          src={logoMain} 
+          alt="Clínica Miró" 
+          className="w-80 md:w-96 lg:w-[500px] animate-fade-in"
+        />
       </div>
 
       {/* Main content grid */}
@@ -41,11 +32,6 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         
         {/* Left side - Text content */}
         <div className="flex flex-col items-center lg:items-start justify-center space-y-6 md:space-y-8">
-          <img 
-            src={logoMain} 
-            alt="SimSmile" 
-            className="w-64 md:w-80 lg:w-96 mx-auto lg:mx-0 mb-4 animate-fade-in opacity-60"
-          />
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
             Visualiza tu

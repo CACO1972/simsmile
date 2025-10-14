@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Check, X, Camera } from "lucide-react";
-import { Logo } from "./Logo";
 import correctPhotoExample from "@/assets/correct-photo-example.jpg";
 import incorrectPhotoExample from "@/assets/incorrect-photo-example.jpg";
-import miroLogo from "@/assets/clinica-miro-logo.png";
+import miroLogo from "@/assets/clinica-miro-logo-white.png";
 
 interface InstructionsSectionProps {
   onContinue: () => void;
@@ -11,12 +10,20 @@ interface InstructionsSectionProps {
 
 export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
-      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
-        <Logo size="md" className="md:w-auto" />
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
+      {/* Animated gradient background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0">
+      {/* Logo at top */}
+      <div className="w-full mb-8 flex justify-center z-10">
+        <img src={miroLogo} alt="Clínica Miró" className="w-64 md:w-80 animate-fade-in" />
+      </div>
+
+      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-center mb-4">
           Instrucciones para el Análisis
         </h2>
@@ -26,7 +33,7 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Foto Correcta */}
-          <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden hover:border-primary/50 transition-all">
             <div className="relative">
               <img 
                 src={correctPhotoExample} 
@@ -61,7 +68,7 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
           </div>
 
           {/* Foto Incorrecta */}
-          <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden hover:border-primary/50 transition-all">
             <div className="relative">
               <img 
                 src={incorrectPhotoExample} 
@@ -102,17 +109,11 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
             Entendido, Continuar
           </Button>
           
-          <div className="space-y-3">
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-muted-foreground">Powered by</span>
-              <img src={miroLogo} alt="Clínica Miró" className="h-8" />
-            </div>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              © 2025 Dr. Carlos Montoya. Todos los derechos reservados.
-              <br />
-              IP y Patent Pending
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground/60 max-w-md mx-auto">
+            © 2025 Dr. Carlos Montoya. Todos los derechos reservados.
+            <br />
+            IP y Patent Pending
+          </p>
         </div>
       </div>
     </div>

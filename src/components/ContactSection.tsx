@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Phone, User } from "lucide-react";
-import { Logo } from "./Logo";
 import { toast } from "sonner";
+import miroLogo from "@/assets/clinica-miro-logo-white.png";
 
 interface ContactSectionProps {
   onSubmit: (data: { name: string; email: string; phone: string; message: string }) => void;
@@ -29,12 +29,20 @@ export const ContactSection = ({ onSubmit }: ContactSectionProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
-      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
-        <Logo size="sm" className="opacity-50" />
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
+      {/* Animated gradient background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0">
+      {/* Logo at top */}
+      <div className="w-full mb-8 flex justify-center z-10">
+        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+      </div>
+
+      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-center mb-4">
           Información de Contacto
         </h2>
@@ -42,7 +50,7 @@ export const ContactSection = ({ onSubmit }: ContactSectionProps) => {
           Déjanos tus datos para enviarte el análisis completo
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 bg-card border border-border rounded-lg p-6 md:p-8">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 md:p-8">
           <div>
             <Label htmlFor="name" className="flex items-center gap-2">
               <User className="h-4 w-4" />

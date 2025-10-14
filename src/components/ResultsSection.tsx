@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Logo } from "./Logo";
 import { Share2, Mail, Download, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics, computeMetrics } from "@/lib/metrics";
+import miroLogo from "@/assets/clinica-miro-logo-white.png";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -110,12 +110,20 @@ export const ResultsSection = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
-      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
-        <Logo size="sm" className="opacity-50" />
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
+      {/* Animated gradient background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto w-full mt-4 md:mt-0">
+      {/* Logo at top */}
+      <div className="w-full mb-8 flex justify-center z-10">
+        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+      </div>
+
+      <div className="max-w-6xl mx-auto w-full mt-4 md:mt-0 z-10">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-center mb-6 md:mb-8">
           Tu Análisis de Sonrisa
         </h2>
@@ -123,16 +131,16 @@ export const ResultsSection = ({
         {/* Before/After Comparison - 3 columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-gold to-lavender rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-            <div className="relative bg-card border border-border rounded-lg p-3 md:p-4">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
+            <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 md:p-4">
               <h3 className="text-base md:text-lg font-heading font-bold mb-3 md:mb-4 text-center">Antes</h3>
               <img src={restImage} alt="Antes" className="w-full rounded-lg" />
             </div>
           </div>
 
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-lavender to-gold rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-            <div className="relative bg-card border border-border rounded-lg p-3 md:p-4">
+            <div className="absolute -inset-1 bg-gradient-to-r from-accent to-primary rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
+            <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-3 md:p-4">
               <h3 className="text-base md:text-lg font-heading font-bold mb-3 md:mb-4 text-center">Simulación IA</h3>
               <div className="relative">
                 <img 
@@ -186,9 +194,9 @@ export const ResultsSection = ({
           </div>
 
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-gold via-lavender to-gold rounded-lg blur opacity-30 group-hover:opacity-60 transition duration-300" />
-            <div className="relative bg-card border-2 border-gold/50 rounded-lg p-4">
-              <h3 className="text-lg font-heading font-bold mb-4 text-center bg-gradient-to-r from-gold to-lavender bg-clip-text text-transparent">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-lg blur opacity-30 group-hover:opacity-60 transition duration-300" />
+            <div className="relative bg-card/50 backdrop-blur-sm border-2 border-primary/50 rounded-lg p-4">
+              <h3 className="text-lg font-heading font-bold mb-4 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Diseño Ideal Recomendado
               </h3>
               <img src={idealImage} alt="Diseño Ideal" className="w-full rounded-lg" />
@@ -200,7 +208,7 @@ export const ResultsSection = ({
         </div>
 
         {/* Interactive Controls */}
-        <div className="bg-card border border-border rounded-lg p-8 mb-8">
+        <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-8 mb-8">
           <h3 className="text-2xl font-heading font-bold mb-6">Ajustes Interactivos</h3>
           <div className="space-y-6">
             <div>
@@ -258,9 +266,9 @@ export const ResultsSection = ({
 
         {/* Analysis Text - Más compacto */}
         <div className="relative group mb-8">
-          <div className="absolute -inset-1 bg-gradient-to-r from-gold via-lavender to-gold rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-300" />
-          <div className="relative bg-card/80 backdrop-blur border border-border rounded-lg p-6">
-            <h3 className="text-xl font-heading font-bold mb-4 bg-gradient-to-r from-gold to-lavender bg-clip-text text-transparent">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-300" />
+          <div className="relative bg-card/80 backdrop-blur border border-border/50 rounded-lg p-6">
+            <h3 className="text-xl font-heading font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               📋 Análisis Facial
             </h3>
             <div className="prose prose-invert max-w-none">

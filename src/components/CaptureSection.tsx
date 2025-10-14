@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import CameraCapture from "./CameraCapture";
-import { Logo } from "./Logo";
 import { ArrowRight } from "lucide-react";
+import miroLogo from "@/assets/clinica-miro-logo-white.png";
 
 interface CaptureSectionProps {
   onCapture: (restImage: string, smileImage: string) => void;
@@ -42,12 +42,20 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12">
-      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
-        <Logo size="sm" className="opacity-50" />
+    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
+      {/* Animated gradient background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0">
+      {/* Logo at top */}
+      <div className="w-full mb-8 flex justify-center z-10">
+        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+      </div>
+
+      <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">
         {step === "rest" && (
           <CameraCapture
             onCapture={handleRestCapture}
@@ -68,8 +76,8 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
             </div>
 
             <div className="relative group max-w-md mx-auto">
-              <div className="absolute -inset-1 bg-gradient-to-r from-gold to-lavender rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-              <div className="relative bg-card border border-border rounded-lg overflow-hidden">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
+              <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
                 <img src={restImage} alt="Foto en reposo" className="w-full h-auto" />
               </div>
             </div>
@@ -116,16 +124,16 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
 
             <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-gold to-lavender rounded-lg blur opacity-25 transition duration-300" />
-                <div className="relative bg-card border border-border rounded-lg overflow-hidden p-4">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 transition duration-300" />
+                <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden p-4">
                   <h4 className="text-lg font-heading font-bold mb-3 text-center">En Reposo</h4>
                   <img src={restImage} alt="Foto en reposo" className="w-full h-auto rounded-lg" />
                 </div>
               </div>
 
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-lavender to-gold rounded-lg blur opacity-25 transition duration-300" />
-                <div className="relative bg-card border border-border rounded-lg overflow-hidden p-4">
+                <div className="absolute -inset-1 bg-gradient-to-r from-accent to-primary rounded-lg blur opacity-25 transition duration-300" />
+                <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden p-4">
                   <h4 className="text-lg font-heading font-bold mb-3 text-center">Sonriendo</h4>
                   <img src={smileImage} alt="Foto sonriendo" className="w-full h-auto rounded-lg" />
                 </div>

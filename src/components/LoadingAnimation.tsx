@@ -1,21 +1,24 @@
-import { Logo } from "./Logo";
 import { OrbitalAnimation } from "./OrbitalAnimation";
+import miroLogo from "@/assets/clinica-miro-logo-white.png";
 
 export const LoadingAnimation = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
-      <div className="w-full mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex justify-center md:justify-start">
-        <Logo size="md" className="opacity-50" />
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden bg-background">
+      {/* Animated gradient background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      {/* Orbital circles animation with connecting lines */}
-      <div className="relative mt-4 md:mt-0">
+      {/* Logo at top */}
+      <div className="w-full mb-8 absolute top-8 flex justify-center z-10">
+        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+      </div>
+
+      {/* Orbital circles animation */}
+      <div className="relative mt-4 md:mt-0 z-10">
         <OrbitalAnimation size="large" />
-        
-        {/* Center logo */}
-        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 3 }}>
-          <Logo size="xl" />
-        </div>
       </div>
 
       <div className="mt-8 md:mt-12 text-center">
