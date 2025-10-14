@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X, Camera } from "lucide-react";
 import correctPhotoExample from "@/assets/correct-photo-example.jpg";
 import incorrectPhotoExample from "@/assets/incorrect-photo-example.jpg";
-import miroLogo from "@/assets/clinica-miro-logo-white.png";
+import simsmileLogo from "@/assets/simsmile-logo-official.png";
 
 interface InstructionsSectionProps {
   onContinue: () => void;
@@ -20,7 +20,7 @@ export const InstructionsSection = ({ onContinue }: InstructionsSectionProps) =>
 
       {/* Logo at top */}
       <div className="w-full mb-8 flex justify-center z-10">
-        <img src={miroLogo} alt="Clínica Miró" className="w-64 md:w-80 animate-fade-in" />
+        <img src={simsmileLogo} alt="SimSmile" className="w-64 md:w-80 animate-fade-in" />
       </div>
 
       <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">

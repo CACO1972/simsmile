@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import CameraCapture from "./CameraCapture";
 import { ArrowRight } from "lucide-react";
-import miroLogo from "@/assets/clinica-miro-logo-white.png";
+import simsmileLogo from "@/assets/simsmile-logo-official.png";
 
 interface CaptureSectionProps {
   onCapture: (restImage: string, smileImage: string) => void;
@@ -52,7 +52,7 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
 
       {/* Logo at top */}
       <div className="w-full mb-8 flex justify-center z-10">
-        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+        <img src={simsmileLogo} alt="SimSmile" className="w-48 md:w-64 opacity-60 animate-fade-in" />
       </div>
 
       <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">

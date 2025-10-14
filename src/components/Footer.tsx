@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Mail, Globe } from "lucide-react";
-import miroLogo from "@/assets/clinica-miro-logo-white.png";
+import simsmileLogo from "@/assets/simsmile-logo-official.png";
 
 export const Footer = () => {
   return (
@@ -7,7 +7,7 @@ export const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col items-center md:items-start gap-3">
-            <img src={miroLogo} alt="Clínica Miró" className="h-16 md:h-20 w-auto" />
+            <img src={simsmileLogo} alt="SimSmile" className="h-16 md:h-20 w-auto" />
             <p className="text-xs text-muted-foreground text-center md:text-left max-w-xs">
               © 2025 Dr. Carlos Montoya. Todos los derechos reservados.
               <br />

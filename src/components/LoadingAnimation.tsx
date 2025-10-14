@@ -1,5 +1,5 @@
 import { OrbitalAnimation } from "./OrbitalAnimation";
-import miroLogo from "@/assets/clinica-miro-logo-white.png";
+import simsmileLogo from "@/assets/simsmile-logo-official.png";
 
 export const LoadingAnimation = () => {
   return (
@@ -13,7 +13,7 @@ export const LoadingAnimation = () => {
 
       {/* Logo at top */}
       <div className="w-full mb-8 absolute top-8 flex justify-center z-10">
-        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+        <img src={simsmileLogo} alt="SimSmile" className="w-48 md:w-64 opacity-60 animate-fade-in" />
       </div>
 
       {/* Orbital circles animation */}

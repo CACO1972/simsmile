@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Share2, Mail, Download, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics, computeMetrics } from "@/lib/metrics";
-import miroLogo from "@/assets/clinica-miro-logo-white.png";
+import simsmileLogo from "@/assets/simsmile-logo-official.png";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -120,7 +120,7 @@ export const ResultsSection = ({
 
       {/* Logo at top */}
       <div className="w-full mb-8 flex justify-center z-10">
-        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+        <img src={simsmileLogo} alt="SimSmile" className="w-48 md:w-64 opacity-60 animate-fade-in" />
       </div>
 
       <div className="max-w-6xl mx-auto w-full mt-4 md:mt-0 z-10">

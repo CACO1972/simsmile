@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Phone, User } from "lucide-react";
 import { toast } from "sonner";
-import miroLogo from "@/assets/clinica-miro-logo-white.png";
+import simsmileLogo from "@/assets/simsmile-logo-official.png";
 
 interface ContactSectionProps {
   onSubmit: (data: { name: string; email: string; phone: string; message: string }) => void;
@@ -39,7 +39,7 @@ export const ContactSection = ({ onSubmit }: ContactSectionProps) => {
 
       {/* Logo at top */}
       <div className="w-full mb-8 flex justify-center z-10">
-        <img src={miroLogo} alt="Clínica Miró" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+        <img src={simsmileLogo} alt="SimSmile" className="w-48 md:w-64 opacity-60 animate-fade-in" />
       </div>
 
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">
