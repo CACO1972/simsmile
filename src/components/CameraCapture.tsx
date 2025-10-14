@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload, RotateCcw } from "lucide-react";
-import faceGuideFrame from "@/assets/face-guide-frame.png";
+import FaceGuideOverlay from "./FaceGuideOverlay";
 
 interface CameraCaptureProps {
   onCapture: (imageBase64: string) => void;
@@ -192,18 +192,14 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
                 />
                 
                 {/* Marco de guía superpuesto */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <img
-                    src={faceGuideFrame}
-                    alt="Face guide"
-                    className="w-[95%] h-[95%] object-contain opacity-60"
-                  />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
+                  <FaceGuideOverlay />
                 </div>
 
                 {/* Instrucciones overlay */}
                 <div className="absolute top-4 left-4 right-4 bg-black/70 backdrop-blur-sm rounded-lg p-3">
                   <p className="text-white text-sm font-medium text-center">
-                    Alinea tu rostro con el marco guía
+                    Alinea tu rostro con el óvalo y tu boca con la zona inferior
                   </p>
                 </div>
               </div>

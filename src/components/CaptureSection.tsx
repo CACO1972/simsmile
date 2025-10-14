@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import CameraCapture from "./CameraCapture";
-import { ArrowRight, Check, X } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
+import photoTipsReference from "@/assets/photo-tips-reference.jpg";
 
 interface CaptureSectionProps {
   onCapture: (restImage: string, smileImage: string) => void;
@@ -58,27 +59,13 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
       <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">
         {step === "rest" && (
           <div className="space-y-6">
-            {/* Quick Tips */}
+            {/* Image Reference */}
             <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-2xl mx-auto">
-              <h3 className="text-lg font-heading font-bold mb-3 text-center">Consejos para una Buena Foto</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Rostro de frente</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Iluminación clara</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <X className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">No ángulos extremos</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <X className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">No fotos borrosas</span>
-                </div>
-              </div>
+              <img 
+                src={photoTipsReference} 
+                alt="Consejos para una buena foto" 
+                className="w-full h-auto rounded-lg"
+              />
             </div>
             
             <CameraCapture
@@ -130,27 +117,13 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
         
         {step === "smile" && (
           <div className="space-y-6">
-            {/* Quick Tips */}
+            {/* Image Reference */}
             <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-2xl mx-auto">
-              <h3 className="text-lg font-heading font-bold mb-3 text-center">Para la Foto Sonriendo</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Sonrisa natural</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">Muestra tus dientes</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <X className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">No sonrisa forzada</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <X className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">No labios cerrados</span>
-                </div>
-              </div>
+              <img 
+                src={photoTipsReference} 
+                alt="Consejos para una buena foto" 
+                className="w-full h-auto rounded-lg"
+              />
             </div>
             
             <CameraCapture
