@@ -129,7 +129,7 @@ export function computeMetrics(params: {
   };
 }
 
-// Overlay 1: Líneas Medias (Facial y Dental) - GRÁFICO SIMPLIFICADO
+// Overlay 1: Líneas Medias (Facial y Dental) - GRÁFICO MEJORADO
 export function drawMidlineOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
@@ -152,36 +152,73 @@ export function drawMidlineOverlay(
   // Calcular línea media dental (centro entre incisivos centrales, estimado por centro de labio superior)
   const dentalCenterX = upperLip.x * w;
   
-  // Línea Media Facial (Rosa brillante - vertical completa)
+  // Línea Media Facial (Rosa brillante con sombra - vertical completa)
+  ctx.shadowColor = "rgba(236, 72, 153, 0.8)";
+  ctx.shadowBlur = 10;
   ctx.strokeStyle = "#ec4899";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(facialCenterX, Math.max(0, forehead.y * h - 30));
   ctx.lineTo(facialCenterX, Math.min(h, chin.y * h + 30));
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
-  // Línea Media Dental (Azul brillante - desde nariz hasta mentón)
+  // Línea Media Dental (Azul brillante con sombra - desde nariz hasta mentón)
+  ctx.shadowColor = "rgba(59, 130, 246, 0.8)";
+  ctx.shadowBlur = 10;
   ctx.strokeStyle = "#3b82f6";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(dentalCenterX, nose.y * h);
   ctx.lineTo(dentalCenterX, chin.y * h);
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
-  // Etiqueta compacta
+  // Etiquetas con mayor visibilidad
   const deviation = m.midlineCoincidence.deviation;
   const statusColor = deviation < 1 ? "#22c55e" : deviation < 2 ? "#facc15" : "#ef4444";
   
-  ctx.fillStyle = "rgba(0,0,0,0.75)";
-  ctx.fillRect(w - 160, 15, 145, 35);
+  // Etiqueta de desviación
+  ctx.fillStyle = "rgba(0,0,0,0.85)";
+  ctx.fillRect(w - 180, 15, 165, 80);
+  
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 12px system-ui";
+  ctx.fillText("Línea Media", w - 170, 35);
+  
   ctx.fillStyle = statusColor;
-  ctx.font = "bold 14px system-ui";
-  ctx.fillText(`Desv: ${deviation.toFixed(1)}mm`, w - 150, 38);
+  ctx.font = "bold 18px system-ui";
+  ctx.fillText(`${deviation.toFixed(1)}mm`, w - 170, 60);
+  
+  ctx.fillStyle = "#cccccc";
+  ctx.font = "11px system-ui";
+  ctx.fillText(deviation < 1 ? "Centrada" : deviation < 2 ? "Leve desv." : "Desviada", w - 170, 80);
+  
+  // Leyenda de colores
+  ctx.fillStyle = "rgba(0,0,0,0.85)";
+  ctx.fillRect(15, 15, 160, 80);
+  
+  // Rosa = Facial
+  ctx.fillStyle = "#ec4899";
+  ctx.fillRect(25, 25, 30, 4);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "12px system-ui";
+  ctx.fillText("Línea Facial", 60, 30);
+  
+  // Azul = Dental
+  ctx.fillStyle = "#3b82f6";
+  ctx.fillRect(25, 50, 30, 4);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("Línea Dental", 60, 55);
+  
+  ctx.fillStyle = "#cccccc";
+  ctx.font = "10px system-ui";
+  ctx.fillText("Idealmente coinciden", 25, 75);
 }
 
-// Overlay 2: Proporciones Faciales (Tercios) - GRÁFICO SIMPLIFICADO
+// Overlay 2: Proporciones Faciales (Tercios) - GRÁFICO MEJORADO
 export function drawProportionsOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
@@ -201,13 +238,15 @@ export function drawProportionsOverlay(
   const foreheadY = forehead.y * h;
   const chinY = chin.y * h;
   
-  // Líneas horizontales más visibles y completas
+  // Líneas horizontales con sombra para mayor visibilidad
+  ctx.shadowColor = "rgba(59, 130, 246, 0.8)";
+  ctx.shadowBlur = 8;
   ctx.strokeStyle = "#3b82f6";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 4;
   ctx.setLineDash([]);
   
-  const leftX = w * 0.1;
-  const rightX = w * 0.9;
+  const leftX = w * 0.05;
+  const rightX = w * 0.95;
   
   [foreheadY, browY, noseBaseY, chinY].forEach(y => {
     ctx.beginPath();
@@ -215,24 +254,47 @@ export function drawProportionsOverlay(
     ctx.lineTo(rightX, y);
     ctx.stroke();
   });
+  ctx.shadowBlur = 0;
 
-  // Etiquetas en el lateral derecho
+  // Etiquetas mejoradas con descripciones
   const labels = [
-    { y: (foreheadY + browY) / 2, text: `${m.facialProportions.upperThird.toFixed(0)}%` },
-    { y: (browY + noseBaseY) / 2, text: `${m.facialProportions.middleThird.toFixed(0)}%` },
-    { y: (noseBaseY + chinY) / 2, text: `${m.facialProportions.lowerThird.toFixed(0)}%` }
+    { y: (foreheadY + browY) / 2, text: `${m.facialProportions.upperThird.toFixed(0)}%`, label: "Tercio Superior" },
+    { y: (browY + noseBaseY) / 2, text: `${m.facialProportions.middleThird.toFixed(0)}%`, label: "Tercio Medio" },
+    { y: (noseBaseY + chinY) / 2, text: `${m.facialProportions.lowerThird.toFixed(0)}%`, label: "Tercio Inferior" }
   ];
 
   labels.forEach(label => {
-    ctx.fillStyle = "rgba(59,130,246,0.9)";
-    ctx.fillRect(w - 85, label.y - 15, 70, 30);
-    ctx.fillStyle = "white";
-    ctx.font = "bold 16px system-ui";
-    ctx.fillText(label.text, w - 75, label.y + 5);
+    ctx.fillStyle = "rgba(0,0,0,0.85)";
+    ctx.fillRect(w - 140, label.y - 25, 130, 50);
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 11px system-ui";
+    ctx.fillText(label.label, w - 130, label.y - 8);
+    
+    ctx.fillStyle = "#3b82f6";
+    ctx.font = "bold 20px system-ui";
+    ctx.fillText(label.text, w - 130, label.y + 15);
   });
+  
+  // Información de balance
+  const isBalanced = m.facialProportions.isBalanced;
+  ctx.fillStyle = "rgba(0,0,0,0.85)";
+  ctx.fillRect(15, h - 95, 180, 80);
+  
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 13px system-ui";
+  ctx.fillText("Proporciones Faciales", 25, h - 70);
+  
+  ctx.fillStyle = isBalanced ? "#22c55e" : "#facc15";
+  ctx.font = "bold 16px system-ui";
+  ctx.fillText(isBalanced ? "Balanceadas" : "Analizadas", 25, h - 45);
+  
+  ctx.fillStyle = "#cccccc";
+  ctx.font = "10px system-ui";
+  ctx.fillText("Ideal: 33% cada tercio", 25, h - 25);
 }
 
-// Overlay 3: Análisis de Sonrisa - GRÁFICO SIMPLIFICADO
+// Overlay 3: Análisis de Sonrisa - GRÁFICO MEJORADO
 export function drawSmileOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
@@ -244,20 +306,24 @@ export function drawSmileOverlay(
 
   const mouthL = lm[61], mouthR = lm[291];
   const upperLip = lm[13], lowerLip = lm[14];
-  const upperGum = lm[12]; // Punto superior encima del labio
   
-  // Puntos clave de la sonrisa (comisuras y centro)
+  // Puntos clave de la sonrisa con sombra (comisuras y centro)
+  ctx.shadowColor = "rgba(236, 72, 153, 0.8)";
+  ctx.shadowBlur = 10;
   ctx.fillStyle = "#ec4899";
   [61, 291, 13].forEach(i => {
     const p = lm[i];
     ctx.beginPath();
-    ctx.arc(p.x * w, p.y * h, 6, 0, Math.PI * 2);
+    ctx.arc(p.x * w, p.y * h, 8, 0, Math.PI * 2);
     ctx.fill();
   });
+  ctx.shadowBlur = 0;
 
-  // Línea horizontal del arco de sonrisa (conectando comisuras)
+  // Línea horizontal del arco de sonrisa (conectando comisuras) - más gruesa
+  ctx.shadowColor = "rgba(236, 72, 153, 0.8)";
+  ctx.shadowBlur = 8;
   ctx.strokeStyle = "#ec4899";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(mouthL.x * w, mouthL.y * h);
@@ -269,9 +335,9 @@ export function drawSmileOverlay(
   const cornerY = (mouthL.y + mouthR.y) / 2 * h;
   const arcHeight = midY - cornerY;
   
-  ctx.strokeStyle = "#ec4899";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([5, 3]);
+  ctx.strokeStyle = "#facc15";
+  ctx.lineWidth = 4;
+  ctx.setLineDash([8, 5]);
   ctx.beginPath();
   ctx.moveTo(mouthL.x * w, mouthL.y * h);
   ctx.quadraticCurveTo(
@@ -280,12 +346,47 @@ export function drawSmileOverlay(
   );
   ctx.stroke();
   ctx.setLineDash([]);
+  ctx.shadowBlur = 0;
 
-  // Etiqueta de exposición gingival
-  ctx.fillStyle = "rgba(0,0,0,0.75)";
-  ctx.fillRect(15, 15, 150, 35);
-  const gingColor = m.gingival.mm < 3 ? "#22c55e" : "#facc15";
-  ctx.fillStyle = gingColor;
+  // Panel de información mejorado
+  ctx.fillStyle = "rgba(0,0,0,0.85)";
+  ctx.fillRect(15, 15, 190, 120);
+  
+  // Título
+  ctx.fillStyle = "#ffffff";
   ctx.font = "bold 14px system-ui";
-  ctx.fillText(`Ging: ${m.gingival.mm.toFixed(1)}mm`, 25, 38);
+  ctx.fillText("Análisis de Sonrisa", 25, 35);
+  
+  // Exposición gingival
+  const gingColor = m.gingival.mm < 3 ? "#22c55e" : "#facc15";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "11px system-ui";
+  ctx.fillText("Exposición Gingival:", 25, 60);
+  
+  ctx.fillStyle = gingColor;
+  ctx.font = "bold 18px system-ui";
+  ctx.fillText(`${m.gingival.mm.toFixed(1)}mm`, 25, 82);
+  
+  ctx.fillStyle = "#cccccc";
+  ctx.font = "10px system-ui";
+  ctx.fillText(m.gingival.class === "media" ? "Óptima" : m.gingival.class === "baja" ? "Reducida" : "Elevada", 25, 98);
+  
+  // Arco de sonrisa
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "11px system-ui";
+  ctx.fillText("Arco:", 110, 60);
+  
+  ctx.fillStyle = "#facc15";
+  ctx.font = "bold 12px system-ui";
+  ctx.fillText(
+    m.smileArc === "consonante" ? "Consonante" : 
+    m.smileArc === "plano" ? "Plano" : "Inverso", 
+    110, 78
+  );
+  
+  // Descripción
+  ctx.fillStyle = "#cccccc";
+  ctx.font = "9px system-ui";
+  ctx.fillText("Ideal: 2-4mm encía", 25, 118);
+  ctx.fillText("Arco consonante", 25, 130);
 }

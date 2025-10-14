@@ -1,7 +1,26 @@
+import { useEffect, useState } from "react";
 import { OrbitalAnimation } from "./OrbitalAnimation";
 import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 
 export const LoadingAnimation = () => {
+  const [countdown, setCountdown] = useState(30); // 30 segundos
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) return 0;
+        return prev - 1;
+      });
+      setProgress(prev => {
+        if (prev >= 100) return 100;
+        return prev + (100 / 30);
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden bg-background">
       {/* Animated gradient background effects */}
@@ -21,13 +40,32 @@ export const LoadingAnimation = () => {
         <OrbitalAnimation size="large" />
       </div>
 
-      <div className="mt-8 md:mt-12 text-center">
+      <div className="mt-8 md:mt-12 text-center space-y-6">
         <h2 className="text-xl md:text-2xl font-heading font-bold mb-2">
           Analizando tu Sonrisa
         </h2>
         <p className="text-sm md:text-base text-muted-foreground">
           Nuestro sistema de IA está procesando tus imágenes...
         </p>
+
+        {/* Countdown Timer */}
+        <div className="flex flex-col items-center gap-4 mt-8">
+          <div className="text-4xl md:text-5xl font-bold text-primary">
+            {countdown}s
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="w-64 md:w-80 h-2 bg-muted rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-1000 ease-linear"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          
+          <p className="text-xs md:text-sm text-muted-foreground">
+            Por favor espera mientras procesamos tu análisis
+          </p>
+        </div>
       </div>
     </div>
   );
