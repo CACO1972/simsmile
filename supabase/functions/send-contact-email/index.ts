@@ -30,8 +30,8 @@ const handler = async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "SimSmile <onboarding@resend.dev>",
-        to: ["clinicadentalmiro@gmail.com"],
+        from: "Clínica Dental Miro <admin@clinicamiro.cl>",
+        to: ["admin@clinicamiro.cl"],
         subject: `Nuevo contacto de SimSmile - ${name}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Clínica Dental Miro <onboarding@resend.dev>",
+        from: "Clínica Dental Miro <admin@clinicamiro.cl>",
         to: [email],
         subject: "¡Hemos recibido tu mensaje!",
         html: `
@@ -87,8 +87,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!userEmailResponse.ok) {
       const errorData = await userEmailResponse.text();
-      console.error("Resend API error (confirmation):", errorData);
-      throw new Error(`Error sending confirmation email: ${errorData}`);
+      console.warn("Resend API error (confirmation, non-blocking):", errorData);
+      // No lanzar error para no bloquear el flujo cuando Resend está en modo prueba
     }
 
     return new Response(JSON.stringify({ success: true }), {
