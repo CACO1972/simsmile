@@ -138,18 +138,39 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <h3 className="text-2xl font-heading font-bold text-center text-foreground mb-6">{title}</h3>
         {description && (
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          <p className="text-muted-foreground text-center max-w-lg mx-auto text-lg font-medium mb-6">{description}</p>
         )}
       </div>
 
       {!capturedImage ? (
         <>
           {!isCameraActive ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Instructions list */}
+              <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 max-w-2xl mx-auto">
+                <ul className="space-y-3 text-left">
+                  <li className="flex items-start gap-3">
+                    <span className="text-primary text-xl mt-0.5">✓</span>
+                    <span className="text-foreground">Toma una foto de rostro completo con sonrisa natural.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-primary text-xl mt-0.5">✓</span>
+                    <span className="text-foreground">Asegúrate de estar en primer plano y centrado.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-primary text-xl mt-0.5">✓</span>
+                    <span className="text-foreground">Sonríe con los dientes en <span className="text-primary font-semibold">posición de mordida natural</span>, sin protruir.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-primary text-xl mt-0.5">✓</span>
+                    <span className="text-foreground">Es necesaria una iluminación adecuada.</span>
+                  </li>
+                </ul>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button
                   onClick={handleStartCamera}

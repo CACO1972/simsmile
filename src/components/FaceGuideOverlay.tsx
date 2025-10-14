@@ -19,12 +19,12 @@ export default function FaceGuideOverlay() {
         strokeDasharray="8 4"
       />
       
-      {/* Zona para la boca - óvalo horizontal más pequeño */}
+      {/* Zona para la boca - óvalo horizontal más pequeño y elevado */}
       <ellipse
         cx="150"
-        cy="280"
-        rx="70"
-        ry="35"
+        cy="240"
+        rx="50"
+        ry="25"
         stroke="hsl(var(--primary))"
         strokeWidth="3"
         strokeOpacity="0.8"
@@ -35,9 +35,9 @@ export default function FaceGuideOverlay() {
       {/* Línea de conexión visual entre rostro y zona de boca */}
       <line
         x1="150"
-        y1="305"
+        y1="265"
         x2="150"
-        y2="260"
+        y2="220"
         stroke="hsl(var(--primary))"
         strokeWidth="2"
         strokeOpacity="0.5"
