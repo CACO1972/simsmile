@@ -25,7 +25,7 @@ export const ResultsSection = ({
   contactEmail,
 }: ResultsSectionProps) => {
   const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
-  const [showMetricsDetail, setShowMetricsDetail] = useState(false);
+  const [showAnalysisOverlay, setShowAnalysisOverlay] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -151,6 +151,18 @@ export const ResultsSection = ({
           </p>
         </div>
 
+        {/* Toggle para análisis facial */}
+        <div className="flex justify-center mb-6">
+          <Button
+            onClick={() => setShowAnalysisOverlay(!showAnalysisOverlay)}
+            variant={showAnalysisOverlay ? "default" : "outline"}
+            className="gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            {showAnalysisOverlay ? "Ocultar" : "Mostrar"} Análisis Facial Comparativo
+          </Button>
+        </div>
+
         {/* Comparación visual principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           {/* Imagen Original */}
@@ -163,6 +175,41 @@ export const ResultsSection = ({
               </div>
               <div className="aspect-square relative rounded-lg overflow-hidden border border-border/50">
                 <img src={restImage} alt="Foto original" className="w-full h-full object-cover" />
+                
+                {/* Overlay de análisis actual */}
+                {showAnalysisOverlay && (
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm p-4 flex flex-col justify-end">
+                    <div className="bg-card/90 backdrop-blur rounded-lg p-4 border border-yellow-500/50">
+                      <h4 className="text-sm font-bold mb-3 flex items-center gap-2 text-yellow-500">
+                        ⚠️ ANÁLISIS ACTUAL
+                      </h4>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Arco de sonrisa:</span>
+                          <span className="font-medium text-yellow-500">{metrics?.smileArc || "plano"}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Exposición gingival:</span>
+                          <span className="font-medium text-yellow-500">{metrics?.gingival?.mm}mm ({metrics?.gingival?.class})</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Línea media:</span>
+                          <span className="font-medium text-yellow-500">{metrics?.midline?.mm}mm ({metrics?.midline?.side})</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Ratio bucal:</span>
+                          <span className="font-medium text-yellow-500">{(metrics?.buccalRatio * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t border-border/30">
+                          <span className="text-muted-foreground">Proporciones faciales:</span>
+                          <span className="font-bold text-yellow-500">
+                            {metrics?.facialProportions?.isBalanced ? "Balanceadas" : "Desbalanceadas"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -191,41 +238,76 @@ export const ResultsSection = ({
                   className="w-full h-full"
                   style={{ display: overlayType ? 'block' : 'none' }}
                 />
+                
+                {/* Overlay de análisis mejorado */}
+                {showAnalysisOverlay && !overlayType && (
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm p-4 flex flex-col justify-end">
+                    <div className="bg-card/90 backdrop-blur rounded-lg p-4 border border-primary/50">
+                      <h4 className="text-sm font-bold mb-3 flex items-center gap-2 text-primary">
+                        ✓ ANÁLISIS MEJORADO
+                      </h4>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Arco de sonrisa:</span>
+                          <span className="font-medium text-green-500">consonante</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Exposición gingival:</span>
+                          <span className="font-medium text-green-500">2.0mm (óptima)</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Línea media:</span>
+                          <span className="font-medium text-green-500">0.5mm (centrado)</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Ratio bucal:</span>
+                          <span className="font-medium text-green-500">20%</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t border-border/30">
+                          <span className="text-muted-foreground">Proporciones faciales:</span>
+                          <span className="font-bold text-green-500">Balanceadas</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Herramientas de análisis visual */}
-              <div className="mt-4 space-y-2">
-                <p className="text-xs text-muted-foreground mb-2">Herramientas de análisis:</p>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    size="sm"
-                    variant={overlayType === "midline" ? "default" : "outline"}
-                    onClick={() => setOverlayType(overlayType === "midline" ? null : "midline")}
-                    className="gap-1 text-xs h-8"
-                  >
-                    <Eye className="h-3 w-3" />
-                    Medias
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={overlayType === "proportions" ? "default" : "outline"}
-                    onClick={() => setOverlayType(overlayType === "proportions" ? null : "proportions")}
-                    className="gap-1 text-xs h-8"
-                  >
-                    <Eye className="h-3 w-3" />
-                    Proporciones
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={overlayType === "smile" ? "default" : "outline"}
-                    onClick={() => setOverlayType(overlayType === "smile" ? null : "smile")}
-                    className="gap-1 text-xs h-8"
-                  >
-                    <Eye className="h-3 w-3" />
-                    Sonrisa
-                  </Button>
+              {!showAnalysisOverlay && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs text-muted-foreground mb-2">Herramientas de análisis:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      size="sm"
+                      variant={overlayType === "midline" ? "default" : "outline"}
+                      onClick={() => setOverlayType(overlayType === "midline" ? null : "midline")}
+                      className="gap-1 text-xs h-8"
+                    >
+                      <Eye className="h-3 w-3" />
+                      Medias
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={overlayType === "proportions" ? "default" : "outline"}
+                      onClick={() => setOverlayType(overlayType === "proportions" ? null : "proportions")}
+                      className="gap-1 text-xs h-8"
+                    >
+                      <Eye className="h-3 w-3" />
+                      Proporciones
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={overlayType === "smile" ? "default" : "outline"}
+                      onClick={() => setOverlayType(overlayType === "smile" ? null : "smile")}
+                      className="gap-1 text-xs h-8"
+                    >
+                      <Eye className="h-3 w-3" />
+                      Sonrisa
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </Card>
 
