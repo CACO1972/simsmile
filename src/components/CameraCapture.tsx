@@ -196,7 +196,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
                   <img
                     src={faceGuideFrame}
                     alt="Face guide"
-                    className="w-[80%] h-[80%] object-contain opacity-60"
+                    className="w-[95%] h-[95%] object-contain opacity-60"
                   />
                 </div>
 
