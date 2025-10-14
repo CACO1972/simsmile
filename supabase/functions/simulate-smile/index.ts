@@ -78,6 +78,7 @@ serve(async (req) => {
     // 1. Autenticación con Perfect Corp (si está disponible)
     let perfectCorpFaceData = null;
     if (PERFECT_CORP_CLIENT_ID && PERFECT_CORP_CLIENT_SECRET) {
+      console.log('🔑 Perfect Corp credentials found, attempting authentication...');
       try {
         // Generar id_token para autenticación Perfect Corp
         const timestamp = Date.now();
@@ -87,6 +88,7 @@ serve(async (req) => {
         // Crear hash simple (Perfect Corp usa RSA pero para demo usamos base64)
         const idToken = btoa(String.fromCharCode(...data));
         
+        console.log('📤 Sending auth request to Perfect Corp...');
         const authResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth', {
           method: 'POST',
           headers: {
@@ -98,12 +100,17 @@ serve(async (req) => {
           }),
         });
 
+        console.log(`📥 Perfect Corp auth response status: ${authResponse.status}`);
+        
         if (authResponse.ok) {
           const authData = await authResponse.json();
           const accessToken = authData.result?.access_token;
+          
+          console.log('✅ Perfect Corp authentication successful:', accessToken ? 'Token received' : 'No token');
 
           if (accessToken) {
             // 2. Crear archivo para análisis facial
+            console.log('📤 Creating file for facial analysis...');
             const fileResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.1/file/face-attr-analysis', {
               method: 'POST',
               headers: {
@@ -118,13 +125,18 @@ serve(async (req) => {
               }),
             });
 
+            console.log(`📥 File creation response status: ${fileResponse.status}`);
+
             if (fileResponse.ok) {
               const fileData = await fileResponse.json();
               const fileInfo = fileData.result?.files?.[0];
               
+              console.log('📁 File info received:', fileInfo ? 'Success' : 'No file info');
+              
               if (fileInfo) {
                 // 3. Subir imagen al URL proporcionado
                 const uploadUrl = fileInfo.requests?.[0]?.url;
+                console.log('📤 Uploading image to Perfect Corp...');
                 if (uploadUrl) {
                   // Convertir base64 a blob
                   const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
@@ -136,7 +148,10 @@ serve(async (req) => {
                     body: binaryData
                   });
 
+                  console.log('✅ Image uploaded successfully');
+
                   // 4. Ejecutar tarea de análisis facial
+                  console.log('🔄 Starting facial analysis task...');
                   const taskResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.0/task/face-attr-analysis', {
                     method: 'POST',
                     headers: {
@@ -151,9 +166,14 @@ serve(async (req) => {
                     }),
                   });
 
+                  console.log(`📥 Task creation response status: ${taskResponse.status}`);
+
                   if (taskResponse.ok) {
                     const taskData = await taskResponse.json();
                     const taskId = taskData.result?.task_id;
+                    
+                    console.log('✅ Analysis task created. Task ID:', taskId);
+                    console.log('⏳ Polling for results...');
                     
                     // 5. Polling para obtener resultado
                     let attempts = 0;
@@ -171,27 +191,54 @@ serve(async (req) => {
 
                       if (statusResponse.ok) {
                         const statusData = await statusResponse.json();
-                        if (statusData.result?.status === 'success') {
+                        const status = statusData.result?.status;
+                        console.log(`📊 Poll attempt ${attempts + 1}/10 - Status: ${status}`);
+                        
+                        if (status === 'success') {
                           perfectCorpFaceData = statusData.result?.result;
-                          console.log('Perfect Corp facial analysis:', perfectCorpFaceData);
+                          console.log('✅ ✅ ✅ Perfect Corp facial analysis SUCCESSFUL!');
+                          console.log('📊 Perfect Corp data:', JSON.stringify(perfectCorpFaceData, null, 2));
                           break;
-                        } else if (statusData.result?.status === 'error') {
-                          console.error('Perfect Corp analysis failed:', statusData.result?.error_code);
+                        } else if (status === 'error') {
+                          console.error('❌ Perfect Corp analysis failed:', statusData.result?.error_code);
                           break;
                         }
+                      } else {
+                        console.error(`❌ Status check failed with status: ${statusResponse.status}`);
                       }
                       attempts++;
                     }
+                    
+                    if (attempts >= 10 && !perfectCorpFaceData) {
+                      console.warn('⏱️ Perfect Corp analysis timed out after 10 attempts');
+                    }
+                  } else {
+                    const taskErrorText = await taskResponse.text();
+                    console.error('❌ Failed to create analysis task:', taskErrorText);
                   }
+                } else {
+                  console.error('❌ No upload URL received');
                 }
+              } else {
+                console.error('❌ No file info in response');
               }
+            } else {
+              const fileErrorText = await fileResponse.text();
+              console.error('❌ File creation failed:', fileErrorText);
             }
+          } else {
+            console.error('❌ No access token received from auth');
           }
+        } else {
+          const authErrorText = await authResponse.text();
+          console.error('❌ Perfect Corp authentication failed:', authErrorText);
         }
       } catch (perfectError) {
-        console.error('Perfect Corp API error:', perfectError);
+        console.error('❌ ❌ ❌ Perfect Corp API error:', perfectError);
         // Continuar sin datos de Perfect Corp
       }
+    } else {
+      console.log('⚠️ Perfect Corp credentials not configured, skipping facial analysis');
     }
 
     // Construir prompt basado en las métricas
