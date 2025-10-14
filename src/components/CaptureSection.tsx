@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import CameraCapture from "./CameraCapture";
 import { ArrowRight } from "lucide-react";
 import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
-import photoTipsReference from "@/assets/photo-tips-reference.jpg";
+import guiaFotoRostroCompleto from "@/assets/guia-foto-rostro-completo.jpg";
 
 interface CaptureSectionProps {
   onCapture: (restImage: string, smileImage: string) => void;
@@ -62,8 +62,8 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
             {/* Image Reference */}
             <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-2xl mx-auto">
               <img 
-                src={photoTipsReference} 
-                alt="Consejos para una buena foto" 
+                src={guiaFotoRostroCompleto} 
+                alt="Guía para foto de rostro completo" 
                 className="w-full h-auto rounded-lg"
               />
             </div>
@@ -120,8 +120,8 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
             {/* Image Reference */}
             <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-2xl mx-auto">
               <img 
-                src={photoTipsReference} 
-                alt="Consejos para una buena foto" 
+                src={guiaFotoRostroCompleto} 
+                alt="Guía para foto de rostro completo" 
                 className="w-full h-auto rounded-lg"
               />
             </div>
