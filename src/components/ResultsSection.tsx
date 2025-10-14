@@ -14,6 +14,7 @@ interface ResultsSectionProps {
   idealImage: string;
   analysis: string;
   metrics: any;
+  landmarks: any;
   contactEmail: string;
 }
 
@@ -23,6 +24,7 @@ export const ResultsSection = ({
   idealImage,
   analysis,
   metrics,
+  landmarks,
   contactEmail,
 }: ResultsSectionProps) => {
   const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
@@ -68,26 +70,14 @@ export const ResultsSection = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Usar métricas reales si están disponibles, sino usar mock
-    const mockLandmarks = Array(478).fill(null).map((_, i) => ({
-      x: Math.random(),
-      y: Math.random()
-    }));
+    // Verificar que tenemos landmarks y métricas reales
+    if (!landmarks || !metrics) {
+      console.error("No hay landmarks o métricas disponibles para el overlay");
+      toast.error("No se pueden mostrar overlays sin análisis completo");
+      return;
+    }
 
-    const metricsToUse: SmileMetrics = metrics || {
-      smileArc: "consonante",
-      gingival: { mm: 2, class: "media" },
-      midline: { mm: 1.2, side: "centrado" },
-      buccalRatio: 0.2,
-      facialMidline: { mm: 0.8, side: "centrado" },
-      midlineCoincidence: { deviation: 1.2, status: "coincidente" },
-      facialProportions: {
-        upperThird: 33,
-        middleThird: 34,
-        lowerThird: 33,
-        isBalanced: true
-      }
-    };
+    const metricsToUse: SmileMetrics = metrics;
 
     // Configurar canvas para que coincida con la imagen
     canvas.width = img.naturalWidth || img.width;
@@ -97,11 +87,11 @@ export const ResultsSection = ({
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
     if (type === "midline") {
-      drawMidlineOverlay(ctx, img, mockLandmarks, metricsToUse);
+      drawMidlineOverlay(ctx, img, landmarks, metricsToUse);
     } else if (type === "proportions") {
-      drawProportionsOverlay(ctx, img, mockLandmarks, metricsToUse);
+      drawProportionsOverlay(ctx, img, landmarks, metricsToUse);
     } else if (type === "smile") {
-      drawSmileOverlay(ctx, img, mockLandmarks, metricsToUse);
+      drawSmileOverlay(ctx, img, landmarks, metricsToUse);
     }
   };
 

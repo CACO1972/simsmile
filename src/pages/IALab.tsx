@@ -20,6 +20,7 @@ const IALab = () => {
   const [idealImage, setIdealImage] = useState<string>("");
   const [analysis, setAnalysis] = useState<string>("");
   const [metrics, setMetrics] = useState<any>(null);
+  const [landmarks, setLandmarks] = useState<any>(null);
   const [contactData, setContactData] = useState<any>(null);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
@@ -132,11 +133,12 @@ const IALab = () => {
 
       if (error) throw error;
 
-      // Actualizar con las imágenes simuladas y métricas
+      // Actualizar con las imágenes simuladas, métricas y landmarks
       setSmileImage(data.simulatedImage);
       setIdealImage(data.idealImage);
       setAnalysis(analysisText);
       setMetrics(calculatedMetrics);
+      setLandmarks(smileLandmarks);
       setStep("contact");
       
     } catch (error) {
@@ -185,6 +187,7 @@ const IALab = () => {
           idealImage={idealImage}
           analysis={analysis}
           metrics={metrics}
+          landmarks={landmarks}
           contactEmail={contactData?.email || ""}
         />
       )}
