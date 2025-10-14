@@ -79,41 +79,51 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               Empezar Ahora
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-border hover:bg-card rounded-full px-8 py-6 text-base"
-            >
-              Ver Demo
-            </Button>
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-8 mt-8">
-            <div className="flex flex-col items-center lg:items-start">
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                70+
+          {/* Process Flow */}
+          <div className="w-full max-w-xl mt-8 space-y-4">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+              Cómo Funciona
+            </h3>
+            
+            <div className="flex items-start gap-4 group">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
+                1
               </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                Clientes
-              </div>
-            </div>
-            <div className="h-12 w-px bg-border" />
-            <div className="flex flex-col items-center lg:items-start">
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                2.1x
-              </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                Precisión
+              <div className="flex-1">
+                <h4 className="font-semibold text-foreground mb-1">Captura tu Sonrisa</h4>
+                <p className="text-sm text-muted-foreground">Toma dos fotos: una en reposo y otra sonriendo naturalmente.</p>
               </div>
             </div>
-            <div className="h-12 w-px bg-border" />
-            <div className="flex flex-col items-center lg:items-start">
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                85%
+
+            <div className="flex items-start gap-4 group">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
+                2
               </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                Satisfacción
+              <div className="flex-1">
+                <h4 className="font-semibold text-foreground mb-1">Análisis con IA</h4>
+                <p className="text-sm text-muted-foreground">Nuestra tecnología analiza tu rostro y sonrisa con precisión avanzada.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 group">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
+                3
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-foreground mb-1">Simulación Personalizada</h4>
+                <p className="text-sm text-muted-foreground">Visualiza cómo lucirías con una sonrisa mejorada y simétrica.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 group">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
+                4
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-foreground mb-1">Recibe tu Reporte</h4>
+                <p className="text-sm text-muted-foreground">Obtén un análisis completo y recomendaciones en tu correo.</p>
               </div>
             </div>
           </div>
