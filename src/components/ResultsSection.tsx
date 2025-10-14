@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { WaitlistModal } from "./WaitlistModal";
 import { SmileCustomizer } from "./SmileCustomizer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { FacialAnalysisReport } from "./FacialAnalysisReport";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -16,22 +17,8 @@ interface ResultsSectionProps {
   metrics: any;
   landmarks: any;
   contactEmail: string;
-  perfectCorpData?: {
-    skinColor?: string;
-    eyeColor?: string;
-    lipColor?: string;
-    hairColor?: string;
-    faceShape?: string;
-    eyeShape?: string;
-    eyeSize?: string;
-    eyeAngle?: string;
-    eyeDistance?: string;
-    eyelid?: string;
-    noseType?: string;
-    lipsType?: string;
-    browsType?: string;
-    cheekbonesType?: string;
-  };
+  facialAnalysis?: any;
+  qualityScore?: number;
 }
 
 export const ResultsSection = ({
@@ -42,7 +29,8 @@ export const ResultsSection = ({
   metrics,
   landmarks,
   contactEmail,
-  perfectCorpData,
+  facialAnalysis,
+  qualityScore,
 }: ResultsSectionProps) => {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [customizedImage, setCustomizedImage] = useState<string | null>(null);
@@ -214,67 +202,15 @@ export const ResultsSection = ({
           />
         </div>
 
-        {/* 3. DATOS DE PERFECT CORP */}
-        {perfectCorpData && (
-          <Card className="bg-gradient-to-br from-accent/10 to-card/50 backdrop-blur border-accent/30 p-6 md:p-8 mb-8">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-heading font-bold mb-2 flex items-center justify-center gap-2">
-                <Sparkles className="h-6 w-6 text-accent" />
-                Análisis Facial Perfect Corp
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Datos avanzados de reconocimiento facial con IA
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Colores */}
-              <div className="bg-muted/30 rounded-lg p-4">
-                <h4 className="font-semibold mb-3 text-sm">Colores Faciales</h4>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Piel:</span>
-                    <span className="font-medium">{perfectCorpData.skinColor || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Ojos:</span>
-                    <span className="font-medium">{perfectCorpData.eyeColor || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Labios:</span>
-                    <span className="font-medium">{perfectCorpData.lipColor || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Cabello:</span>
-                    <span className="font-medium">{perfectCorpData.hairColor || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rasgos */}
-              <div className="bg-muted/30 rounded-lg p-4">
-                <h4 className="font-semibold mb-3 text-sm">Rasgos Faciales</h4>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Forma de cara:</span>
-                    <span className="font-medium capitalize">{perfectCorpData.faceShape || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Ojos:</span>
-                    <span className="font-medium capitalize">{perfectCorpData.eyeShape || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Distancia ojos:</span>
-                    <span className="font-medium capitalize">{perfectCorpData.eyeDistance || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nariz:</span>
-                    <span className="font-medium capitalize">{perfectCorpData.noseType || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+        {/* 3. ANÁLISIS FACIAL COMPLETO */}
+        {facialAnalysis && (
+          <div className="mb-8">
+            <FacialAnalysisReport 
+              data={facialAnalysis}
+              imageUrl={restImage}
+              onUnlockPremium={() => setShowWaitlistModal(true)}
+            />
+          </div>
         )}
 
         {/* Botones de acción */}

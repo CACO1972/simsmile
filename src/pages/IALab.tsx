@@ -22,7 +22,7 @@ const IALab = () => {
   const [metrics, setMetrics] = useState<any>(null);
   const [landmarks, setLandmarks] = useState<any>(null);
   const [contactData, setContactData] = useState<any>(null);
-  const [perfectCorpData, setPerfectCorpData] = useState<any>(null);
+  const [simulationData, setSimulationData] = useState<any>(null);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
   // Initialize MediaPipe Face Landmarker
@@ -140,7 +140,7 @@ const IALab = () => {
       setAnalysis(analysisText);
       setMetrics(calculatedMetrics);
       setLandmarks(smileLandmarks);
-      setPerfectCorpData(data.perfectCorpData || null);
+      setSimulationData(data);
       setStep("contact");
       
     } catch (error) {
@@ -191,7 +191,8 @@ const IALab = () => {
           metrics={metrics}
           landmarks={landmarks}
           contactEmail={contactData?.email || ""}
-          perfectCorpData={perfectCorpData}
+          facialAnalysis={simulationData?.facialAnalysis}
+          qualityScore={simulationData?.qualityScore}
         />
       )}
 

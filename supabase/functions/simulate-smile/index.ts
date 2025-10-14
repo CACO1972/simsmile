@@ -13,13 +13,7 @@ serve(async (req) => {
 
   try {
     const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
-    const PERFECT_CORP_CLIENT_ID = Deno.env.get('PERFECT_CORP_CLIENT_ID');
-    const PERFECT_CORP_CLIENT_SECRET = Deno.env.get('PERFECT_CORP_CLIENT_SECRET');
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    
-    if (!PERFECT_CORP_CLIENT_ID || !PERFECT_CORP_CLIENT_SECRET) {
-      console.warn('Perfect Corp API keys not configured, skipping facial analysis');
-    }
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
@@ -75,171 +69,149 @@ serve(async (req) => {
       );
     }
 
-    // 1. Autenticación con Perfect Corp (si está disponible)
-    let perfectCorpFaceData = null;
-    if (PERFECT_CORP_CLIENT_ID && PERFECT_CORP_CLIENT_SECRET) {
-      console.log('🔑 Perfect Corp credentials found, attempting authentication...');
-      try {
-        // Generar id_token para autenticación Perfect Corp
-        const timestamp = Date.now();
-        const encoder = new TextEncoder();
-        const data = encoder.encode(`client_id=${PERFECT_CORP_CLIENT_ID}&timestamp=${timestamp}`);
-        
-        // Crear hash simple (Perfect Corp usa RSA pero para demo usamos base64)
-        const idToken = btoa(String.fromCharCode(...data));
-        
-        console.log('📤 Sending auth request to Perfect Corp...');
-        const authResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            client_id: PERFECT_CORP_CLIENT_ID,
-            id_token: idToken
-          }),
-        });
+    // 1. Validación de calidad de imagen con Lovable AI
+    console.log('📸 Validando calidad de imagen...');
+    const qualityCheckPrompt = `You are an image quality expert. Analyze this photo for facial analysis suitability.
+    
+Check for:
+1. Face is centered and clearly visible
+2. Good lighting (not too dark or overexposed)
+3. Face is in focus (not blurry)
+4. Front-facing angle (not profile or extreme angle)
+5. No obstructions (hands, objects covering face)
+6. Sufficient resolution
 
-        console.log(`📥 Perfect Corp auth response status: ${authResponse.status}`);
-        
-        if (authResponse.ok) {
-          const authData = await authResponse.json();
-          const accessToken = authData.result?.access_token;
-          
-          console.log('✅ Perfect Corp authentication successful:', accessToken ? 'Token received' : 'No token');
+Respond with a JSON object:
+{
+  "isValid": boolean,
+  "quality_score": number (0-100),
+  "issues": string[] (list of problems found, empty if valid),
+  "recommendation": string (what to improve if invalid)
+}`;
 
-          if (accessToken) {
-            // 2. Crear archivo para análisis facial
-            console.log('📤 Creating file for facial analysis...');
-            const fileResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.1/file/face-attr-analysis', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                files: [{
-                  content_type: 'image/jpeg',
-                  file_name: 'face_analysis.jpg'
-                }]
-              }),
-            });
-
-            console.log(`📥 File creation response status: ${fileResponse.status}`);
-
-            if (fileResponse.ok) {
-              const fileData = await fileResponse.json();
-              const fileInfo = fileData.result?.files?.[0];
-              
-              console.log('📁 File info received:', fileInfo ? 'Success' : 'No file info');
-              
-              if (fileInfo) {
-                // 3. Subir imagen al URL proporcionado
-                const uploadUrl = fileInfo.requests?.[0]?.url;
-                console.log('📤 Uploading image to Perfect Corp...');
-                if (uploadUrl) {
-                  // Convertir base64 a blob
-                  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-                  const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-                  
-                  await fetch(uploadUrl, {
-                    method: fileInfo.requests[0].method,
-                    headers: fileInfo.requests[0].headers,
-                    body: binaryData
-                  });
-
-                  console.log('✅ Image uploaded successfully');
-
-                  // 4. Ejecutar tarea de análisis facial
-                  console.log('🔄 Starting facial analysis task...');
-                  const taskResponse = await fetch('https://yce-api-01.perfectcorp.com/s2s/v1.0/task/face-attr-analysis', {
-                    method: 'POST',
-                    headers: {
-                      'Authorization': `Bearer ${accessToken}`,
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      request_id: 0,
-                      payload: {
-                        file_id: fileInfo.file_id
-                      }
-                    }),
-                  });
-
-                  console.log(`📥 Task creation response status: ${taskResponse.status}`);
-
-                  if (taskResponse.ok) {
-                    const taskData = await taskResponse.json();
-                    const taskId = taskData.result?.task_id;
-                    
-                    console.log('✅ Analysis task created. Task ID:', taskId);
-                    console.log('⏳ Polling for results...');
-                    
-                    // 5. Polling para obtener resultado
-                    let attempts = 0;
-                    while (attempts < 10) {
-                      await new Promise(resolve => setTimeout(resolve, 2000));
-                      
-                      const statusResponse = await fetch(
-                        `https://yce-api-01.perfectcorp.com/s2s/v1.0/task/face-attr-analysis?task_id=${encodeURIComponent(taskId)}`,
-                        {
-                          headers: {
-                            'Authorization': `Bearer ${accessToken}`
-                          }
-                        }
-                      );
-
-                      if (statusResponse.ok) {
-                        const statusData = await statusResponse.json();
-                        const status = statusData.result?.status;
-                        console.log(`📊 Poll attempt ${attempts + 1}/10 - Status: ${status}`);
-                        
-                        if (status === 'success') {
-                          perfectCorpFaceData = statusData.result?.result;
-                          console.log('✅ ✅ ✅ Perfect Corp facial analysis SUCCESSFUL!');
-                          console.log('📊 Perfect Corp data:', JSON.stringify(perfectCorpFaceData, null, 2));
-                          break;
-                        } else if (status === 'error') {
-                          console.error('❌ Perfect Corp analysis failed:', statusData.result?.error_code);
-                          break;
-                        }
-                      } else {
-                        console.error(`❌ Status check failed with status: ${statusResponse.status}`);
-                      }
-                      attempts++;
-                    }
-                    
-                    if (attempts >= 10 && !perfectCorpFaceData) {
-                      console.warn('⏱️ Perfect Corp analysis timed out after 10 attempts');
-                    }
-                  } else {
-                    const taskErrorText = await taskResponse.text();
-                    console.error('❌ Failed to create analysis task:', taskErrorText);
-                  }
-                } else {
-                  console.error('❌ No upload URL received');
-                }
-              } else {
-                console.error('❌ No file info in response');
+    const qualityResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: qualityCheckPrompt },
+              {
+                type: 'image_url',
+                image_url: { url: imageBase64 }
               }
-            } else {
-              const fileErrorText = await fileResponse.text();
-              console.error('❌ File creation failed:', fileErrorText);
-            }
-          } else {
-            console.error('❌ No access token received from auth');
+            ]
           }
-        } else {
-          const authErrorText = await authResponse.text();
-          console.error('❌ Perfect Corp authentication failed:', authErrorText);
-        }
-      } catch (perfectError) {
-        console.error('❌ ❌ ❌ Perfect Corp API error:', perfectError);
-        // Continuar sin datos de Perfect Corp
-      }
-    } else {
-      console.log('⚠️ Perfect Corp credentials not configured, skipping facial analysis');
+        ],
+        response_format: { type: "json_object" }
+      }),
+    });
+
+    if (!qualityResponse.ok) {
+      console.error('Quality check failed:', qualityResponse.status);
     }
+
+    const qualityData = await qualityResponse.json();
+    const qualityResult = JSON.parse(qualityData.choices?.[0]?.message?.content || '{"isValid": true, "quality_score": 75}');
+    
+    console.log('✅ Quality check result:', qualityResult);
+
+    // Si la calidad es baja, rechazar
+    if (!qualityResult.isValid || qualityResult.quality_score < 60) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Calidad de imagen insuficiente',
+          quality: qualityResult,
+          message: qualityResult.recommendation || 'Por favor, toma una foto con mejor iluminación y centrada.'
+        }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 2. Análisis facial profundo con Lovable AI
+    console.log('🔍 Realizando análisis facial completo...');
+    const facialAnalysisPrompt = `You are a facial analysis expert. Analyze this face photo and provide comprehensive measurements.
+
+Calculate these facial proportions and ratios:
+
+FACE STRUCTURE:
+1. Horizontal Ratio - Divide face into 3 horizontal sections (upper, middle, lower thirds)
+2. Vertical Ratio - Divide face into 5 vertical sections from top to bottom
+3. Face Aspect Ratio - Ratio of face height to width
+4. Eye Distance - Spacing between eyes (narrow/balanced/wide)
+5. Eye Width - Individual eye width (narrow/balanced/wide)  
+6. Eye Aspect Ratio - Height to width ratio of eyes
+
+NOSE & MOUTH:
+7. Nose Aspect Ratio - Nose height to width
+8. Nose Width to Mouth Width Ratio
+9. Nose to Lip to Chin Ratio
+10. Upper Lip to Lower Lip Ratio
+11. Mouth Width relative to face width
+
+OVERALL SYMMETRY:
+12. Face symmetry score (0-100)
+13. Golden ratio proximity for key measurements
+
+Provide measurements as percentages and ratios where applicable.
+
+Respond with a JSON object:
+{
+  "horizontal_ratio": {"upper": number, "middle": number, "lower": number},
+  "vertical_ratio": [number, number, number, number, number],
+  "face_aspect_ratio": number,
+  "eye_distance": {"value": number, "category": "narrow|balanced|wide"},
+  "eye_width": {"value": number, "category": "narrow|balanced|wide"},
+  "eye_aspect_ratio": number,
+  "nose_aspect_ratio": number,
+  "nose_to_mouth_width": number,
+  "nose_lip_chin_ratio": number,
+  "upper_lower_lip_ratio": number,
+  "mouth_width_percentage": number,
+  "symmetry_score": number,
+  "golden_ratio_score": number,
+  "overall_balance": "excellent|good|fair|needs_improvement"
+}`;
+
+    const facialResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: facialAnalysisPrompt },
+              {
+                type: 'image_url',
+                image_url: { url: imageBase64 }
+              }
+            ]
+          }
+        ],
+        response_format: { type: "json_object" }
+      }),
+    });
+
+    if (!facialResponse.ok) {
+      console.error('Facial analysis failed:', facialResponse.status);
+      throw new Error('Facial analysis failed');
+    }
+
+    const facialData = await facialResponse.json();
+    const facialMetrics = JSON.parse(facialData.choices?.[0]?.message?.content || '{}');
+    
+    console.log('✅ Facial analysis complete:', facialMetrics);
 
     // Construir prompt basado en las métricas
     const corrections = [];
@@ -320,24 +292,6 @@ IMPORTANT:
 - DO NOT change the person's age, gender, or facial features
 - ONLY enhance the teeth and smile area`;
 
-    // Preparar datos de Perfect Corp para respuesta
-    const perfectCorpDataForResponse = perfectCorpFaceData ? {
-      skinColor: perfectCorpFaceData.skin_color,
-      eyeColor: perfectCorpFaceData.eye_color_name,
-      lipColor: perfectCorpFaceData.lip_color,
-      hairColor: perfectCorpFaceData.hair_color_name,
-      faceShape: perfectCorpFaceData.face_shape,
-      eyeShape: perfectCorpFaceData.eye_shape,
-      eyeSize: perfectCorpFaceData.eye_size,
-      eyeAngle: perfectCorpFaceData.eye_angle,
-      eyeDistance: perfectCorpFaceData.eye_distance,
-      eyelid: perfectCorpFaceData.eyelid,
-      noseType: perfectCorpFaceData.nose_type,
-      lipsType: perfectCorpFaceData.lips_type,
-      browsType: perfectCorpFaceData.brows_type,
-      cheekbonesType: perfectCorpFaceData.cheekbones_type
-    } : null;
-
     // Primera simulación: correcciones con Lovable AI
     const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -392,16 +346,11 @@ IMPORTANT:
       correctedImage = imageBase64;
     }
 
-    // Segunda simulación: diseño ideal con Lovable AI y datos de Perfect Corp
+    // Segunda simulación: diseño ideal con Lovable AI
     const enhancedRecommendationPrompt = `You are an expert in smile design. Based on the corrected image, create an IDEAL smile simulation. CRITICAL: You must maintain the SAME PERSON - do not change the face, age, or identity.
 
-FACIAL ANALYSIS${perfectCorpFaceData ? ' (Enhanced with Perfect Corp AI)' : ''}:
+FACIAL ANALYSIS:
 ${faceDescriptions.length > 0 ? faceDescriptions.join(', ') : 'Analyzed facial profile'}
-${perfectCorpFaceData ? `
-- Skin tone: ${perfectCorpFaceData.skin_color}
-- Eye color: ${perfectCorpFaceData.eye_color_name}
-- Lip color: ${perfectCorpFaceData.lip_color}
-- Hair color: ${perfectCorpFaceData.hair_color_name}` : ''}
 
 DESIGN RECOMMENDATIONS:
 1. Tooth shape: ${teethShapeRec}
@@ -409,7 +358,7 @@ DESIGN RECOMMENDATIONS:
 3. Smile width: ${smileWidthRec}
 4. Gingival exposure: ${gingivalRec}
 
-RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions and color harmony'}
+RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions'}
 
 IMPORTANT:
 - Keep the EXACT SAME person, face structure, and facial features
@@ -453,8 +402,8 @@ IMPORTANT:
         JSON.stringify({ 
           simulatedImage: correctedImage, 
           idealImage: correctedImage,
-          faceAnalysis: faceAnalysis,
-          perfectCorpData: perfectCorpDataForResponse
+          facialAnalysis: facialMetrics,
+          qualityScore: qualityResult.quality_score
         }), 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -467,8 +416,8 @@ IMPORTANT:
       JSON.stringify({ 
         simulatedImage: correctedImage,
         idealImage: idealImage || correctedImage,
-        faceAnalysis: faceAnalysis,
-        perfectCorpData: perfectCorpDataForResponse
+        facialAnalysis: facialMetrics,
+        qualityScore: qualityResult.quality_score
       }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
