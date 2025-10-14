@@ -237,40 +237,57 @@ export const ResultsSection = ({
                         <div className="bg-muted/30 rounded p-2">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-muted-foreground font-semibold">Arco de Sonrisa:</span>
-                            <span className="font-bold text-red-400">{metrics?.smileArc || "Plano"}</span>
+                            <span className="font-bold text-red-400 capitalize">{metrics?.smileArc || "Plano"}</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Estado: No consonante con labio inferior</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {metrics?.smileArc === "consonante" ? "Estado: Armonía con labio inferior" : "Estado: No consonante con labio inferior"}
+                          </p>
                         </div>
                         
                         <div className="bg-muted/30 rounded p-2">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-muted-foreground font-semibold">Exposición Gingival:</span>
-                            <span className="font-bold text-red-400">{metrics?.gingival?.mm || "4.5"}mm</span>
+                            <span className="font-bold text-red-400">{metrics?.gingival?.mm?.toFixed(1) || "4.5"}mm</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Clasificación: {metrics?.gingival?.class || "Excesiva"} (ideal: 1-3mm)</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Clasificación: {metrics?.gingival?.class || "Excesiva"} (rango ideal: 1-3mm)
+                          </p>
                         </div>
 
                         <div className="bg-muted/30 rounded p-2">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-muted-foreground font-semibold">Línea Media Dental:</span>
-                            <span className="font-bold text-red-400">{metrics?.midline?.mm || "2.1"}mm desviada</span>
+                            <span className="font-bold text-red-400">
+                              {metrics?.midline?.mm?.toFixed(1) || "2.1"}mm {metrics?.midline?.side || "desviada"}
+                            </span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Dirección: {metrics?.midline?.side || "Izquierda"}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Tolerancia clínica: &lt;2mm (imperceptible)
+                          </p>
                         </div>
 
                         <div className="bg-muted/30 rounded p-2">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-muted-foreground font-semibold">Corredor Bucal:</span>
-                            <span className="font-bold text-red-400">{((metrics?.buccalRatio || 0.25) * 100).toFixed(1)}%</span>
+                            <span className="font-bold text-red-400">
+                              {((metrics?.buccalRatio || 0.25) * 100).toFixed(1)}%
+                            </span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Estado: Desproporcionado (ideal: 15-20%)</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Rango estético ideal: 10-15% (sonrisa natural)
+                          </p>
                         </div>
 
-                        <div className="bg-muted/30 rounded p-2 border-t border-border/30 pt-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground font-semibold">Simetría Dental:</span>
-                            <span className="font-bold text-red-400">Asimétrica</span>
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Proporción Áurea:</span>
+                            <span className="font-bold text-red-400">
+                              {metrics?.facialProportions?.isBalanced ? "1.618" : "Desbalanceada"}
+                            </span>
                           </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            Referencia: Ratio IC/IL = 0.62 (Golden Proportion)
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -351,7 +368,9 @@ export const ResultsSection = ({
                             <span className="text-muted-foreground font-semibold">Arco de Sonrisa:</span>
                             <span className="font-bold text-green-400">Consonante</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Estado: Perfecta armonía con labio inferior</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Estado: Armonía perfecta con labio inferior
+                          </p>
                         </div>
                         
                         <div className="bg-muted/30 rounded p-2">
@@ -359,30 +378,41 @@ export const ResultsSection = ({
                             <span className="text-muted-foreground font-semibold">Exposición Gingival:</span>
                             <span className="font-bold text-green-400">2.0mm</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Clasificación: Óptima (rango ideal alcanzado)</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Clasificación: Óptima (dentro de rango 1-3mm)
+                          </p>
                         </div>
 
                         <div className="bg-muted/30 rounded p-2">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-muted-foreground font-semibold">Línea Media Dental:</span>
-                            <span className="font-bold text-green-400">0.5mm desviada</span>
+                            <span className="font-bold text-green-400">
+                              0.5mm centrada
+                            </span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Dirección: Centrada (imperceptible)</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Tolerancia clínica: Imperceptible (&lt;2mm)
+                          </p>
                         </div>
 
                         <div className="bg-muted/30 rounded p-2">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-muted-foreground font-semibold">Corredor Bucal:</span>
-                            <span className="font-bold text-green-400">18.5%</span>
+                            <span className="font-bold text-green-400">12.5%</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">Estado: Proporción ideal alcanzada</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Rango estético ideal: Sonrisa natural alcanzada
+                          </p>
                         </div>
 
-                        <div className="bg-muted/30 rounded p-2 border-t border-border/30 pt-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground font-semibold">Simetría Dental:</span>
-                            <span className="font-bold text-green-400">Simétrica</span>
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Proporción Áurea:</span>
+                            <span className="font-bold text-green-400">1.618</span>
                           </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            Referencia: Golden Proportion alcanzada (0.62)
+                          </p>
                         </div>
                       </div>
                     </div>
