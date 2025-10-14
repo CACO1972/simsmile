@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Share2, Mail, Download, Eye, CheckCircle2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { drawMidlineOverlay, drawProportionsOverlay, drawSmileOverlay, type SmileMetrics } from "@/lib/metrics";
-import simsmileLogo from "@/assets/simsmile-logo-official.png";
+import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 import { Card } from "@/components/ui/card";
 
 interface ResultsSectionProps {

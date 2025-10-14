@@ -1,5 +1,5 @@
 import { OrbitalAnimation } from "./OrbitalAnimation";
-import simsmileLogo from "@/assets/simsmile-logo-official.png";
+import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 
 export const LoadingAnimation = () => {
   return (
