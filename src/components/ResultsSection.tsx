@@ -16,6 +16,22 @@ interface ResultsSectionProps {
   metrics: any;
   landmarks: any;
   contactEmail: string;
+  perfectCorpData?: {
+    skinColor?: string;
+    eyeColor?: string;
+    lipColor?: string;
+    hairColor?: string;
+    faceShape?: string;
+    eyeShape?: string;
+    eyeSize?: string;
+    eyeAngle?: string;
+    eyeDistance?: string;
+    eyelid?: string;
+    noseType?: string;
+    lipsType?: string;
+    browsType?: string;
+    cheekbonesType?: string;
+  };
 }
 
 export const ResultsSection = ({
@@ -26,10 +42,12 @@ export const ResultsSection = ({
   metrics,
   landmarks,
   contactEmail,
+  perfectCorpData,
 }: ResultsSectionProps) => {
   const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
   const [showAnalysisOverlay, setShowAnalysisOverlay] = useState(false);
   const [showSmileAnalysis, setShowSmileAnalysis] = useState(false);
+  const [showFacialAttributes, setShowFacialAttributes] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -149,7 +167,10 @@ export const ResultsSection = ({
           <Button
             onClick={() => {
               setShowAnalysisOverlay(!showAnalysisOverlay);
-              if (!showAnalysisOverlay) setShowSmileAnalysis(false);
+              if (!showAnalysisOverlay) {
+                setShowSmileAnalysis(false);
+                setShowFacialAttributes(false);
+              }
             }}
             variant={showAnalysisOverlay ? "default" : "outline"}
             className="gap-2"
@@ -160,7 +181,10 @@ export const ResultsSection = ({
           <Button
             onClick={() => {
               setShowSmileAnalysis(!showSmileAnalysis);
-              if (!showSmileAnalysis) setShowAnalysisOverlay(false);
+              if (!showSmileAnalysis) {
+                setShowAnalysisOverlay(false);
+                setShowFacialAttributes(false);
+              }
             }}
             variant={showSmileAnalysis ? "default" : "outline"}
             className="gap-2"
@@ -168,6 +192,22 @@ export const ResultsSection = ({
             <Eye className="h-4 w-4" />
             {showSmileAnalysis ? "Ocultar" : "Mostrar"} Análisis Técnico de Sonrisa
           </Button>
+          {perfectCorpData && (
+            <Button
+              onClick={() => {
+                setShowFacialAttributes(!showFacialAttributes);
+                if (!showFacialAttributes) {
+                  setShowAnalysisOverlay(false);
+                  setShowSmileAnalysis(false);
+                }
+              }}
+              variant={showFacialAttributes ? "default" : "outline"}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              {showFacialAttributes ? "Ocultar" : "Mostrar"} Atributos Faciales IA
+            </Button>
+          )}
         </div>
 
         {/* Comparación visual principal */}
@@ -505,6 +545,131 @@ export const ResultsSection = ({
             </div>
           </Card>
         </div>
+
+        {/* Atributos Faciales con Perfect Corp AI */}
+        {showFacialAttributes && perfectCorpData && (
+          <div className="mb-12 animate-fade-in">
+            <Card className="bg-card/30 backdrop-blur border-primary/30 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-heading font-bold flex items-center gap-2">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                  Análisis de Atributos Faciales
+                </h3>
+                <span className="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30">
+                  Perfect Corp AI
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Face Shape */}
+                {perfectCorpData.faceShape && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">FORMA DE CARA</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.faceShape}</p>
+                  </div>
+                )}
+
+                {/* Eye Attributes */}
+                {perfectCorpData.eyeShape && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">FORMA DE OJOS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeShape}</p>
+                  </div>
+                )}
+                
+                {perfectCorpData.eyeSize && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TAMAÑO DE OJOS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeSize}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.eyeAngle && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">ÁNGULO DE OJOS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeAngle}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.eyeDistance && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">DISTANCIA OCULAR</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeDistance}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.eyelid && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">PÁRPADO</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyelid}</p>
+                  </div>
+                )}
+
+                {/* Other Facial Features */}
+                {perfectCorpData.noseType && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE NARIZ</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.noseType}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.lipsType && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE LABIOS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.lipsType}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.browsType && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE CEJAS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.browsType}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.cheekbonesType && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TIPO DE PÓMULOS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.cheekbonesType}</p>
+                  </div>
+                )}
+
+                {/* Colors */}
+                {perfectCorpData.skinColor && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">TONO DE PIEL</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.skinColor}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.eyeColor && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">COLOR DE OJOS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.eyeColor}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.lipColor && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">COLOR DE LABIOS</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.lipColor}</p>
+                  </div>
+                )}
+
+                {perfectCorpData.hairColor && (
+                  <div className="bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <h4 className="text-sm font-bold text-muted-foreground mb-2">COLOR DE CABELLO</h4>
+                    <p className="text-lg font-bold capitalize">{perfectCorpData.hairColor}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 text-xs text-muted-foreground text-center">
+                Análisis facial avanzado proporcionado por Perfect Corp AI
+              </div>
+            </Card>
+          </div>
+        )}
 
 
         {/* Premium Features CTA */}

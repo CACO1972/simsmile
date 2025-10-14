@@ -362,10 +362,26 @@ IMPORTANT:
         idealImage: idealImage || correctedImage,
         faceAnalysis: enhancedFaceAnalysis,
         perfectCorpData: perfectCorpFaceData ? {
+          // Colores
           skinColor: perfectCorpFaceData.skin_color,
           eyeColor: perfectCorpFaceData.eye_color_name,
           lipColor: perfectCorpFaceData.lip_color,
-          hairColor: perfectCorpFaceData.hair_color_name
+          hairColor: perfectCorpFaceData.hair_color_name,
+          // Atributos faciales
+          faceShape: perfectCorpFaceData.face_shape,
+          // Ojos
+          eyeShape: perfectCorpFaceData.eye_shape,
+          eyeSize: perfectCorpFaceData.eye_size,
+          eyeAngle: perfectCorpFaceData.eye_angle,
+          eyeDistance: perfectCorpFaceData.eye_distance,
+          eyelid: perfectCorpFaceData.eyelid,
+          // Otros rasgos
+          noseType: perfectCorpFaceData.nose_type,
+          lipsType: perfectCorpFaceData.lips_type,
+          browsType: perfectCorpFaceData.brows_type,
+          cheekbonesType: perfectCorpFaceData.cheekbones_type,
+          // Datos raw completos para uso avanzado
+          raw: perfectCorpFaceData
         } : null
       }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
