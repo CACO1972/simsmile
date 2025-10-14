@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, TrendingUp, Users, Award } from "lucide-react";
 import logoMain from "@/assets/simsmile-logo-minimal.png";
+import hero3D from "@/assets/hero-3d-tooth.png";
 
 interface HeroSectionProps {
   onStart: () => void;
@@ -8,65 +9,144 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-4 md:pt-8 relative overflow-hidden bg-gradient-to-b from-[#1a0b2e] via-[#2d1b4e] to-[#3d2863]">
+    <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-8 md:pt-12 relative overflow-hidden bg-background">
       
-      {/* Main gradient glow effect */}
+      {/* Animated gradient background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 right-0 h-[60%] bg-gradient-to-b from-[hsl(270,100%,75%)] via-[hsl(270,80%,65%)] to-transparent opacity-40 blur-[120px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-[50%] bg-gradient-to-t from-[hsl(265,70%,50%)] to-transparent opacity-30 blur-[100px]" />
-      </div>
-      
-      {/* Radial glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-[hsl(280,100%,70%)] rounded-full opacity-20 blur-[150px] animate-[pulse_8s_ease-in-out_infinite]" />
-        <div className="absolute top-[30%] right-[15%] w-[400px] h-[400px] bg-[hsl(260,90%,65%)] rounded-full opacity-25 blur-[120px] animate-[pulse_10s_ease-in-out_infinite_reverse]" />
-        <div className="absolute bottom-[20%] left-[50%] -translate-x-1/2 w-[600px] h-[300px] bg-[hsl(270,85%,60%)] rounded-full opacity-30 blur-[140px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col items-center justify-start text-center z-10 max-w-5xl w-full">
-        <img 
-          src={logoMain} 
-          alt="SimSmile" 
-          className="w-80 md:w-[40rem] lg:w-[48rem] mx-auto mb-1 animate-fade-in"
-        />
-        
-        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight mb-6">
-          IA Poderosa,
-          <br />
-          <span className="bg-gradient-to-r from-[hsl(270,100%,85%)] via-[hsl(280,90%,75%)] to-[hsl(260,85%,80%)] bg-clip-text text-transparent">
-            Sonrisas Más Brillantes
-          </span>
-        </h1>
-        
-        <p className="text-xl md:text-2xl lg:text-3xl text-white/80 font-light max-w-3xl leading-relaxed mb-6">
-          Descubre el potencial de tu sonrisa con nuestro simulador de inteligencia artificial avanzado
-        </p>
+      {/* Stats bar at top */}
+      <div className="w-full max-w-6xl mb-8 md:mb-12 z-10">
+        <div className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-8 text-xs md:text-sm">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <span className="text-foreground/80">93.24% Precisión</span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-foreground/80">$57M+ Valoración</span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
+            <Award className="h-4 w-4 text-primary" />
+            <span className="text-foreground/80 uppercase text-xs">Excellence</span>
+          </div>
+        </div>
+      </div>
 
-        <p className="text-2xl md:text-3xl text-white/90 font-light mb-10">
-          📸 Con solo tomarte una selfie
-        </p>
+      {/* Main content grid */}
+      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-8 md:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-12">
+        
+        {/* Left side - Text content */}
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-6 md:space-y-8">
+          <img 
+            src={logoMain} 
+            alt="SimSmile" 
+            className="w-64 md:w-80 lg:w-96 mx-auto lg:mx-0 mb-4 animate-fade-in opacity-60"
+          />
+          
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
+            Bienvenido a la
+            <br />
+            <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+              Revolución de la
+              <br />
+              Tecnología Inteligente
+            </span>
+          </h1>
+          
+          <p className="text-base md:text-lg lg:text-xl text-muted-foreground font-normal max-w-xl leading-relaxed">
+            Nuestra misión es aprovechar el poder de la IA para potenciar la transformación facial que mejora programas pioneros y soluciones innovadoras. 
+            Con un equipo de expertos dedicados, ofrecemos...
+          </p>
 
-        <div>
-          <Button
-            size="lg"
-            onClick={onStart}
-            className="text-xl md:text-2xl px-14 py-7 md:px-20 md:py-9 bg-gradient-to-r from-[hsl(270,90%,65%)] via-[hsl(280,85%,60%)] to-[hsl(265,80%,65%)] hover:from-[hsl(270,90%,70%)] hover:via-[hsl(280,85%,65%)] hover:to-[hsl(265,80%,70%)] text-white font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)] hover:shadow-[0_0_60px_rgba(168,85,247,0.6)] flex flex-col items-center gap-1"
-          >
-            <span className="flex items-center">
-              <Sparkles className="mr-3" />
-              Comenzar Análisis Gratis
-            </span>
-            <span className="text-base md:text-lg font-normal opacity-90">
-              ⚡ Gratis por Tiempo Limitado - Aprovecha Ahora
-            </span>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <Button
+              size="lg"
+              onClick={onStart}
+              className="text-base md:text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all hover:scale-105 shadow-lg shadow-primary/50 hover:shadow-primary/70"
+            >
+              <Sparkles className="mr-2 h-5 w-5" />
+              Empezar Ahora
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-base md:text-lg px-8 py-6 border-border hover:bg-card/50 text-foreground font-medium rounded-lg transition-all"
+            >
+              Contáctanos
+            </Button>
+          </div>
         </div>
 
-        <p className="text-base md:text-lg text-white/40 font-light italic mt-16">
-          Powered by Clínica Miró
-        </p>
+        {/* Right side - 3D visual */}
+        <div className="relative w-full max-w-lg lg:max-w-none">
+          <div className="relative">
+            {/* Glow effect behind image */}
+            <div className="absolute inset-0 bg-primary/30 blur-[100px] rounded-full" />
+            
+            {/* 3D Tooth image */}
+            <img 
+              src={hero3D} 
+              alt="Tecnología IA Dental" 
+              className="relative w-full h-auto drop-shadow-2xl animate-float"
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Bottom section with value props */}
+      <div className="w-full max-w-6xl z-10 mb-12">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            Descubre Soluciones de IA
+            <br />
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              de Vanguardia
+            </span>
+          </h2>
+          <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
+            Nuestra misión es aprovechar el poder de la IA para impulsar la transformación empresarial que 
+            mejora programas pioneros y soluciones innovadoras. Con un equipo de expertos...
+          </p>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
+            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+              89.2K+
+            </div>
+            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
+              Clientes Activos
+            </div>
+          </div>
+          
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
+            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+              700+
+            </div>
+            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
+              Proyectos IA
+            </div>
+          </div>
+          
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center hover:border-primary/50 transition-all hover:scale-105">
+            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+              3.12K+
+            </div>
+            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
+              Integraciones
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p className="text-xs md:text-sm text-muted-foreground/40 font-light italic z-10 mb-8">
+        Powered by Clínica Miró
+      </p>
     </div>
   );
 };
