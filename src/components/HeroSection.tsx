@@ -49,26 +49,26 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             Descubre cómo podrías lucir con una sonrisa perfecta. Nuestra tecnología de simulación avanzada te permite ver tu transformación antes de comenzar cualquier tratamiento.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-8">
-            <Button
-              size="lg"
-              onClick={onStart}
-              className="text-base md:text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all hover:scale-105 shadow-lg shadow-primary/50 hover:shadow-primary/70"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              Empezar Ahora
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-base md:text-lg px-8 py-6 border-border hover:bg-card/50 text-foreground font-medium rounded-lg transition-all"
-              asChild
-            >
-              <a href="https://www.clinicamiro.cl" target="_blank" rel="noopener noreferrer">
-                Contáctanos
-              </a>
-            </Button>
+          <div className="flex flex-col items-center lg:items-start gap-3 mt-4">
+            <div className="flex items-center gap-4 text-sm md:text-base text-muted-foreground">
+              <span className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
+                <Sparkles className="h-4 w-4 text-primary" />
+                100% Gratis
+              </span>
+              <span className="flex items-center gap-2 bg-accent/10 px-4 py-2 rounded-full border border-accent/20">
+                📸 Solo una selfie
+              </span>
+            </div>
           </div>
+
+          <Button
+            size="lg"
+            onClick={onStart}
+            className="text-base md:text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all hover:scale-105 shadow-lg shadow-primary/50 hover:shadow-primary/70 mt-6"
+          >
+            <Sparkles className="mr-2 h-5 w-5" />
+            Empezar Ahora
+          </Button>
         </div>
 
         {/* Right side - Smile Transformation Video */}

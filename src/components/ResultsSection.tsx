@@ -280,7 +280,7 @@ export const ResultsSection = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4 justify-center">
+        <div className="flex flex-wrap gap-4 justify-center mb-8">
           <Button size="lg" onClick={handleEmailAnalysis} className="gap-2">
             <Mail className="h-5 w-5" />
             Enviar Análisis por Email
@@ -292,6 +292,25 @@ export const ResultsSection = ({
           <Button size="lg" variant="outline" className="gap-2">
             <Download className="h-5 w-5" />
             Descargar Reporte
+          </Button>
+        </div>
+
+        {/* Contact CTA */}
+        <div className="text-center bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-8">
+          <h3 className="text-2xl font-heading font-bold mb-4">
+            ¿Listo para tu Transformación?
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            Agenda tu consulta con nuestros especialistas y comienza tu camino hacia la sonrisa perfecta
+          </p>
+          <Button
+            size="lg"
+            className="text-base md:text-lg px-8 py-6"
+            asChild
+          >
+            <a href="https://www.clinicamiro.cl" target="_blank" rel="noopener noreferrer">
+              Contáctanos
+            </a>
           </Button>
         </div>
       </div>
