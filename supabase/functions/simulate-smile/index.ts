@@ -13,10 +13,11 @@ serve(async (req) => {
 
   try {
     const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const PERFECT_CORP_CLIENT_ID = Deno.env.get('PERFECT_CORP_CLIENT_ID');
+    const PERFECT_CORP_CLIENT_SECRET = Deno.env.get('PERFECT_CORP_CLIENT_SECRET');
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!PERFECT_CORP_CLIENT_ID || !PERFECT_CORP_CLIENT_SECRET) {
+      throw new Error('Perfect Corp API keys not configured');
     }
 
     // Construir prompt basado en las métricas
@@ -98,28 +99,25 @@ IMPORTANT:
 - DO NOT change the person's age, gender, or facial features
 - ONLY enhance the teeth and smile area`;
 
-    // Primera simulación: correcciones
-    const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Primera simulación con Perfect Corp API
+    const correctionResponse = await fetch('https://api.perfectcorp.com/v1/smile-design', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'X-Client-ID': PERFECT_CORP_CLIENT_ID,
+        'X-Client-Secret': PERFECT_CORP_CLIENT_SECRET,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: correctionPrompt },
-              {
-                type: 'image_url',
-                image_url: { url: imageBase64 }
-              }
-            ]
-          }
-        ],
-        modalities: ['image', 'text']
+        image: imageBase64,
+        adjustments: {
+          smileArc: metrics.smileArc !== 'consonante',
+          gingivalDisplay: metrics.gingival.class === 'excesiva' || metrics.gingival.class === 'alta',
+          midlineCorrection: metrics.midline.mm > 2,
+          buccalCorridor: metrics.buccalRatio < 0.1 || metrics.buccalRatio > 0.3,
+          teethAlignment: faceAnalysis?.teethAlignment === 'desalineado',
+          missingTeeth: smileRecommendations?.missingTeeth || false
+        },
+        mode: 'correction'
       }),
     });
 
@@ -145,35 +143,32 @@ IMPORTANT:
     }
 
     const correctionData = await correctionResponse.json();
-    let correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    let correctedImage = correctionData.result?.image || correctionData.image;
 
     if (!correctedImage) {
-      console.warn('No se generó imagen corregida desde IA, uso imagen original como fallback');
+      console.warn('No se generó imagen corregida desde Perfect Corp, uso imagen original como fallback');
       correctedImage = imageBase64;
     }
 
-    // Segunda simulación: diseño ideal basado en recomendaciones
-    const idealResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Segunda simulación: diseño ideal con Perfect Corp API
+    const idealResponse = await fetch('https://api.perfectcorp.com/v1/smile-design', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'X-Client-ID': PERFECT_CORP_CLIENT_ID,
+        'X-Client-Secret': PERFECT_CORP_CLIENT_SECRET,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: recommendationPrompt },
-              {
-                type: 'image_url',
-                image_url: { url: correctedImage }
-              }
-            ]
-          }
-        ],
-        modalities: ['image', 'text']
+        image: correctedImage,
+        design: {
+          teethShape: smileRecommendations?.teethShape,
+          teethSize: smileRecommendations?.teethSize,
+          smileWidth: smileRecommendations?.smileWidth,
+          gingivalDisplay: smileRecommendations?.gingivalDisplay,
+          faceShape: faceAnalysis?.faceShape,
+          gender: faceAnalysis?.gender
+        },
+        mode: 'ideal'
       }),
     });
 
@@ -187,7 +182,7 @@ IMPORTANT:
     }
 
     const idealData = await idealResponse.json();
-    const idealImage = idealData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const idealImage = idealData.result?.image || idealData.image;
 
     return new Response(
       JSON.stringify({ 
