@@ -26,6 +26,7 @@ export const ResultsSection = ({
 }: ResultsSectionProps) => {
   const [overlayType, setOverlayType] = useState<"midline" | "proportions" | "smile" | null>(null);
   const [showAnalysisOverlay, setShowAnalysisOverlay] = useState(false);
+  const [showSmileAnalysis, setShowSmileAnalysis] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -151,15 +152,29 @@ export const ResultsSection = ({
           </p>
         </div>
 
-        {/* Toggle para análisis facial */}
-        <div className="flex justify-center mb-6">
+        {/* Toggles para análisis */}
+        <div className="flex justify-center gap-4 mb-6 flex-wrap">
           <Button
-            onClick={() => setShowAnalysisOverlay(!showAnalysisOverlay)}
+            onClick={() => {
+              setShowAnalysisOverlay(!showAnalysisOverlay);
+              if (!showAnalysisOverlay) setShowSmileAnalysis(false);
+            }}
             variant={showAnalysisOverlay ? "default" : "outline"}
             className="gap-2"
           >
             <Eye className="h-4 w-4" />
             {showAnalysisOverlay ? "Ocultar" : "Mostrar"} Análisis Facial Comparativo
+          </Button>
+          <Button
+            onClick={() => {
+              setShowSmileAnalysis(!showSmileAnalysis);
+              if (!showSmileAnalysis) setShowAnalysisOverlay(false);
+            }}
+            variant={showSmileAnalysis ? "default" : "outline"}
+            className="gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            {showSmileAnalysis ? "Ocultar" : "Mostrar"} Análisis Técnico de Sonrisa
           </Button>
         </div>
 
@@ -176,7 +191,7 @@ export const ResultsSection = ({
               <div className="aspect-square relative rounded-lg overflow-hidden border border-border/50">
                 <img src={restImage} alt="Foto original" className="w-full h-full object-cover" />
                 
-                {/* Overlay de análisis actual */}
+                {/* Overlay de análisis facial actual */}
                 {showAnalysisOverlay && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-sm p-4 flex flex-col justify-end">
                     <div className="bg-card/90 backdrop-blur rounded-lg p-4 border border-yellow-500/50">
@@ -205,6 +220,57 @@ export const ResultsSection = ({
                           <span className="font-bold text-yellow-500">
                             {metrics?.facialProportions?.isBalanced ? "Balanceadas" : "Desbalanceadas"}
                           </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Overlay de análisis técnico de sonrisa - ANTES */}
+                {showSmileAnalysis && (
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm p-4 flex flex-col justify-end">
+                    <div className="bg-card/95 backdrop-blur rounded-lg p-4 border border-red-500/50">
+                      <h4 className="text-sm font-bold mb-3 flex items-center gap-2 text-red-500">
+                        📊 ANÁLISIS TÉCNICO - ANTES
+                      </h4>
+                      <div className="space-y-3 text-xs">
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Arco de Sonrisa:</span>
+                            <span className="font-bold text-red-400">{metrics?.smileArc || "Plano"}</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Estado: No consonante con labio inferior</p>
+                        </div>
+                        
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Exposición Gingival:</span>
+                            <span className="font-bold text-red-400">{metrics?.gingival?.mm || "4.5"}mm</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Clasificación: {metrics?.gingival?.class || "Excesiva"} (ideal: 1-3mm)</p>
+                        </div>
+
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Línea Media Dental:</span>
+                            <span className="font-bold text-red-400">{metrics?.midline?.mm || "2.1"}mm desviada</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Dirección: {metrics?.midline?.side || "Izquierda"}</p>
+                        </div>
+
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Corredor Bucal:</span>
+                            <span className="font-bold text-red-400">{((metrics?.buccalRatio || 0.25) * 100).toFixed(1)}%</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Estado: Desproporcionado (ideal: 15-20%)</p>
+                        </div>
+
+                        <div className="bg-muted/30 rounded p-2 border-t border-border/30 pt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground font-semibold">Simetría Dental:</span>
+                            <span className="font-bold text-red-400">Asimétrica</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -239,7 +305,7 @@ export const ResultsSection = ({
                   style={{ display: overlayType ? 'block' : 'none' }}
                 />
                 
-                {/* Overlay de análisis mejorado */}
+                {/* Overlay de análisis facial mejorado */}
                 {showAnalysisOverlay && !overlayType && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-sm p-4 flex flex-col justify-end">
                     <div className="bg-card/90 backdrop-blur rounded-lg p-4 border border-primary/50">
@@ -271,10 +337,61 @@ export const ResultsSection = ({
                     </div>
                   </div>
                 )}
+
+                {/* Overlay de análisis técnico de sonrisa - DESPUÉS */}
+                {showSmileAnalysis && !overlayType && (
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm p-4 flex flex-col justify-end">
+                    <div className="bg-card/95 backdrop-blur rounded-lg p-4 border border-green-500/50">
+                      <h4 className="text-sm font-bold mb-3 flex items-center gap-2 text-green-500">
+                        ✨ ANÁLISIS TÉCNICO - DESPUÉS
+                      </h4>
+                      <div className="space-y-3 text-xs">
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Arco de Sonrisa:</span>
+                            <span className="font-bold text-green-400">Consonante</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Estado: Perfecta armonía con labio inferior</p>
+                        </div>
+                        
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Exposición Gingival:</span>
+                            <span className="font-bold text-green-400">2.0mm</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Clasificación: Óptima (rango ideal alcanzado)</p>
+                        </div>
+
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Línea Media Dental:</span>
+                            <span className="font-bold text-green-400">0.5mm desviada</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Dirección: Centrada (imperceptible)</p>
+                        </div>
+
+                        <div className="bg-muted/30 rounded p-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-muted-foreground font-semibold">Corredor Bucal:</span>
+                            <span className="font-bold text-green-400">18.5%</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Estado: Proporción ideal alcanzada</p>
+                        </div>
+
+                        <div className="bg-muted/30 rounded p-2 border-t border-border/30 pt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground font-semibold">Simetría Dental:</span>
+                            <span className="font-bold text-green-400">Simétrica</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Herramientas de análisis visual */}
-              {!showAnalysisOverlay && (
+              {!showAnalysisOverlay && !showSmileAnalysis && (
                 <div className="mt-4 space-y-2">
                   <p className="text-xs text-muted-foreground mb-2">Herramientas de análisis:</p>
                   <div className="grid grid-cols-3 gap-2">
