@@ -9,8 +9,8 @@ export const SmileTransformationAnimation = () => {
       <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-accent/30 blur-[60px] rounded-full" />
       <div className="absolute bottom-1/4 left-1/4 w-40 h-40 bg-secondary/20 blur-[70px] rounded-full animate-pulse" />
       
-      {/* Video containers - side by side on desktop, stacked on mobile */}
-      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      {/* Video containers - stacked vertically */}
+      <div className="relative z-10 w-full max-w-md lg:max-w-lg flex flex-col gap-4 md:gap-6">
         {/* First video */}
         <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 backdrop-blur-sm border border-primary/20">
           <video
