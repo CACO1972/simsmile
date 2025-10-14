@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Phone, User } from "lucide-react";
 import { toast } from "sonner";
-import simsmileLogo from "@/assets/simsmile-logo-official.png";
+import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
 
 interface ContactSectionProps {
   onSubmit: (data: { name: string; email: string; phone: string; message: string }) => void;

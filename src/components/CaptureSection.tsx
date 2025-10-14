@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import CameraCapture from "./CameraCapture";
 import { ArrowRight } from "lucide-react";
-import simsmileLogo from "@/assets/simsmile-logo-official.png";
+import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
 
 interface CaptureSectionProps {
   onCapture: (restImage: string, smileImage: string) => void;

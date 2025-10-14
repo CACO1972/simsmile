@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X, Camera } from "lucide-react";
 import correctPhotoExample from "@/assets/correct-photo-example.jpg";
 import incorrectPhotoExample from "@/assets/incorrect-photo-example.jpg";
-import simsmileLogo from "@/assets/simsmile-logo-official.png";
+import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
 
 interface InstructionsSectionProps {
   onContinue: () => void;
