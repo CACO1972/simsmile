@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { HeroSection } from "@/components/HeroSection";
-import { InstructionsSection } from "@/components/InstructionsSection";
 import { CaptureSection } from "@/components/CaptureSection";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
 import { ContactSection } from "@/components/ContactSection";
@@ -11,7 +10,7 @@ import { track } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
-type Step = "hero" | "instructions" | "capture" | "loading" | "contact" | "results";
+type Step = "hero" | "capture" | "loading" | "contact" | "results";
 
 const IALab = () => {
   const [step, setStep] = useState<Step>("hero");
@@ -172,9 +171,7 @@ const IALab = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {step === "hero" && <HeroSection onStart={() => setStep("instructions")} />}
-      
-      {step === "instructions" && <InstructionsSection onContinue={() => setStep("capture")} />}
+      {step === "hero" && <HeroSection onStart={() => setStep("capture")} />}
       
       {step === "capture" && <CaptureSection onCapture={handleCapture} />}
       
