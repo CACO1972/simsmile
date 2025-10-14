@@ -49,7 +49,9 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (!clinicEmailResponse.ok) {
-      throw new Error("Error sending email to clinic");
+      const errorData = await clinicEmailResponse.text();
+      console.error("Resend API error:", errorData);
+      throw new Error(`Error sending email to clinic: ${errorData}`);
     }
 
     // Email de confirmación al usuario
@@ -84,7 +86,9 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (!userEmailResponse.ok) {
-      throw new Error("Error sending confirmation email");
+      const errorData = await userEmailResponse.text();
+      console.error("Resend API error (confirmation):", errorData);
+      throw new Error(`Error sending confirmation email: ${errorData}`);
     }
 
     return new Response(JSON.stringify({ success: true }), {
