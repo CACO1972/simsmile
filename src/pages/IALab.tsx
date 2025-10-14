@@ -82,11 +82,24 @@ const IALab = () => {
     }
   };
 
-  const handleContactSubmit = (data: any) => {
+  const handleContactSubmit = async (data: any) => {
     setContactData(data);
-    setStep("results");
-    track({ name: "contact_submitted", data: { email: data.email } });
-    toast.success("¡Análisis completado!");
+    
+    try {
+      // Enviar emails
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: data
+      });
+
+      if (error) throw error;
+
+      setStep("results");
+      track({ name: "contact_submitted", data: { email: data.email } });
+      toast.success("¡Análisis completado y enviado a tu correo!");
+    } catch (error) {
+      console.error("Error sending emails:", error);
+      toast.error("Error al enviar el correo. Por favor intenta de nuevo.");
+    }
   };
 
   return (
