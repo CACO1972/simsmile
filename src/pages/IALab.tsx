@@ -131,7 +131,21 @@ const IALab = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Edge function error:", error);
+        // Intentar parsear el mensaje de error del backend
+        const errorMessage = error.message || "Error al procesar la imagen";
+        toast.error(errorMessage);
+        setStep("capture");
+        return;
+      }
+
+      // Verificar si hay datos válidos
+      if (!data || !data.simulatedImage) {
+        toast.error("No se pudo generar la simulación. Por favor intenta de nuevo.");
+        setStep("capture");
+        return;
+      }
 
       // Actualizar con las imágenes simuladas, métricas y landmarks
       setSmileImage(data.simulatedImage);
@@ -144,7 +158,7 @@ const IALab = () => {
       
     } catch (error) {
       console.error("Error processing smile:", error);
-      toast.error(error instanceof Error ? error.message : "Error al procesar la imagen. Por favor intenta de nuevo.");
+      toast.error(error instanceof Error ? error.message : "Error al procesar la imagen. Por favor intenta de nuevo con mejor iluminación.");
       setStep("capture");
     }
   };
