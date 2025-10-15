@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText } from "lucide-react";
 import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
-import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
+import logoAnimation from "@/assets/simsmile-logo-animation-new.mp4";
 
 interface HeroSectionProps {
   onStart: () => void;
