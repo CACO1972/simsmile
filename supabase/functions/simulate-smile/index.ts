@@ -122,13 +122,13 @@ Respond with a JSON object:
     
     console.log('✅ Quality check result:', qualityResult);
 
-    // Validación más permisiva - solo rechazar si es realmente mala calidad
-    if (qualityResult.quality_score < 40) {
+    // Validación de calidad - rechazar si es menor a 50
+    if (qualityResult.quality_score < 50) {
       return new Response(
         JSON.stringify({ 
           error: 'Calidad de imagen insuficiente',
           quality: qualityResult,
-          message: qualityResult.recommendation || 'Por favor, toma una foto con mejor iluminación, centrada y con el rostro completo visible.'
+          message: `Tu fotografía no cumple con los estándares de calidad necesarios (puntaje: ${qualityResult.quality_score}/100). ${qualityResult.recommendation || 'Por favor, toma nuevas fotos siguiendo estas recomendaciones:'}\n\n✓ Asegúrate de tener buena iluminación\n✓ Centra tu rostro en el encuadre\n✓ Mantén el rostro completo visible\n✓ Evita sombras en el rostro`
         }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

@@ -133,16 +133,16 @@ const IALab = () => {
 
       if (error) {
         console.error("Edge function error:", error);
-        // Intentar parsear el mensaje de error del backend
-        const errorMessage = error.message || "Error al procesar la imagen";
-        toast.error(errorMessage);
+        // Mostrar mensaje de error detallado del backend
+        const errorMessage = error.message || "La calidad de tus fotografías no es suficiente para realizar el análisis. Por favor, toma nuevas fotos siguiendo las recomendaciones de iluminación y encuadre.";
+        toast.error(errorMessage, { duration: 6000 });
         setStep("capture");
         return;
       }
 
       // Verificar si hay datos válidos
       if (!data || !data.simulatedImage) {
-        toast.error("No se pudo generar la simulación. Por favor intenta de nuevo.");
+        toast.error("No se pudo generar la simulación debido a la calidad de la imagen. Por favor, toma nuevas fotos con mejor iluminación y asegúrate de que tu rostro esté centrado y completamente visible.", { duration: 6000 });
         setStep("capture");
         return;
       }
