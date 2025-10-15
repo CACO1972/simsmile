@@ -3,7 +3,7 @@ import { OrbitalAnimation } from "./OrbitalAnimation";
 import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 
 export const LoadingAnimation = () => {
-  const [countdown, setCountdown] = useState(30); // 30 segundos
+  const [countdown, setCountdown] = useState(20); // 20 segundos
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export const LoadingAnimation = () => {
       });
       setProgress(prev => {
         if (prev >= 100) return 100;
-        return prev + (100 / 30);
+        return prev + (100 / 20);
       });
     }, 1000);
 
