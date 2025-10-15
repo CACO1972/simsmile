@@ -55,7 +55,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            SIMULACIÓN | TECNOLOGÍA
+            100% GRATIS | SIMULACIÓN | TECNOLOGÍA
           </div>
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-foreground leading-tight tracking-tight">
@@ -68,7 +68,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </h1>
           
           <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
-            Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
+            <span className="font-semibold text-primary">100% Gratis.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
