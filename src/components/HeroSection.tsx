@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText } from "lucide-react";
 import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
@@ -81,8 +81,8 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               <div className="group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
-                    1
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Camera className="w-7 h-7" />
                   </div>
                   <p className="text-sm font-semibold text-foreground">Captura</p>
                   <p className="text-xs text-muted-foreground mt-1">Tu foto</p>
@@ -92,8 +92,8 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               <div className="group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
-                    2
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Brain className="w-7 h-7" />
                   </div>
                   <p className="text-sm font-semibold text-foreground">Análisis IA</p>
                   <p className="text-xs text-muted-foreground mt-1">Evaluación</p>
@@ -103,8 +103,8 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               <div className="group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
-                    3
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Wand2 className="w-7 h-7" />
                   </div>
                   <p className="text-sm font-semibold text-foreground">Simulación</p>
                   <p className="text-xs text-muted-foreground mt-1">Transformación</p>
@@ -114,8 +114,8 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               <div className="group relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
-                    4
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <FileText className="w-7 h-7" />
                   </div>
                   <p className="text-sm font-semibold text-foreground">Reporte</p>
                   <p className="text-xs text-muted-foreground mt-1">Resultados</p>
