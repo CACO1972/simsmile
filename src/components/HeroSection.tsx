@@ -77,48 +77,48 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               Cómo Funciona
             </h3>
             
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div className="grid grid-cols-4 gap-2 md:gap-4 mb-10">
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Camera className="w-7 h-7" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-3 md:p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-2 md:mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300 mx-auto">
+                    <Camera className="w-5 h-5 md:w-7 md:h-7" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground">Captura</p>
-                  <p className="text-xs text-muted-foreground mt-1">Tu foto</p>
+                  <p className="text-xs md:text-sm font-semibold text-foreground text-center">Captura</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1 text-center">Tu foto</p>
                 </div>
               </div>
 
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Brain className="w-7 h-7" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-3 md:p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-2 md:mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300 mx-auto">
+                    <Brain className="w-5 h-5 md:w-7 md:h-7" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground">Análisis IA</p>
-                  <p className="text-xs text-muted-foreground mt-1">Evaluación</p>
+                  <p className="text-xs md:text-sm font-semibold text-foreground text-center">Análisis IA</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1 text-center">Evaluación</p>
                 </div>
               </div>
 
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Wand2 className="w-7 h-7" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-3 md:p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-2 md:mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300 mx-auto">
+                    <Wand2 className="w-5 h-5 md:w-7 md:h-7" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground">Simulación</p>
-                  <p className="text-xs text-muted-foreground mt-1">Transformación</p>
+                  <p className="text-xs md:text-sm font-semibold text-foreground text-center">Simulación</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1 text-center">Transformación</p>
                 </div>
               </div>
 
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <FileText className="w-7 h-7" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-3 md:p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white mb-2 md:mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300 mx-auto">
+                    <FileText className="w-5 h-5 md:w-7 md:h-7" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground">Reporte</p>
-                  <p className="text-xs text-muted-foreground mt-1">Resultados</p>
+                  <p className="text-xs md:text-sm font-semibold text-foreground text-center">Reporte</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1 text-center">Resultados</p>
                 </div>
               </div>
             </div>
