@@ -1,4 +1,4 @@
-import transformationVideo from "@/assets/smile-transformation-unified.mp4";
+import transformationVideo from "@/assets/smile-transformation-main.mp4";
 
 export const SmileTransformationAnimation = () => {
   return (
