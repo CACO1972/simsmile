@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { WaitlistModal } from "./WaitlistModal";
 import { SmileCustomizer } from "./SmileCustomizer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { FacialAnalysisReport } from "./FacialAnalysisReport";
+import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
 
 interface ResultsSectionProps {
   restImage: string;
@@ -202,13 +202,12 @@ export const ResultsSection = ({
           />
         </div>
 
-        {/* 3. ANÁLISIS FACIAL COMPLETO */}
+        {/* 3. ANÁLISIS FACIAL CON OVERLAY VISUAL */}
         {facialAnalysis && (
           <div className="mb-8">
-            <FacialAnalysisReport 
+            <FacialAnalysisOverlay 
               data={facialAnalysis}
               imageUrl={restImage}
-              onUnlockPremium={() => setShowWaitlistModal(true)}
             />
           </div>
         )}
