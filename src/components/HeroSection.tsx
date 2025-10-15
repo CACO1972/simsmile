@@ -58,16 +58,16 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </div>
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-foreground leading-tight tracking-tight">
-            Transforma{" "}
+            Simulador{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              Tu Sonrisa
+              Profesional
             </span>
             <br />
-            con IA
+            de Sonrisa con IA
           </h1>
           
           <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
-            Descubre cómo podrías lucir con una sonrisa perfecta. Nuestra tecnología de simulación avanzada te permite visualizar tu transformación dental antes de comenzar cualquier tratamiento.
+            Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
