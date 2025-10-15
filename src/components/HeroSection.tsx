@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight } from "lucide-react";
 import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
+import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
 
 interface HeroSectionProps {
   onStart: () => void;
@@ -214,7 +215,17 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             </div>
             
             <div className="flex items-center justify-center">
-              <div className="w-64 h-64 bg-gradient-to-br from-primary/30 via-accent/30 to-secondary/30 rounded-[3rem] transform rotate-12 hover:rotate-0 transition-transform duration-500" />
+              <div className="relative w-64 h-64 rounded-[3rem] overflow-hidden transform hover:scale-105 transition-transform duration-500 shadow-2xl shadow-primary/30">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src={logoAnimation} type="video/mp4" />
+                </video>
+              </div>
             </div>
           </div>
         </div>
