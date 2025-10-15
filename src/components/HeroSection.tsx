@@ -71,39 +71,55 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             <span className="font-semibold text-primary">100% Gratis.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
-          {/* Process Flow - Compact Version */}
-          <div className="w-full max-w-xl mt-8">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-6 text-center lg:text-left">
+          {/* Process Flow - Professional Version */}
+          <div className="w-full max-w-2xl mt-8">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8 text-center lg:text-left">
               Cómo Funciona
             </h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-                  1
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
+                    1
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Captura</p>
+                  <p className="text-xs text-muted-foreground mt-1">Tu foto</p>
                 </div>
-                <p className="text-xs font-medium text-foreground">Captura</p>
               </div>
 
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-                  2
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
+                    2
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Análisis IA</p>
+                  <p className="text-xs text-muted-foreground mt-1">Evaluación</p>
                 </div>
-                <p className="text-xs font-medium text-foreground">Análisis IA</p>
               </div>
 
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-                  3
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
+                    3
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Simulación</p>
+                  <p className="text-xs text-muted-foreground mt-1">Transformación</p>
                 </div>
-                <p className="text-xs font-medium text-foreground">Simulación</p>
               </div>
 
-              <div className="flex flex-col items-center text-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-                  4
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-xl mb-4 shadow-lg">
+                    4
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Reporte</p>
+                  <p className="text-xs text-muted-foreground mt-1">Resultados</p>
                 </div>
-                <p className="text-xs font-medium text-foreground">Reporte</p>
               </div>
             </div>
 
@@ -111,10 +127,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               <Button
                 size="lg"
                 onClick={onStart}
-                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-full px-8 py-6 text-base transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)]"
+                className="group relative bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white font-semibold rounded-2xl px-10 py-7 text-lg transition-all duration-500 hover:scale-[1.02] shadow-[0_8px_30px_rgb(168,85,247,0.3)] hover:shadow-[0_12px_40px_rgb(168,85,247,0.5)] border border-white/10"
               >
-                Empezar Ahora
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <span className="relative z-10 flex items-center gap-3">
+                  Empezar Ahora
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </span>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Button>
             </div>
           </div>
