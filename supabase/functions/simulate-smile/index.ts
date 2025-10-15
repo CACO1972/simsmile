@@ -95,7 +95,7 @@ Respond with a JSON object:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-20250805',
+        model: 'claude-opus-4-1-20250805',
         max_tokens: 1024,
         messages: [
           {
@@ -242,7 +242,7 @@ Respond with JSON including measurements AND professional explanations:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-20250805',
+        model: 'claude-opus-4-1-20250805',
         max_tokens: 2048,
         messages: [
           {
