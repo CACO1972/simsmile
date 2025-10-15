@@ -71,61 +71,51 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             <span className="font-semibold text-primary">100% Gratis.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
-            <Button
-              size="lg"
-              onClick={onStart}
-              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-full px-8 py-6 text-base transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)]"
-            >
-              Empezar Ahora
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Process Flow */}
-          <div className="w-full max-w-xl mt-8 space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          {/* Process Flow - Compact Version */}
+          <div className="w-full max-w-xl mt-8">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-6 text-center lg:text-left">
               Cómo Funciona
             </h3>
             
-            <div className="flex items-start gap-4 group">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
-                1
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
+                  1
+                </div>
+                <p className="text-xs font-medium text-foreground">Captura</p>
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-foreground mb-1">Captura tu Sonrisa</h4>
-                <p className="text-sm text-muted-foreground">Toma dos fotos: una en reposo y otra sonriendo naturalmente.</p>
+
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
+                  2
+                </div>
+                <p className="text-xs font-medium text-foreground">Análisis IA</p>
+              </div>
+
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
+                  3
+                </div>
+                <p className="text-xs font-medium text-foreground">Simulación</p>
+              </div>
+
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
+                  4
+                </div>
+                <p className="text-xs font-medium text-foreground">Reporte</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 group">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
-                2
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-foreground mb-1">Análisis con IA</h4>
-                <p className="text-sm text-muted-foreground">Nuestra tecnología analiza tu rostro y sonrisa con precisión avanzada.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 group">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
-                3
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-foreground mb-1">Simulación Personalizada</h4>
-                <p className="text-sm text-muted-foreground">Visualiza cómo lucirías con una sonrisa mejorada y simétrica.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 group">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
-                4
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-foreground mb-1">Recibe tu Reporte</h4>
-                <p className="text-sm text-muted-foreground">Obtén un análisis completo y recomendaciones en tu correo.</p>
-              </div>
+            <div className="flex justify-center lg:justify-start">
+              <Button
+                size="lg"
+                onClick={onStart}
+                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-full px-8 py-6 text-base transition-all hover:scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)]"
+              >
+                Empezar Ahora
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>
