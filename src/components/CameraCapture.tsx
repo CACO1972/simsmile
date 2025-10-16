@@ -18,7 +18,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>("");
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user"); // Always starts in selfie mode
   const [cameraError, setCameraError] = useState<string>("");
 
   const startCamera = async (mode: "user" | "environment" = facingMode) => {
