@@ -133,17 +133,44 @@ const IALab = () => {
 
       if (error) {
         console.error("Edge function error:", error);
-        // Mostrar mensaje de error detallado del backend
-        const errorMessage = error.message || "La calidad de tus fotografías no es suficiente para realizar el análisis. Por favor, toma nuevas fotos siguiendo las recomendaciones de iluminación y encuadre.";
-        toast.error(errorMessage, { duration: 6000 });
-        setStep("capture");
+        const msg = (error as any)?.message || "";
+
+        // Si es un error de calidad de imagen, continuamos con fallback
+        if (typeof msg === "string" && msg.includes("Calidad de imagen insuficiente")) {
+          toast.info("Tu foto no cumple el umbral de calidad óptimo, pero continuaremos con una simulación básica.", { duration: 5000 });
+          setSmileImage(smile);
+          setIdealImage(smile);
+          setAnalysis(analysisText);
+          setMetrics(calculatedMetrics);
+          setLandmarks(smileLandmarks);
+          setSimulationData({ warnings: ["low_quality"] });
+          setStep("contact");
+          return;
+        }
+
+        // Para otros errores, mostrar mensaje y NO devolver a capture
+        console.error("Simulación falló pero continuamos con foto original:", msg);
+        toast.info("No pudimos generar la simulación ideal, pero continuaremos con tu análisis facial.", { duration: 5000 });
+        setSmileImage(smile);
+        setIdealImage(smile);
+        setAnalysis(analysisText);
+        setMetrics(calculatedMetrics);
+        setLandmarks(smileLandmarks);
+        setSimulationData({ warnings: ["simulation_error"] });
+        setStep("contact");
         return;
       }
 
       // Verificar si hay datos válidos
       if (!data || !data.simulatedImage) {
-        toast.error("No se pudo generar la simulación debido a la calidad de la imagen. Por favor, toma nuevas fotos con mejor iluminación y asegúrate de que tu rostro esté centrado y completamente visible.", { duration: 6000 });
-        setStep("capture");
+        toast.info("No se pudo generar la simulación automáticamente. Continuaremos con tu foto original.", { duration: 5000 });
+        setSmileImage(smile);
+        setIdealImage(smile);
+        setAnalysis(analysisText);
+        setMetrics(calculatedMetrics);
+        setLandmarks(smileLandmarks);
+        setSimulationData({ warnings: ["no_simulation"] });
+        setStep("contact");
         return;
       }
 
