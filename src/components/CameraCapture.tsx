@@ -8,9 +8,10 @@ interface CameraCaptureProps {
   onCapture: (imageBase64: string) => void;
   title: string;
   description?: string;
+  showGuide?: boolean;
 }
 
-export default function CameraCapture({ onCapture, title, description }: CameraCaptureProps) {
+export default function CameraCapture({ onCapture, title, description, showGuide = true }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -238,7 +239,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="relative rounded-xl overflow-hidden border-4 border-primary bg-black aspect-[3/4] max-w-md mx-auto">
+              <div className={`relative rounded-xl overflow-hidden ${showGuide ? 'border-4 border-primary' : 'border-0'} bg-black aspect-[3/4] max-w-md mx-auto`}>
                 <video
                   ref={videoRef}
                   autoPlay
@@ -248,7 +249,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
                 />
                 
                 {/* Marco de guía dinámico con detección facial */}
-                <DynamicFaceGuide videoRef={videoRef} />
+                {showGuide && <DynamicFaceGuide videoRef={videoRef} />}
               </div>
 
               <canvas ref={canvasRef} className="hidden" />

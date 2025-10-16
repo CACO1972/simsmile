@@ -130,6 +130,7 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
               onCapture={handleSmileCapture}
               title="Foto Sonriendo"
               description="Ahora sonríe naturalmente mostrando tus dientes"
+              showGuide={false}
             />
           </div>
         )}
