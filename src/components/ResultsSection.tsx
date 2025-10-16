@@ -99,27 +99,33 @@ export const ResultsSection = ({
           </p>
         </div>
 
-        {/* 1. IMAGEN CORREGIDA */}
+        {/* 1. IMAGEN Y PERSONALIZACIÓN INTEGRADA */}
         <Card className="bg-gradient-to-br from-primary/5 to-card/50 backdrop-blur border-primary/30 p-6 md:p-8 mb-8">
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             <h2 className="text-2xl font-heading font-bold mb-2">
-              ✨ Tu Sonrisa con Correcciones IA
+              ✨ Tu Sonrisa Mejorada
             </h2>
             <p className="text-sm text-muted-foreground">
-              Haz clic para ampliar • Comparar antes/después
+              {customizedImage ? 'Sonrisa personalizada generada' : 'Correcciones aplicadas por IA'}
             </p>
           </div>
           
-          <div className="max-w-md mx-auto space-y-4">
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* Imagen Principal */}
             <div 
               className="aspect-square relative rounded-xl overflow-hidden border-2 border-primary/30 shadow-xl cursor-pointer hover:border-primary/60 transition-all"
               onClick={() => setShowFullscreen(true)}
             >
               <img 
                 src={customizedImage || smileImage} 
-                alt="Sonrisa corregida" 
+                alt="Sonrisa mejorada" 
                 className="w-full h-full object-cover"
               />
+              {customizedImage && (
+                <div className="absolute top-4 right-4 bg-accent text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-pulse">
+                  Personalizada ✨
+                </div>
+              )}
             </div>
 
             {/* Botón Comparar Antes/Después */}
@@ -206,18 +212,18 @@ export const ResultsSection = ({
                 </div>
               </div>
             )}
+
+            {/* Personalizador Interactivo */}
+            <div className="border-t border-border/50 pt-6">
+              <SmileCustomizer
+                baseImage={smileImage}
+                onSimulate={handleCustomizedSimulation}
+              />
+            </div>
           </div>
         </Card>
 
-        {/* 2. PERSONALIZADOR INTERACTIVO */}
-        <div className="mb-8">
-          <SmileCustomizer
-            baseImage={smileImage}
-            onSimulate={handleCustomizedSimulation}
-          />
-        </div>
-
-        {/* 3. ANÁLISIS FACIAL CON OVERLAY VISUAL */}
+        {/* 2. ANÁLISIS FACIAL CON OVERLAY VISUAL */}
         {facialAnalysis && (
           <div className="mb-8">
             <FacialAnalysisOverlay 

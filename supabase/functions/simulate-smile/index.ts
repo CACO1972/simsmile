@@ -210,9 +210,71 @@ Respond ONLY with a JSON object (no markdown, no extra text):
       );
     }
 
-    // 2. Análisis facial simplificado - OMITIDO para mejorar velocidad
-    console.log('⚡ Saltando análisis facial detallado para optimizar velocidad...');
-    const facialMetrics = {};
+    // 2. Análisis facial detallado
+    console.log('📊 Realizando análisis facial detallado...');
+    let facialMetrics: any = null;
+    
+    try {
+      const facialPrompt = `Analyze this face photo in detail and provide facial harmony metrics.
+
+Return your analysis in JSON format with this structure:
+{
+  "horizontal_ratio": {
+    "upper_third": number (percentage),
+    "middle_third": number (percentage),
+    "lower_third": number (percentage),
+    "deviation_from_ideal": number (percentage difference from 33.33%)
+  },
+  "vertical_ratio": {
+    "left_side": number (percentage),
+    "right_side": number (percentage),
+    "symmetry_score": number (0-100, where 100 is perfect symmetry)
+  },
+  "golden_ratio_score": number (0-100, overall facial harmony),
+  "aspect_ratio": number (face width/height ratio)
+}
+
+Guidelines:
+- Horizontal thirds should ideally be 33.33% each (forehead, midface, lower face)
+- Vertical halves should ideally be 50% each for perfect symmetry
+- Golden ratio score considers overall facial proportions
+- Aspect ratio around 0.75 is considered ideal`;
+
+      const facialResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: facialPrompt },
+                {
+                  type: "image_url",
+                  image_url: { url: imageBase64 }
+                }
+              ]
+            }
+          ]
+        }),
+      });
+
+      if (!facialResponse.ok) {
+        throw new Error(`Facial analysis failed: ${facialResponse.status}`);
+      }
+
+      const facialData = await facialResponse.json();
+      const facialText = facialData.choices?.[0]?.message?.content;
+      facialMetrics = parseClaudeJSON(facialText);
+      console.log('✅ Análisis facial completado:', JSON.stringify(facialMetrics, null, 2));
+    } catch (facialError) {
+      console.error('❌ Error en análisis facial:', facialError);
+      facialMetrics = null;
+    }
 
     // Construir prompt basado en las métricas
     const corrections = [];
