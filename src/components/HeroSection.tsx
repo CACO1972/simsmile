@@ -152,7 +152,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               </span>
             </h2>
             <p className="text-muted-foreground text-lg mb-8">
-              Miles de personas ya han visualizado su sonrisa perfecta con nuestra tecnología de IA. Inteligencia artificial con registro de propiedad intelectual y patente en Estados Unidos.
+              Miles de personas ya han visualizado su sonrisa perfecta con tecnología propia desarrollada en Chile por nuestra clínica en colaboración con Humanaia.cl. SimSmile posee IP registrada y patente pending en USA.
             </p>
           </div>
 
