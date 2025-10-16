@@ -6,50 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper para parsear JSON de Claude (puede venir envuelto en ```json...``` o con texto extra)
-function parseClaudeJSON(text: string): any {
-  let clean = (text ?? '').trim();
-
-  // Remover bloques de código markdown si existen
-  clean = clean
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/i, '')
-    .trim();
-
-  try {
-    return JSON.parse(clean);
-  } catch (_) {
-    // Intento secundario: extraer el primer objeto { ... } válido
-    const start = clean.indexOf('{');
-    const end = clean.lastIndexOf('}');
-    if (start !== -1 && end !== -1 && end > start) {
-      const candidate = clean.slice(start, end + 1);
-      try {
-        return JSON.parse(candidate);
-      } catch (e2) {
-        console.error('Claude JSON candidate failed:', candidate);
-        throw new Error(`Invalid JSON from Claude: ${e2 instanceof Error ? e2.message : 'Unknown error'}`);
-      }
-    }
-    console.error('Claude text without JSON object:', clean);
-    throw new Error('Invalid JSON from Claude: no JSON object found');
-  }
-}
-
-// Helper para convertir data URL a Blob para multipart/form-data
-function dataUrlToBlob(dataUrl: string): Blob {
-  const parts = dataUrl.split(',');
-  const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
-  const bstr = atob(parts[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new Blob([u8arr], { type: mime });
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -58,65 +14,50 @@ serve(async (req) => {
   try {
     const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
-    }
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
     }
 
     // Si es una llamada de personalización (customPrompt presente)
     if (customPrompt && image) {
       console.log('Processing custom smile simulation with parameters:', customParameters);
       
-      const formData = new FormData();
-      formData.append('model', 'gpt-image-1');
-      formData.append('prompt', customPrompt);
-      formData.append('image', dataUrlToBlob(image), 'image.png');
-      formData.append('size', 'auto');
-      formData.append('quality', 'high');
-      formData.append('output_format', 'png');
-
-      const customResponse = await fetch('https://api.openai.com/v1/images/edits', {
+      const customResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-image-preview',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: customPrompt },
+                {
+                  type: 'image_url',
+                  image_url: { url: image }
+                }
+              ]
+            }
+          ],
+          modalities: ['image', 'text']
+        }),
       });
 
       if (!customResponse.ok) {
         const errorText = await customResponse.text();
-        console.error('Custom simulation error:', customResponse.status, errorText);
-        
-        // Fallback a imagen original
-        return new Response(
-          JSON.stringify({ 
-            customizedImage: image,
-            parameters: customParameters,
-            warnings: ['custom_simulation_failed']
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        console.error('Custom simulation error:', errorText);
+        throw new Error(`Custom simulation failed: ${customResponse.status} ${errorText}`);
       }
-      
+
       const customData = await customResponse.json();
-      const customizedImage = customData.data?.[0]?.b64_json ? 
-        `data:image/png;base64,${customData.data[0].b64_json}` : 
-        customData.data?.[0]?.url;
+      const customizedImage = customData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
       if (!customizedImage) {
-        console.warn('No customized image in response, using original');
-        return new Response(
-          JSON.stringify({ 
-            customizedImage: image,
-            parameters: customParameters,
-            warnings: ['no_image_generated']
-          }), 
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        throw new Error('No customized image received from AI');
       }
 
       return new Response(
@@ -128,8 +69,8 @@ serve(async (req) => {
       );
     }
 
-    // 1. Validación de calidad de imagen con Gemini
-    console.log('📸 Validando calidad de imagen con Gemini...');
+    // 1. Validación de calidad de imagen con Lovable AI
+    console.log('📸 Validando calidad de imagen...');
     const qualityCheckPrompt = `You are an image quality expert. Analyze this photo for facial analysis suitability.
     
 Check for:
@@ -140,7 +81,7 @@ Check for:
 5. No obstructions (hands, objects covering face)
 6. Sufficient resolution
 
-Respond ONLY with a JSON object (no markdown, no extra text):
+Respond with a JSON object:
 {
   "isValid": boolean,
   "quality_score": number (0-100),
@@ -160,66 +101,67 @@ Respond ONLY with a JSON object (no markdown, no extra text):
           {
             role: 'user',
             content: [
-              { 
+              { type: 'text', text: qualityCheckPrompt },
+              {
                 type: 'image_url',
-                image_url: {
-                  url: imageBase64
-                }
-              },
-              { type: 'text', text: qualityCheckPrompt }
+                image_url: { url: imageBase64 }
+              }
             ]
           }
         ],
-        max_tokens: 1024
+        response_format: { type: "json_object" }
       }),
     });
 
-    let qualityResult: any = { isValid: true, quality_score: 75 };
-    
     if (!qualityResponse.ok) {
       console.error('Quality check failed:', qualityResponse.status);
-      const errorText = await qualityResponse.text();
-      console.error('Error details:', errorText);
-      
-      // Si falla el check de calidad, continuamos con valor por defecto
-      console.warn('Usando valores por defecto de calidad debido a error en API');
-    } else {
-      try {
-        const qualityData = await qualityResponse.json();
-        const qualityContent = qualityData.choices?.[0]?.message?.content || '{"isValid": true, "quality_score": 75}';
-        qualityResult = parseClaudeJSON(qualityContent);
-      } catch (parseError) {
-        console.error('Error parsing quality response:', parseError);
-        console.warn('Usando valores por defecto de calidad');
+      if (qualityResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Sin créditos de IA',
+            message: 'Los créditos de Lovable AI se han agotado. Por favor, recarga créditos en Settings → Workspace → Usage.'
+          }), 
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (qualityResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Límite de solicitudes excedido',
+            message: 'Demasiadas solicitudes. Por favor, espera unos momentos e intenta de nuevo.'
+          }), 
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     }
+
+    const qualityData = await qualityResponse.json();
+    const qualityResult = JSON.parse(qualityData.choices?.[0]?.message?.content || '{"isValid": true, "quality_score": 75}');
     
     console.log('✅ Quality check result:', qualityResult);
 
     // Validación de calidad - rechazar si es menor a 50
-    const qualityScore = Number(qualityResult.quality_score ?? 75);
-    const safeQualityScore = Number.isNaN(qualityScore) ? 75 : qualityScore;
-    if (safeQualityScore < 50) {
+    if (qualityResult.quality_score < 50) {
       return new Response(
         JSON.stringify({ 
           error: 'Calidad de imagen insuficiente',
           quality: qualityResult,
-          message: `Tu fotografía no cumple con los estándares de calidad necesarios (puntaje: ${safeQualityScore}/100). ${qualityResult.recommendation || 'Por favor, toma nuevas fotos siguiendo estas recomendaciones:'}\n\n✓ Asegúrate de tener buena iluminación\n✓ Centra tu rostro en el encuadre\n✓ Mantén el rostro completo visible\n✓ Evita sombras en el rostro`
+          message: `Tu fotografía no cumple con los estándares de calidad necesarios (puntaje: ${qualityResult.quality_score}/100). ${qualityResult.recommendation || 'Por favor, toma nuevas fotos siguiendo estas recomendaciones:'}\n\n✓ Asegúrate de tener buena iluminación\n✓ Centra tu rostro en el encuadre\n✓ Mantén el rostro completo visible\n✓ Evita sombras en el rostro`
         }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // 2. Análisis facial REAL con mediciones sobre la imagen con Gemini
-    console.log('🔍 Realizando análisis facial profesional con Gemini...');
-    const facialAnalysisPrompt = `You are a professional facial analysis expert with clinical training. Analyze this photo by taking REAL MEASUREMENTS on the image.
+    // 2. Análisis facial REAL con mediciones sobre la imagen
+    console.log('🔍 Realizando análisis facial con mediciones reales...');
+    const facialAnalysisPrompt = `You are a professional facial analysis expert. Analyze this photo by taking REAL MEASUREMENTS on the image.
 
 CRITICAL INSTRUCTIONS:
 - Use actual pixel measurements and proportions from THIS specific image
 - DO NOT give generic or average values
 - Measure the ACTUAL distances and ratios visible in the photo
 - Compare EACH measurement with the Golden Ratio (1.618) and aesthetic ideals
-- Provide a professional clinical explanation for each measurement
+- Provide a simple explanation for each measurement
 
 MEASUREMENTS TO TAKE:
 
@@ -254,44 +196,43 @@ MEASUREMENTS TO TAKE:
    - Golden Ratio ideal: 0.618 (nose should be 61.8% of mouth width)
    - Explain: proportion balance
 
-IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no code blocks, no extra text before or after the JSON.
-
+Respond with JSON including measurements AND simple explanations:
 {
   "horizontal_ratio": {
     "upper": number (percentage),
     "middle": number (percentage),
     "lower": number (percentage),
-    "explanation": "professional explanation comparing to 33% ideal",
+    "explanation": "simple explanation comparing to 33% ideal",
     "golden_ratio_comparison": "how it relates to golden ratio"
   },
   "vertical_ratio": {
     "sections": [number, number, number, number, number],
-    "explanation": "professional explanation about facial width balance"
+    "explanation": "simple explanation about facial width balance"
   },
   "face_aspect_ratio": {
     "value": number,
     "golden_ratio_ideal": 1.618,
     "difference": number (how far from golden ratio),
-    "explanation": "professional explanation if face is more oval/round/long"
+    "explanation": "simple explanation if face is more oval/round/long"
   },
   "eye_distance": {
     "value": number,
     "category": "narrow|ideal|wide",
-    "explanation": "professional explanation about eye spacing"
+    "explanation": "simple explanation about eye spacing"
   },
   "eye_aspect_ratio": {
     "value": number,
-    "explanation": "professional explanation about eye shape"
+    "explanation": "simple explanation about eye shape"
   },
   "nose_to_mouth_ratio": {
     "value": number,
     "golden_ratio_ideal": 0.618,
     "difference": number,
-    "explanation": "professional explanation about nose-mouth proportion"
+    "explanation": "simple explanation about nose-mouth proportion"
   },
   "symmetry_score": number (0-100),
   "overall_golden_ratio_score": number (0-100, how close overall proportions are to golden ratio),
-  "overall_assessment": "comprehensive professional clinical summary"
+  "overall_assessment": "brief simple summary"
 }`;
 
     const facialResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -306,13 +247,11 @@ IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no cod
           {
             role: 'user',
             content: [
-              { 
+              { type: 'text', text: facialAnalysisPrompt },
+              {
                 type: 'image_url',
-                image_url: {
-                  url: imageBase64
-                }
-              },
-              { type: 'text', text: facialAnalysisPrompt }
+                image_url: { url: imageBase64 }
+              }
             ]
           }
         ],
@@ -320,25 +259,31 @@ IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no cod
       }),
     });
 
-    let facialMetrics = {};
-    
     if (!facialResponse.ok) {
       console.error('Facial analysis failed:', facialResponse.status);
-      const errorText = await facialResponse.text();
-      console.error('Error details:', errorText);
-      
-      // Si falla análisis facial, usamos métricas vacías
-      console.warn('Continuando sin análisis facial detallado debido a error en API');
-    } else {
-      try {
-        const facialData = await facialResponse.json();
-        const facialContent = facialData.choices?.[0]?.message?.content || '{}';
-        facialMetrics = parseClaudeJSON(facialContent);
-      } catch (parseError) {
-        console.error('Error parsing facial analysis:', parseError);
-        console.warn('Continuando sin análisis facial detallado');
+      if (facialResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Sin créditos de IA',
+            message: 'Los créditos de Lovable AI se han agotado. Por favor, recarga créditos en Settings → Workspace → Usage.'
+          }), 
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
+      if (facialResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Límite de solicitudes excedido',
+            message: 'Demasiadas solicitudes. Por favor, espera unos momentos e intenta de nuevo.'
+          }), 
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw new Error('Facial analysis failed');
     }
+
+    const facialData = await facialResponse.json();
+    const facialMetrics = JSON.parse(facialData.choices?.[0]?.message?.content || '{}');
     
     console.log('✅ Facial analysis complete:', facialMetrics);
 
@@ -346,42 +291,42 @@ IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no cod
     const corrections = [];
     
     if (metrics.smileArc === 'inverso' || metrics.smileArc === 'plano') {
-      corrections.push('Improve the smile arc to be consonant and upward-curving');
+      corrections.push('mejorar el arco de sonrisa para que sea consonante');
     }
     
     if (metrics.gingival.class === 'excesiva' || metrics.gingival.class === 'alta') {
-      corrections.push('Reduce excessive gingival display to ideal proportions');
+      corrections.push('reducir la exposición gingival excesiva');
     }
     
     if (metrics.midline.mm > 2) {
-      corrections.push(`Correct the dental midline deviation of ${metrics.midline.mm.toFixed(1)}mm`);
+      corrections.push(`corregir la línea media dental desviada ${metrics.midline.mm.toFixed(1)}mm`);
     }
     
     if (metrics.buccalRatio < 0.1 || metrics.buccalRatio > 0.3) {
-      corrections.push('Optimize the buccal corridor to ideal proportions');
+      corrections.push('optimizar el corredor bucal');
     }
 
     // Agregar correcciones de dientes
     if (smileRecommendations?.missingTeeth) {
-      corrections.push('Add missing teeth with natural shape and color');
+      corrections.push('agregar dientes faltantes con forma y color natural');
     }
     if (faceAnalysis?.teethAlignment === 'desalineado') {
-      corrections.push('Straighten and align crooked or misaligned teeth subtly');
+      corrections.push('enderezar y alinear dientes torcidos o desalineados sutilmente');
     }
 
-    const correctionPrompt = `Professional dental photo editing. Apply these aesthetic corrections naturally and realistically. CRITICAL: Maintain the SAME PERSON - do not change the face, age, or identity.
+    const correctionPrompt = `You are an expert in dental photo editing. Edit this smile photo to apply these aesthetic corrections naturally and realistically. CRITICAL: You must maintain the SAME PERSON - do not change the face, age, or identity.
 
-Corrections:
+Corrections to apply:
 ${corrections.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
-REQUIREMENTS:
-- Keep EXACT SAME person, face structure, and facial features
-- Maintain original lighting, shadows, and background
-- Changes should be subtle but clinically visible
+IMPORTANT: 
+- Keep the EXACT SAME person, face structure, and facial features
+- Maintain the original lighting, shadows, and background
+- Changes should be subtle but visible
 - Use natural tooth tones (not artificial white)
-- Healthy proportionate gums
-- DO NOT change person's age, gender, or facial features
-- ONLY edit teeth and smile area`;
+- The gums should look healthy and proportionate
+- DO NOT change the person's age, gender, or facial features
+- ONLY edit the teeth and smile area`;
 
     // Construir prompt de recomendaciones
     const faceDescriptions = [];
@@ -396,128 +341,157 @@ REQUIREMENTS:
     const teethSizeRec = smileRecommendations?.teethSize || 'proportional to the face';
     const smileWidthRec = smileRecommendations?.smileWidth || 'balanced and natural';
     const gingivalRec = smileRecommendations?.gingivalDisplay || 'adequate gingival exposure';
-
-    // Primera simulación: correcciones con OpenAI GPT Image
-    console.log('🎨 Aplicando correcciones estéticas con OpenAI GPT Image...');
     
-    const correctionFormData = new FormData();
-    correctionFormData.append('model', 'gpt-image-1');
-    correctionFormData.append('prompt', correctionPrompt);
-    correctionFormData.append('image', dataUrlToBlob(imageBase64), 'image.png');
-    correctionFormData.append('size', 'auto');
-    correctionFormData.append('quality', 'high');
-    correctionFormData.append('output_format', 'png');
-
-    const correctionResponse = await fetch('https://api.openai.com/v1/images/edits', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: correctionFormData,
-    });
-
-    let correctedImage = imageBase64;
-    const warnings: string[] = [];
-
-    if (!correctionResponse.ok) {
-      const errorText = await correctionResponse.text();
-      console.error('Correction error:', correctionResponse.status, errorText);
-      console.warn('Using original image as correctedImage due to correction failure');
-      warnings.push('correction_failed');
-    } else {
-      try {
-        const correctionData = await correctionResponse.json();
-        correctedImage = correctionData.data?.[0]?.b64_json ? 
-          `data:image/png;base64,${correctionData.data[0].b64_json}` : 
-          correctionData.data?.[0]?.url;
-
-        if (!correctedImage) {
-          console.warn('No corrected image generated, using original as fallback');
-          correctedImage = imageBase64;
-          warnings.push('no_corrected_image');
-        }
-      } catch (parseError) {
-        console.error('Error parsing correction response:', parseError);
-        correctedImage = imageBase64;
-        warnings.push('correction_parse_failed');
-      }
-    }
-
-    // Segunda simulación: diseño ideal con OpenAI GPT Image
-    console.log('✨ Generando simulación de sonrisa ideal con OpenAI GPT Image...');
-    const recommendationPrompt = `Expert smile design. Create an IDEAL smile simulation based on professional recommendations. CRITICAL: Maintain the SAME PERSON.
+    const recommendationPrompt = `You are an expert in smile design. Based on the corrected image, create an IDEAL smile simulation. CRITICAL: You must maintain the SAME PERSON - do not change the face, age, or identity.
 
 FACIAL ANALYSIS:
 ${faceDescriptions.length > 0 ? faceDescriptions.join(', ') : 'Analyzed facial profile'}
 
-PROFESSIONAL DESIGN RECOMMENDATIONS:
+DESIGN RECOMMENDATIONS:
 1. Tooth shape: ${teethShapeRec}
 2. Tooth size: ${teethSizeRec}
 3. Smile width: ${smileWidthRec}
 4. Gingival exposure: ${gingivalRec}
 
-CLINICAL RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions and golden ratio analysis'}
+RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions'}
 
-REQUIREMENTS:
-- Keep EXACT SAME person, face structure, and facial features
-- Apply recommended tooth shape: ${teethShapeRec}
-- Adjust size per recommendation: ${teethSizeRec}
+IMPORTANT:
+- Keep the EXACT SAME person, face structure, and facial features
+- Apply the recommended tooth shape: ${teethShapeRec}
+- Adjust size according to recommendation: ${teethSizeRec}
 - Configure ideal smile width: ${smileWidthRec}
 - Maintain naturalness and facial harmony
-- Professional but natural appearance
-- Natural white color harmonizing with skin tone
-- DO NOT change person's age, gender, or facial features
-- ONLY enhance teeth and smile area`;
+- Teeth should look professional but natural
+- Natural white color, not artificial
+- DO NOT change the person's age, gender, or facial features
+- ONLY enhance the teeth and smile area`;
 
-    const idealFormData = new FormData();
-    idealFormData.append('model', 'gpt-image-1');
-    idealFormData.append('prompt', recommendationPrompt);
-    idealFormData.append('image', dataUrlToBlob(correctedImage), 'image.png');
-    idealFormData.append('size', 'auto');
-    idealFormData.append('quality', 'high');
-    idealFormData.append('output_format', 'png');
-
-    const idealResponse = await fetch('https://api.openai.com/v1/images/edits', {
+    // Primera simulación: correcciones con Lovable AI
+    const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-      body: idealFormData,
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash-image-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: correctionPrompt },
+              {
+                type: 'image_url',
+                image_url: { url: imageBase64 }
+              }
+            ]
+          }
+        ],
+        modalities: ['image', 'text']
+      }),
     });
 
-    let idealImage = correctedImage;
+    if (!correctionResponse.ok) {
+      if (correctionResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Límite de uso excedido, intenta más tarde.' }), 
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (correctionResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Créditos agotados. Recarga tu cuenta.' }), 
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const errorText = await correctionResponse.text();
+      console.error('AI Gateway error (correction):', correctionResponse.status, errorText);
+      return new Response(
+        JSON.stringify({ error: 'Error en IA' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const correctionData = await correctionResponse.json();
+    let correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+    if (!correctedImage) {
+      console.warn('No se generó imagen corregida desde IA, uso imagen original como fallback');
+      correctedImage = imageBase64;
+    }
+
+    // Segunda simulación: diseño ideal con Lovable AI
+    const enhancedRecommendationPrompt = `You are an expert in smile design. Based on the corrected image, create an IDEAL smile simulation. CRITICAL: You must maintain the SAME PERSON - do not change the face, age, or identity.
+
+FACIAL ANALYSIS:
+${faceDescriptions.length > 0 ? faceDescriptions.join(', ') : 'Analyzed facial profile'}
+
+DESIGN RECOMMENDATIONS:
+1. Tooth shape: ${teethShapeRec}
+2. Tooth size: ${teethSizeRec}
+3. Smile width: ${smileWidthRec}
+4. Gingival exposure: ${gingivalRec}
+
+RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions'}
+
+IMPORTANT:
+- Keep the EXACT SAME person, face structure, and facial features
+- Apply the recommended tooth shape: ${teethShapeRec}
+- Adjust size according to recommendation: ${teethSizeRec}
+- Configure ideal smile width: ${smileWidthRec}
+- Use natural tooth color that harmonizes with skin tone and lip color
+- Maintain naturalness and facial harmony
+- Teeth should look professional but natural
+- DO NOT change the person's age, gender, or facial features
+- ONLY enhance the teeth and smile area`;
+
+    const idealResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash-image-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: enhancedRecommendationPrompt },
+              {
+                type: 'image_url',
+                image_url: { url: correctedImage }
+              }
+            ]
+          }
+        ],
+        modalities: ['image', 'text']
+      }),
+    });
 
     if (!idealResponse.ok) {
-      const errorText = await idealResponse.text();
-      console.error('Ideal simulation error:', idealResponse.status, errorText);
-      console.warn('Using corrected image as ideal due to ideal simulation failure');
-      warnings.push('ideal_simulation_failed');
-    } else {
-      try {
-        const idealData = await idealResponse.json();
-        idealImage = idealData.data?.[0]?.b64_json ? 
-          `data:image/png;base64,${idealData.data[0].b64_json}` : 
-          idealData.data?.[0]?.url;
-
-        if (!idealImage) {
-          console.warn('No ideal image generated, using corrected as fallback');
-          idealImage = correctedImage;
-          warnings.push('no_ideal_image');
-        }
-      } catch (parseError) {
-        console.error('Error parsing ideal response:', parseError);
-        idealImage = correctedImage;
-        warnings.push('ideal_parse_failed');
-      }
+      console.error('AI Gateway error (ideal):', idealResponse.status);
+      // Si falla la segunda simulación, devolvemos solo la corregida
+      return new Response(
+        JSON.stringify({ 
+          simulatedImage: correctedImage, 
+          idealImage: correctedImage,
+          facialAnalysis: facialMetrics,
+          qualityScore: qualityResult.quality_score
+        }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    const idealData = await idealResponse.json();
+    const idealImage = idealData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     return new Response(
       JSON.stringify({ 
         simulatedImage: correctedImage,
         idealImage: idealImage || correctedImage,
         facialAnalysis: facialMetrics,
-        qualityScore: qualityResult.quality_score,
-        warnings: warnings.length > 0 ? warnings : undefined
+        qualityScore: qualityResult.quality_score
       }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -1,17 +1,15 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, RotateCcw, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Camera, Upload, RotateCcw } from "lucide-react";
 import DynamicFaceGuide from "./DynamicFaceGuide";
 
 interface CameraCaptureProps {
   onCapture: (imageBase64: string) => void;
   title: string;
   description?: string;
-  showGuide?: boolean;
 }
 
-export default function CameraCapture({ onCapture, title, description, showGuide = true }: CameraCaptureProps) {
+export default function CameraCapture({ onCapture, title, description }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -19,12 +17,9 @@ export default function CameraCapture({ onCapture, title, description, showGuide
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>("");
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
-  const [cameraError, setCameraError] = useState<string>("");
 
   const startCamera = async (mode: "user" | "environment" = facingMode) => {
     try {
-      setCameraError(""); // Clear any previous errors
-      
       // Stop any existing stream before starting a new one
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
@@ -32,8 +27,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
 
       if (!navigator.mediaDevices?.getUserMedia) {
         console.error("getUserMedia not supported in this browser");
-        const errorMsg = "Tu navegador no soporta acceso a la cámara. Intenta con Chrome, Firefox o Safari actualizado.";
-        setCameraError(errorMsg);
+        alert("Tu navegador no soporta acceso a la cámara. Intenta con otro navegador o actualiza.");
         return;
       }
 
@@ -74,28 +68,13 @@ export default function CameraCapture({ onCapture, title, description, showGuide
       setIsCameraActive(true);
     } catch (error: any) {
       console.error("Error accessing camera:", error);
-      
-      let errorMsg = "";
-      let instructions = "";
-      
-      if (error?.name === "NotAllowedError") {
-        errorMsg = "Permiso denegado para acceder a la cámara";
-        instructions = "En Android Chrome:\n1. Toca el icono de candado/info en la barra de direcciones\n2. Activa los permisos de Cámara\n3. Recarga la página\n\nEn iOS Safari:\n1. Ve a Ajustes > Safari > Cámara\n2. Cambia a 'Permitir'\n3. Recarga la página";
-      } else if (error?.name === "NotFoundError") {
-        errorMsg = "No se encontró cámara disponible";
-        instructions = "Verifica que tu dispositivo tenga una cámara funcional y que no esté siendo usada por otra aplicación.";
-      } else if (error?.name === "NotReadableError") {
-        errorMsg = "La cámara está siendo usada por otra aplicación";
-        instructions = "Cierra otras aplicaciones que puedan estar usando la cámara e intenta de nuevo.";
-      } else if (error?.name === "SecurityError") {
-        errorMsg = "Error de seguridad al acceder a la cámara";
-        instructions = "Asegúrate de estar accediendo desde una conexión segura (HTTPS). También puedes intentar usar 'Subir desde Galería' como alternativa.";
-      } else {
-        errorMsg = "No se pudo acceder a la cámara";
-        instructions = "Verifica los permisos del navegador o intenta usar 'Subir desde Galería' como alternativa.";
-      }
-      
-      setCameraError(`${errorMsg}. ${instructions}`);
+      const msg =
+        error?.name === "NotAllowedError"
+          ? "Permiso denegado. Activa el acceso a la cámara en los ajustes del navegador."
+          : error?.name === "NotFoundError"
+          ? "No se encontró una cámara disponible en este dispositivo."
+          : "No se pudo acceder a la cámara. Verifica permisos o intenta con otro navegador.";
+      alert(msg);
     }
   };
 
@@ -149,7 +128,6 @@ export default function CameraCapture({ onCapture, title, description, showGuide
 
   const retake = () => {
     setCapturedImage("");
-    setCameraError("");
     startCamera();
   };
 
@@ -172,17 +150,6 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         <>
           {!isCameraActive ? (
             <div className="space-y-6">
-              {/* Error Alert */}
-              {cameraError && (
-                <Alert variant="destructive" className="max-w-2xl mx-auto">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error de Cámara</AlertTitle>
-                  <AlertDescription className="whitespace-pre-line text-sm">
-                    {cameraError}
-                  </AlertDescription>
-                </Alert>
-              )}
-              
               {/* Instructions list */}
               <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 max-w-2xl mx-auto">
                 <ul className="space-y-3 text-left">
@@ -239,7 +206,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
             </div>
           ) : (
             <div className="space-y-4">
-              <div className={`relative rounded-xl overflow-hidden bg-black aspect-[3/4] max-w-md mx-auto ${showGuide ? 'border-4 border-primary' : ''}`}>
+              <div className="relative rounded-xl overflow-hidden border-4 border-primary bg-black aspect-[3/4] max-w-md mx-auto">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -249,17 +216,17 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                 />
                 
                 {/* Marco de guía dinámico con detección facial */}
-                {showGuide && <DynamicFaceGuide videoRef={videoRef} />}
+                <DynamicFaceGuide videoRef={videoRef} />
               </div>
 
               <canvas ref={canvasRef} className="hidden" />
 
-              <div className="grid grid-cols-1 sm:flex gap-3 max-w-md mx-auto px-4">
+              <div className="flex gap-3 max-w-md mx-auto">
                 <Button
                   onClick={switchCamera}
                   variant="outline"
                   size="lg"
-                  className="w-full sm:flex-1 border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
+                  className="flex-1 border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
                 >
                   <RotateCcw className="mr-2 h-5 w-5" />
                   Cambiar Cámara
@@ -268,7 +235,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                 <Button
                   onClick={capturePhoto}
                   size="lg"
-                  className="w-full sm:flex-[2] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105"
+                  className="flex-[2] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105"
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Capturar Foto
