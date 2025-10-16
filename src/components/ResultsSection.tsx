@@ -173,6 +173,21 @@ export const ResultsSection = ({
                     document.addEventListener('mousemove', handleMouseMove);
                     document.addEventListener('mouseup', handleMouseUp);
                   }}
+                  onTouchStart={(e) => {
+                    const container = e.currentTarget.parentElement!;
+                    const handleTouchMove = (moveEvent: TouchEvent) => {
+                      const rect = container.getBoundingClientRect();
+                      const x = moveEvent.touches[0].clientX - rect.left;
+                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                      setBeforeAfterPosition(percentage);
+                    };
+                    const handleTouchEnd = () => {
+                      document.removeEventListener('touchmove', handleTouchMove);
+                      document.removeEventListener('touchend', handleTouchEnd);
+                    };
+                    document.addEventListener('touchmove', handleTouchMove);
+                    document.addEventListener('touchend', handleTouchEnd);
+                  }}
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center">
                     <div className="flex gap-1">

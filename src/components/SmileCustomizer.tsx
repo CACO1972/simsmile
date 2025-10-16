@@ -37,15 +37,28 @@ export const SmileCustomizer = ({ baseImage, onSimulate }: SmileCustomizerProps)
     toast.loading("Generando tu sonrisa personalizada...");
 
     try {
-      // Crear el prompt basado en los parámetros ajustados
-      const lengthDesc = teethLength[0] < 40 ? "dientes más cortos" 
-        : teethLength[0] > 60 ? "dientes más largos" : "longitud de dientes estándar";
+      // Crear el prompt basado en los parámetros ajustados (5% más intenso)
+      const lengthDiff = Math.round((teethLength[0] - 50) * 1.05);
+      const widthDiff = Math.round((teethWidth[0] - 50) * 1.05);
+      const whitenessDiff = Math.round((teethWhiteness[0] - 50) * 1.05);
       
-      const widthDesc = teethWidth[0] < 40 ? "dientes más delgados" 
-        : teethWidth[0] > 60 ? "dientes más anchos" : "ancho de dientes estándar";
+      const lengthDesc = lengthDiff < -10 ? "dientes significativamente más cortos" 
+        : lengthDiff < -3 ? "dientes más cortos"
+        : lengthDiff > 10 ? "dientes significativamente más largos"
+        : lengthDiff > 3 ? "dientes más largos" 
+        : "longitud de dientes estándar";
       
-      const whitenessDesc = teethWhiteness[0] < 40 ? "tono de dientes natural" 
-        : teethWhiteness[0] > 60 ? "dientes muy blancos" : "dientes blancos naturales";
+      const widthDesc = widthDiff < -10 ? "dientes significativamente más delgados" 
+        : widthDiff < -3 ? "dientes más delgados"
+        : widthDiff > 10 ? "dientes significativamente más anchos"
+        : widthDiff > 3 ? "dientes más anchos" 
+        : "ancho de dientes estándar";
+      
+      const whitenessDesc = whitenessDiff < -10 ? "tono de dientes más natural y menos blanco" 
+        : whitenessDiff < -3 ? "tono de dientes natural"
+        : whitenessDiff > 10 ? "dientes extremadamente blancos brillantes"
+        : whitenessDiff > 3 ? "dientes muy blancos" 
+        : "dientes blancos naturales";
 
       const customPrompt = `Adjust this smile photo with these specifications:
 - ${lengthDesc}
