@@ -37,35 +37,71 @@ export const SmileCustomizer = ({ baseImage, onSimulate }: SmileCustomizerProps)
     toast.loading("Generando tu sonrisa personalizada...");
 
     try {
-      // Crear el prompt basado en los parámetros ajustados (5% más intenso)
-      const lengthDiff = Math.round((teethLength[0] - 50) * 1.05);
-      const widthDiff = Math.round((teethWidth[0] - 50) * 1.05);
-      const whitenessDiff = Math.round((teethWhiteness[0] - 50) * 1.05);
+      // Crear el prompt basado en los parámetros ajustados con cambios más evidentes
+      const lengthValue = teethLength[0];
+      const widthValue = teethWidth[0];
+      const whitenessValue = teethWhiteness[0];
       
-      const lengthDesc = lengthDiff < -10 ? "dientes significativamente más cortos" 
-        : lengthDiff < -3 ? "dientes más cortos"
-        : lengthDiff > 10 ? "dientes significativamente más largos"
-        : lengthDiff > 3 ? "dientes más largos" 
-        : "longitud de dientes estándar";
-      
-      const widthDesc = widthDiff < -10 ? "dientes significativamente más delgados" 
-        : widthDiff < -3 ? "dientes más delgados"
-        : widthDiff > 10 ? "dientes significativamente más anchos"
-        : widthDiff > 3 ? "dientes más anchos" 
-        : "ancho de dientes estándar";
-      
-      const whitenessDesc = whitenessDiff < -10 ? "tono de dientes más natural y menos blanco" 
-        : whitenessDiff < -3 ? "tono de dientes natural"
-        : whitenessDiff > 10 ? "dientes extremadamente blancos brillantes"
-        : whitenessDiff > 3 ? "dientes muy blancos" 
-        : "dientes blancos naturales";
+      // Instrucciones específicas por parámetro con rangos más marcados
+      let lengthInstruction = "";
+      if (lengthValue < 35) {
+        lengthInstruction = "CRITICALLY IMPORTANT: Make teeth 25-30% SHORTER than current. Reduce vertical height dramatically so the change is clearly visible.";
+      } else if (lengthValue < 48) {
+        lengthInstruction = "Make teeth 10-15% shorter than current length. Noticeable reduction in height.";
+      } else if (lengthValue > 65) {
+        lengthInstruction = "CRITICALLY IMPORTANT: Make teeth 25-30% LONGER than current. Increase vertical height dramatically so the change is clearly visible. Elongate them significantly.";
+      } else if (lengthValue > 52) {
+        lengthInstruction = "Make teeth 10-15% longer than current length. Noticeable increase in height.";
+      } else {
+        lengthInstruction = "Keep teeth at standard proportional length.";
+      }
 
-      const customPrompt = `Adjust this smile photo with these specifications:
-- ${lengthDesc}
-- ${widthDesc}
-- ${whitenessDesc}
+      let widthInstruction = "";
+      if (widthValue < 35) {
+        widthInstruction = "CRITICALLY IMPORTANT: Make teeth 25-30% NARROWER/THINNER than current. Reduce horizontal width dramatically - make them visibly slimmer.";
+      } else if (widthValue < 48) {
+        widthInstruction = "Make teeth 10-15% narrower than current width. Visible slimming effect.";
+      } else if (widthValue > 65) {
+        widthInstruction = "CRITICALLY IMPORTANT: Make teeth 25-30% WIDER/BROADER than current. Increase horizontal width dramatically - make them noticeably broader.";
+      } else if (widthValue > 52) {
+        widthInstruction = "Make teeth 10-15% wider than current width. Visible broadening effect.";
+      } else {
+        widthInstruction = "Keep teeth at standard proportional width.";
+      }
 
-Maintain facial proportions, skin tone, and natural appearance. Focus only on teeth modifications.`;
+      let whitenessInstruction = "";
+      if (whitenessValue < 35) {
+        whitenessInstruction = "CRITICALLY IMPORTANT: Make teeth significantly LESS WHITE - use natural ivory/cream tones (shade A3-A4). Make the color change very obvious.";
+      } else if (whitenessValue < 48) {
+        whitenessInstruction = "Use natural tooth color with slight ivory tone (shade A2).";
+      } else if (whitenessValue > 65) {
+        whitenessInstruction = "CRITICALLY IMPORTANT: Make teeth EXTREMELY WHITE - brilliant Hollywood white (shade B1 or bleaching white). Make them dramatically brighter than current.";
+      } else if (whitenessValue > 52) {
+        whitenessInstruction = "Make teeth very white and bright (shade A1).";
+      } else {
+        whitenessInstruction = "Use standard natural white tooth color.";
+      }
+
+      const customPrompt = `You are a dental image editing AI. Edit this smile photo following these EXACT specifications. The changes MUST be clearly visible and obvious:
+
+TEETH LENGTH ADJUSTMENT:
+${lengthInstruction}
+
+TEETH WIDTH ADJUSTMENT:
+${widthInstruction}
+
+TEETH COLOR/WHITENESS ADJUSTMENT:
+${whitenessInstruction}
+
+CRITICAL REQUIREMENTS:
+- Make changes BOLD and CLEARLY VISIBLE - the difference must be obvious when comparing
+- Apply changes to ALL visible teeth uniformly
+- Maintain natural tooth texture and translucency
+- Keep facial features, skin, and background exactly the same
+- Focus ONLY on modifying the teeth as specified
+- The adjustments should be dramatic enough to be immediately noticeable
+
+Output a high-quality edited image where the tooth modifications are CLEARLY APPARENT.`;
 
       const { data, error } = await supabase.functions.invoke('simulate-smile', {
         body: {
