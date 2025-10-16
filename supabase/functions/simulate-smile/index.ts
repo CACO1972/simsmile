@@ -154,7 +154,7 @@ Respond ONLY with a JSON object (no markdown, no extra text):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
         messages: [
           {
             role: 'user',
@@ -169,7 +169,8 @@ Respond ONLY with a JSON object (no markdown, no extra text):
             ]
           }
         ],
-        max_tokens: 1024
+        max_tokens: 2048,
+        temperature: 0.2
       }),
     });
 
@@ -300,7 +301,7 @@ IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no cod
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
         messages: [
           {
             role: 'user',
@@ -316,6 +317,7 @@ IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no cod
           }
         ],
         temperature: 0.1,
+        max_tokens: 4096,
         response_format: { type: "json_object" }
       }),
     });
@@ -369,19 +371,27 @@ IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no cod
       corrections.push('Straighten and align crooked or misaligned teeth subtly');
     }
 
-    const correctionPrompt = `Professional dental photo editing. Apply these aesthetic corrections naturally and realistically. CRITICAL: Maintain the SAME PERSON - do not change the face, age, or identity.
+    const correctionPrompt = `You are a world-class dental aesthetics expert specializing in photorealistic smile simulations. Apply the following corrections with CLINICAL PRECISION while maintaining photographic realism.
 
-Corrections:
+DENTAL CORRECTIONS TO APPLY:
 ${corrections.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
-REQUIREMENTS:
-- Keep EXACT SAME person, face structure, and facial features
-- Maintain original lighting, shadows, and background
-- Changes should be subtle but clinically visible
-- Use natural tooth tones (not artificial white)
-- Healthy proportionate gums
-- DO NOT change person's age, gender, or facial features
-- ONLY edit teeth and smile area`;
+CRITICAL TECHNICAL REQUIREMENTS:
+- PRESERVE IDENTITY: Keep exact same person, facial structure, age, ethnicity, skin tone, and all facial features
+- LIGHTING PRESERVATION: Maintain exact original lighting conditions, shadows, highlights, and reflections on teeth
+- PHOTOREALISTIC QUALITY: Edits must be indistinguishable from professional dental photography
+- DENTAL PRECISION: Apply corrections following clinical aesthetic standards (golden proportions, smile arc theory)
+- NATURAL TEXTURES: Maintain tooth enamel texture, natural translucency, and micro-surface details
+- GINGIVAL REALISM: Realistic gum tissue color, texture, and proportions matching the patient's natural tone
+- CONSERVATIVE APPROACH: Subtle, clinically accurate changes - avoid artificial "Hollywood white" appearance
+- OCCLUSION ACCURACY: Maintain natural bite relationship and tooth contact points
+- EDIT SCOPE: ONLY modify teeth and immediate gingival area - preserve all other facial features
+
+QUALITY STANDARDS:
+- High-resolution output maintaining original image quality
+- Natural tooth color matching patient's complexion (shade A1-A2 range)
+- Proper incisal translucency and mamelons where appropriate
+- Realistic tooth proportions following width-to-length golden ratio (0.75-0.80)`;
 
     // Construir prompt de recomendaciones
     const faceDescriptions = [];
@@ -448,29 +458,39 @@ REQUIREMENTS:
 
     // Segunda simulación: diseño ideal con Lovable AI (Gemini Image Preview)
     console.log('✨ Generando simulación de sonrisa ideal con Gemini Image...');
-    const recommendationPrompt = `Expert smile design. Create an IDEAL smile simulation based on professional recommendations. CRITICAL: Maintain the SAME PERSON.
+    const recommendationPrompt = `You are an elite cosmetic dentist and digital smile design specialist. Create a WORLD-CLASS IDEAL smile simulation following professional aesthetic dentistry principles.
 
-FACIAL ANALYSIS:
-${faceDescriptions.length > 0 ? faceDescriptions.join(', ') : 'Analyzed facial profile'}
+PATIENT FACIAL ANALYSIS:
+${faceDescriptions.length > 0 ? faceDescriptions.join(', ') : 'Comprehensive facial proportions analyzed'}
 
-PROFESSIONAL DESIGN RECOMMENDATIONS:
-1. Tooth shape: ${teethShapeRec}
-2. Tooth size: ${teethSizeRec}
-3. Smile width: ${smileWidthRec}
-4. Gingival exposure: ${gingivalRec}
+PROFESSIONAL SMILE DESIGN SPECIFICATIONS:
+1. Tooth Morphology: ${teethShapeRec}
+2. Tooth Dimensions: ${teethSizeRec}
+3. Smile Width Configuration: ${smileWidthRec}
+4. Gingival Exposure Level: ${gingivalRec}
 
-CLINICAL RATIONALE: ${smileRecommendations?.rationale || 'Custom design based on facial proportions and golden ratio analysis'}
+CLINICAL DESIGN RATIONALE: ${smileRecommendations?.rationale || 'Custom digital smile design based on golden ratio facial proportions, smile arc dynamics, and individualized aesthetic harmony analysis'}
 
-REQUIREMENTS:
-- Keep EXACT SAME person, face structure, and facial features
-- Apply recommended tooth shape: ${teethShapeRec}
-- Adjust size per recommendation: ${teethSizeRec}
-- Configure ideal smile width: ${smileWidthRec}
-- Maintain naturalness and facial harmony
-- Professional but natural appearance
-- Natural white color harmonizing with skin tone
-- DO NOT change person's age, gender, or facial features
-- ONLY enhance teeth and smile area`;
+PROFESSIONAL EXECUTION STANDARDS:
+- IDENTITY PRESERVATION: Maintain EXACT same person - facial structure, age, ethnicity, complexion, all features
+- GOLDEN RATIO APPLICATION: Apply phi (1.618) proportion in central incisors width-to-height ratio
+- SMILE ARC OPTIMIZATION: Create consonant smile arc following lower lip curvature
+- TOOTH MORPHOLOGY: Implement ${teethShapeRec} shape with proper axial inclinations and embrasure spaces
+- DIMENSIONAL ACCURACY: ${teethSizeRec} maintaining 75-80% width-to-height ratio for central incisors
+- SMILE WIDTH DESIGN: ${smileWidthRec} extending to premolar region for optimal aesthetics
+- GINGIVAL AESTHETICS: ${gingivalRec} with symmetrical zenith positions and proper papilla fill
+- NATURAL HARMONIZATION: Color integration with patient's skin tone (realistic A1-B1 shade range)
+- PHOTOREALISTIC QUALITY: Clinical-grade simulation with natural enamel texture, translucency, and light reflections
+- FACIAL HARMONY: Design must complement facial proportions, lip dynamics, and smile line
+- PROFESSIONAL APPEARANCE: Sophisticated, natural result - not artificial "celebrity veneers" look
+- PRECISION SCOPE: Transform ONLY dentition and gingival area - preserve all other facial characteristics
+
+TECHNICAL QUALITY REQUIREMENTS:
+- High-resolution output preserving original image sharpness
+- Realistic tooth anatomy with proper anatomical landmarks
+- Natural incisal edge translucency and characterization
+- Proper contact points and embrasure form
+- Symmetrical gingival architecture with ideal soft tissue proportions`;
 
     const idealResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
