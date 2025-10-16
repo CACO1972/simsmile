@@ -6,6 +6,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper para parsear JSON de Claude (puede venir envuelto en ```json...```)
+function parseClaudeJSON(text: string): any {
+  // Remover bloques de código markdown si existen
+  const cleanText = text
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+  
+  try {
+    return JSON.parse(cleanText);
+  } catch (error) {
+    console.error('Failed to parse Claude JSON:', cleanText);
+    throw new Error(`Invalid JSON from Claude: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -135,7 +152,7 @@ Respond with a JSON object:
 
     const qualityData = await qualityResponse.json();
     const qualityContent = qualityData.content?.[0]?.text || '{"isValid": true, "quality_score": 75}';
-    const qualityResult = JSON.parse(qualityContent);
+    const qualityResult = parseClaudeJSON(qualityContent);
     
     console.log('✅ Quality check result:', qualityResult);
 
@@ -282,7 +299,7 @@ Respond with JSON including measurements AND professional explanations:
 
     const facialData = await facialResponse.json();
     const facialContent = facialData.content?.[0]?.text || '{}';
-    const facialMetrics = JSON.parse(facialContent);
+    const facialMetrics = parseClaudeJSON(facialContent);
     
     console.log('✅ Facial analysis complete:', facialMetrics);
 
