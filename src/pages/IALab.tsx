@@ -135,9 +135,9 @@ const IALab = () => {
         console.error("Edge function error:", error);
         const msg = (error as any)?.message || "";
 
+        // Si es un error de calidad de imagen, continuamos con fallback
         if (typeof msg === "string" && msg.includes("Calidad de imagen insuficiente")) {
-          toast.info("Tu foto no cumple el umbral de calidad, continuaremos con una simulación básica.", { duration: 5000 });
-          // Fallback: usar la foto original para continuar el flujo
+          toast.info("Tu foto no cumple el umbral de calidad óptimo, pero continuaremos con una simulación básica.", { duration: 5000 });
           setSmileImage(smile);
           setIdealImage(smile);
           setAnalysis(analysisText);
@@ -148,8 +148,16 @@ const IALab = () => {
           return;
         }
 
-        toast.error("No pudimos procesar tus fotos correctamente. Por favor, toma nuevas fotos asegurándote de: tener buena iluminación, mantener tu rostro centrado y completamente visible, y evitar sombras fuertes.", { duration: 8000 });
-        setStep("capture");
+        // Para otros errores, mostrar mensaje y NO devolver a capture
+        console.error("Simulación falló pero continuamos con foto original:", msg);
+        toast.info("No pudimos generar la simulación ideal, pero continuaremos con tu análisis facial.", { duration: 5000 });
+        setSmileImage(smile);
+        setIdealImage(smile);
+        setAnalysis(analysisText);
+        setMetrics(calculatedMetrics);
+        setLandmarks(smileLandmarks);
+        setSimulationData({ warnings: ["simulation_error"] });
+        setStep("contact");
         return;
       }
 

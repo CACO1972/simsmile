@@ -239,7 +239,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
             </div>
           ) : (
             <div className="space-y-4">
-              <div className={`relative rounded-xl overflow-hidden ${showGuide ? 'border-4 border-primary' : 'border-0'} bg-black aspect-[3/4] max-w-md mx-auto`}>
+              <div className={`relative rounded-xl overflow-hidden bg-black aspect-[3/4] max-w-md mx-auto ${showGuide ? 'border-4 border-primary' : ''}`}>
                 <video
                   ref={videoRef}
                   autoPlay
