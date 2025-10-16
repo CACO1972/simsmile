@@ -55,7 +55,7 @@ const ANALYSIS_ITEMS = [
     description: "Comparación con el ideal del Golden Ratio",
     getValue: (data: FacialAnalysisData) => {
       const h = data.horizontal_ratio;
-      if (!h) return null;
+      if (!h || h.upper === undefined || h.middle === undefined || h.lower === undefined) return null;
       return `${h.upper.toFixed(1)}% : ${h.middle.toFixed(1)}% : ${h.lower.toFixed(1)}%`;
     },
     getIdeal: () => "33.3% : 33.3% : 33.3%",
@@ -73,7 +73,7 @@ const ANALYSIS_ITEMS = [
     description: "Balance del ancho facial según Golden Ratio",
     getValue: (data: FacialAnalysisData) => {
       const v = data.vertical_ratio?.sections;
-      if (!v || v.length < 5) return null;
+      if (!v || v.length < 5 || v.some(val => val === undefined)) return null;
       return `${v[0].toFixed(1)}% : ${v[1].toFixed(1)}% : ${v[2].toFixed(1)}% : ${v[3].toFixed(1)}% : ${v[4].toFixed(1)}%`;
     },
     getIdeal: () => "20% : 20% : 20% : 20% : 20%",
