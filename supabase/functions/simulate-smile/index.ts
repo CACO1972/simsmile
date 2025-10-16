@@ -58,34 +58,33 @@ serve(async (req) => {
   try {
     const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
+    }
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
     // Si es una llamada de personalización (customPrompt presente)
     if (customPrompt && image) {
       console.log('Processing custom smile simulation with parameters:', customParameters);
       
-      const customResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const formData = new FormData();
+      formData.append('model', 'gpt-image-1');
+      formData.append('prompt', customPrompt);
+      formData.append('image', dataUrlToBlob(image), 'image.png');
+      formData.append('size', 'auto');
+      formData.append('quality', 'high');
+      formData.append('output_format', 'png');
+
+      const customResponse = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
         },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image-preview',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: customPrompt },
-                { type: 'image_url', image_url: { url: image } }
-              ]
-            }
-          ],
-          modalities: ['image', 'text']
-        }),
+        body: formData,
       });
 
       if (!customResponse.ok) {
@@ -104,7 +103,9 @@ serve(async (req) => {
       }
       
       const customData = await customResponse.json();
-      const customizedImage = customData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      const customizedImage = customData.data?.[0]?.b64_json ? 
+        `data:image/png;base64,${customData.data[0].b64_json}` : 
+        customData.data?.[0]?.url;
 
       if (!customizedImage) {
         console.warn('No customized image in response, using original');
@@ -315,7 +316,6 @@ IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no cod
             ]
           }
         ],
-        temperature: 0.1,
         response_format: { type: "json_object" }
       }),
     });
@@ -397,28 +397,23 @@ REQUIREMENTS:
     const smileWidthRec = smileRecommendations?.smileWidth || 'balanced and natural';
     const gingivalRec = smileRecommendations?.gingivalDisplay || 'adequate gingival exposure';
 
-    // Primera simulación: correcciones con Lovable AI (Gemini Image Preview)
-    console.log('🎨 Aplicando correcciones estéticas con Gemini Image...');
+    // Primera simulación: correcciones con OpenAI GPT Image
+    console.log('🎨 Aplicando correcciones estéticas con OpenAI GPT Image...');
     
-    const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const correctionFormData = new FormData();
+    correctionFormData.append('model', 'gpt-image-1');
+    correctionFormData.append('prompt', correctionPrompt);
+    correctionFormData.append('image', dataUrlToBlob(imageBase64), 'image.png');
+    correctionFormData.append('size', 'auto');
+    correctionFormData.append('quality', 'high');
+    correctionFormData.append('output_format', 'png');
+
+    const correctionResponse = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: correctionPrompt },
-              { type: 'image_url', image_url: { url: imageBase64 } }
-            ]
-          }
-        ],
-        modalities: ['image', 'text']
-      }),
+      body: correctionFormData,
     });
 
     let correctedImage = imageBase64;
@@ -432,7 +427,9 @@ REQUIREMENTS:
     } else {
       try {
         const correctionData = await correctionResponse.json();
-        correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        correctedImage = correctionData.data?.[0]?.b64_json ? 
+          `data:image/png;base64,${correctionData.data[0].b64_json}` : 
+          correctionData.data?.[0]?.url;
 
         if (!correctedImage) {
           console.warn('No corrected image generated, using original as fallback');
@@ -446,8 +443,8 @@ REQUIREMENTS:
       }
     }
 
-    // Segunda simulación: diseño ideal con Lovable AI (Gemini Image Preview)
-    console.log('✨ Generando simulación de sonrisa ideal con Gemini Image...');
+    // Segunda simulación: diseño ideal con OpenAI GPT Image
+    console.log('✨ Generando simulación de sonrisa ideal con OpenAI GPT Image...');
     const recommendationPrompt = `Expert smile design. Create an IDEAL smile simulation based on professional recommendations. CRITICAL: Maintain the SAME PERSON.
 
 FACIAL ANALYSIS:
@@ -472,25 +469,20 @@ REQUIREMENTS:
 - DO NOT change person's age, gender, or facial features
 - ONLY enhance teeth and smile area`;
 
-    const idealResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const idealFormData = new FormData();
+    idealFormData.append('model', 'gpt-image-1');
+    idealFormData.append('prompt', recommendationPrompt);
+    idealFormData.append('image', dataUrlToBlob(correctedImage), 'image.png');
+    idealFormData.append('size', 'auto');
+    idealFormData.append('quality', 'high');
+    idealFormData.append('output_format', 'png');
+
+    const idealResponse = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: recommendationPrompt },
-              { type: 'image_url', image_url: { url: correctedImage } }
-            ]
-          }
-        ],
-        modalities: ['image', 'text']
-      }),
+      body: idealFormData,
     });
 
     let idealImage = correctedImage;
@@ -503,7 +495,9 @@ REQUIREMENTS:
     } else {
       try {
         const idealData = await idealResponse.json();
-        idealImage = idealData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        idealImage = idealData.data?.[0]?.b64_json ? 
+          `data:image/png;base64,${idealData.data[0].b64_json}` : 
+          idealData.data?.[0]?.url;
 
         if (!idealImage) {
           console.warn('No ideal image generated, using corrected as fallback');
