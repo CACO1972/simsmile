@@ -6,20 +6,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper para parsear JSON de Claude (puede venir envuelto en ```json...```)
+// Helper para parsear JSON de Claude (puede venir envuelto en ```json...``` o con texto extra)
 function parseClaudeJSON(text: string): any {
+  let clean = (text ?? '').trim();
+
   // Remover bloques de código markdown si existen
-  const cleanText = text
+  clean = clean
     .replace(/^```json\s*/i, '')
     .replace(/^```\s*/i, '')
     .replace(/\s*```$/i, '')
     .trim();
-  
+
   try {
-    return JSON.parse(cleanText);
-  } catch (error) {
-    console.error('Failed to parse Claude JSON:', cleanText);
-    throw new Error(`Invalid JSON from Claude: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return JSON.parse(clean);
+  } catch (_) {
+    // Intento secundario: extraer el primer objeto { ... } válido
+    const start = clean.indexOf('{');
+    const end = clean.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+      const candidate = clean.slice(start, end + 1);
+      try {
+        return JSON.parse(candidate);
+      } catch (e2) {
+        console.error('Claude JSON candidate failed:', candidate);
+        throw new Error(`Invalid JSON from Claude: ${e2 instanceof Error ? e2.message : 'Unknown error'}`);
+      }
+    }
+    console.error('Claude text without JSON object:', clean);
+    throw new Error('Invalid JSON from Claude: no JSON object found');
   }
 }
 
@@ -157,12 +171,14 @@ Respond with a JSON object:
     console.log('✅ Quality check result:', qualityResult);
 
     // Validación de calidad - rechazar si es menor a 50
-    if (qualityResult.quality_score < 50) {
+    const qualityScore = Number(qualityResult.quality_score ?? 75);
+    const safeQualityScore = Number.isNaN(qualityScore) ? 75 : qualityScore;
+    if (safeQualityScore < 50) {
       return new Response(
         JSON.stringify({ 
           error: 'Calidad de imagen insuficiente',
           quality: qualityResult,
-          message: `Tu fotografía no cumple con los estándares de calidad necesarios (puntaje: ${qualityResult.quality_score}/100). ${qualityResult.recommendation || 'Por favor, toma nuevas fotos siguiendo estas recomendaciones:'}\n\n✓ Asegúrate de tener buena iluminación\n✓ Centra tu rostro en el encuadre\n✓ Mantén el rostro completo visible\n✓ Evita sombras en el rostro`
+          message: `Tu fotografía no cumple con los estándares de calidad necesarios (puntaje: ${safeQualityScore}/100). ${qualityResult.recommendation || 'Por favor, toma nuevas fotos siguiendo estas recomendaciones:'}\n\n✓ Asegúrate de tener buena iluminación\n✓ Centra tu rostro en el encuadre\n✓ Mantén el rostro completo visible\n✓ Evita sombras en el rostro`
         }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
