@@ -166,8 +166,8 @@ export const ResultsSection = ({
                   style={{ left: `${beforeAfterPosition}%` }}
                   onMouseDown={(e) => {
                     const container = e.currentTarget.parentElement!;
+                    const rect = container.getBoundingClientRect();
                     const handleMouseMove = (moveEvent: MouseEvent) => {
-                      const rect = container.getBoundingClientRect();
                       const x = moveEvent.clientX - rect.left;
                       const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
                       setBeforeAfterPosition(percentage);
@@ -181,8 +181,8 @@ export const ResultsSection = ({
                   }}
                   onTouchStart={(e) => {
                     const container = e.currentTarget.parentElement!;
+                    const rect = container.getBoundingClientRect();
                     const handleTouchMove = (moveEvent: TouchEvent) => {
-                      const rect = container.getBoundingClientRect();
                       const x = moveEvent.touches[0].clientX - rect.left;
                       const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
                       setBeforeAfterPosition(percentage);
