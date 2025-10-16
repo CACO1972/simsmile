@@ -278,7 +278,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Clínica Miró Badge */}
-      <div className="text-center text-xs text-muted-foreground/50 z-10">
+      <div className="text-center text-base font-medium text-foreground/80 z-10">
         Desarrollado por Clínica Miró
       </div>
     </div>
