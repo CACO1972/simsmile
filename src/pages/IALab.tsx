@@ -148,7 +148,7 @@ const IALab = () => {
           return;
         }
 
-        toast.error(msg || "Error al generar la simulación. Intenta nuevamente.", { duration: 6000 });
+        toast.error("No pudimos procesar tus fotos correctamente. Por favor, toma nuevas fotos asegurándote de: tener buena iluminación, mantener tu rostro centrado y completamente visible, y evitar sombras fuertes.", { duration: 8000 });
         setStep("capture");
         return;
       }
