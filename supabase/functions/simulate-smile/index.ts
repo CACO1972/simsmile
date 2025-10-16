@@ -154,7 +154,7 @@ Respond ONLY with a JSON object (no markdown, no extra text):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-pro',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'user',
@@ -169,7 +169,7 @@ Respond ONLY with a JSON object (no markdown, no extra text):
             ]
           }
         ],
-        max_tokens: 2048,
+        max_tokens: 500,
         temperature: 0.2
       }),
     });
@@ -210,139 +210,9 @@ Respond ONLY with a JSON object (no markdown, no extra text):
       );
     }
 
-    // 2. Análisis facial REAL con mediciones sobre la imagen con Gemini
-    console.log('🔍 Realizando análisis facial profesional con Gemini...');
-    const facialAnalysisPrompt = `You are a professional facial analysis expert with clinical training. Analyze this photo by taking REAL MEASUREMENTS on the image.
-
-CRITICAL INSTRUCTIONS:
-- Use actual pixel measurements and proportions from THIS specific image
-- DO NOT give generic or average values
-- Measure the ACTUAL distances and ratios visible in the photo
-- Compare EACH measurement with the Golden Ratio (1.618) and aesthetic ideals
-- Provide a professional clinical explanation for each measurement
-
-MEASUREMENTS TO TAKE:
-
-1. FACE HORIZONTAL RATIO (Face Thirds Rule):
-   - Measure: hairline to eyebrows (upper), eyebrows to nose tip (middle), nose tip to chin (lower)
-   - Ideal: 33.3% each (equal thirds)
-   - Golden Ratio comparison: should be harmonious
-   - Explain: if balanced or which section is longer/shorter
-
-2. FACE VERTICAL RATIO (Fifths Rule):
-   - Measure: divide face width into 5 equal sections
-   - Ideal: each section should be 20% of face width
-   - Explain: spacing between features
-
-3. FACE ASPECT RATIO:
-   - Measure: face height ÷ face width
-   - Golden Ratio ideal: 1.618
-   - Explain: how close to golden ratio
-
-4. EYE DISTANCE:
-   - Measure: distance between inner eye corners
-   - Ideal: should equal one eye width
-   - Explain: if eyes are close-set, ideal, or wide-set
-
-5. EYE ASPECT RATIO:
-   - Measure: eye height ÷ eye width for each eye
-   - Ideal: approximately 0.35-0.40
-   - Explain: eye shape (almond, round, narrow)
-
-6. NOSE TO MOUTH WIDTH RATIO:
-   - Measure: nose width at base ÷ mouth width
-   - Golden Ratio ideal: 0.618 (nose should be 61.8% of mouth width)
-   - Explain: proportion balance
-
-IMPORTANT: Respond with a valid JSON object ONLY. No markdown formatting, no code blocks, no extra text before or after the JSON.
-
-{
-  "horizontal_ratio": {
-    "upper": number (percentage),
-    "middle": number (percentage),
-    "lower": number (percentage),
-    "explanation": "professional explanation comparing to 33% ideal",
-    "golden_ratio_comparison": "how it relates to golden ratio"
-  },
-  "vertical_ratio": {
-    "sections": [number, number, number, number, number],
-    "explanation": "professional explanation about facial width balance"
-  },
-  "face_aspect_ratio": {
-    "value": number,
-    "golden_ratio_ideal": 1.618,
-    "difference": number (how far from golden ratio),
-    "explanation": "professional explanation if face is more oval/round/long"
-  },
-  "eye_distance": {
-    "value": number,
-    "category": "narrow|ideal|wide",
-    "explanation": "professional explanation about eye spacing"
-  },
-  "eye_aspect_ratio": {
-    "value": number,
-    "explanation": "professional explanation about eye shape"
-  },
-  "nose_to_mouth_ratio": {
-    "value": number,
-    "golden_ratio_ideal": 0.618,
-    "difference": number,
-    "explanation": "professional explanation about nose-mouth proportion"
-  },
-  "symmetry_score": number (0-100),
-  "overall_golden_ratio_score": number (0-100, how close overall proportions are to golden ratio),
-  "overall_assessment": "comprehensive professional clinical summary"
-}`;
-
-    const facialResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-pro',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { 
-                type: 'image_url',
-                image_url: {
-                  url: imageBase64
-                }
-              },
-              { type: 'text', text: facialAnalysisPrompt }
-            ]
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 4096,
-        response_format: { type: "json_object" }
-      }),
-    });
-
-    let facialMetrics = {};
-    
-    if (!facialResponse.ok) {
-      console.error('Facial analysis failed:', facialResponse.status);
-      const errorText = await facialResponse.text();
-      console.error('Error details:', errorText);
-      
-      // Si falla análisis facial, usamos métricas vacías
-      console.warn('Continuando sin análisis facial detallado debido a error en API');
-    } else {
-      try {
-        const facialData = await facialResponse.json();
-        const facialContent = facialData.choices?.[0]?.message?.content || '{}';
-        facialMetrics = parseClaudeJSON(facialContent);
-      } catch (parseError) {
-        console.error('Error parsing facial analysis:', parseError);
-        console.warn('Continuando sin análisis facial detallado');
-      }
-    }
-    
-    console.log('✅ Facial analysis complete:', facialMetrics);
+    // 2. Análisis facial simplificado - OMITIDO para mejorar velocidad
+    console.log('⚡ Saltando análisis facial detallado para optimizar velocidad...');
+    const facialMetrics = {};
 
     // Construir prompt basado en las métricas
     const corrections = [];
