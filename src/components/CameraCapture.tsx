@@ -253,12 +253,12 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
 
               <canvas ref={canvasRef} className="hidden" />
 
-              <div className="flex gap-3 max-w-md mx-auto">
+              <div className="grid grid-cols-1 sm:flex gap-3 max-w-md mx-auto px-4">
                 <Button
                   onClick={switchCamera}
                   variant="outline"
                   size="lg"
-                  className="flex-1 border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
+                  className="w-full sm:flex-1 border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
                 >
                   <RotateCcw className="mr-2 h-5 w-5" />
                   Cambiar Cámara
@@ -267,7 +267,7 @@ export default function CameraCapture({ onCapture, title, description }: CameraC
                 <Button
                   onClick={capturePhoto}
                   size="lg"
-                  className="flex-[2] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105"
+                  className="w-full sm:flex-[2] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105"
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Capturar Foto
