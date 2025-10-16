@@ -37,6 +37,19 @@ function parseClaudeJSON(text: string): any {
   }
 }
 
+// Helper para convertir data URL a Blob para multipart/form-data
+function dataUrlToBlob(dataUrl: string): Blob {
+  const parts = dataUrl.split(',');
+  const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+  const bstr = atob(parts[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -58,26 +71,35 @@ serve(async (req) => {
     if (customPrompt && image) {
       console.log('Processing custom smile simulation with parameters:', customParameters);
       
+      const formData = new FormData();
+      formData.append('model', 'gpt-image-1');
+      formData.append('prompt', customPrompt);
+      formData.append('image', dataUrlToBlob(image), 'image.png');
+      formData.append('size', 'auto');
+      formData.append('quality', 'high');
+      formData.append('output_format', 'png');
+
       const customResponse = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: 'gpt-image-1',
-          prompt: customPrompt,
-          image: image,
-          size: 'auto',
-          quality: 'high',
-          output_format: 'png'
-        }),
+        body: formData,
       });
 
       if (!customResponse.ok) {
         const errorText = await customResponse.text();
-        console.error('Custom simulation error:', errorText);
-        throw new Error(`Custom simulation failed: ${customResponse.status} ${errorText}`);
+        console.error('Custom simulation error:', customResponse.status, errorText);
+        
+        // Fallback a imagen original
+        return new Response(
+          JSON.stringify({ 
+            customizedImage: image,
+            parameters: customParameters,
+            warnings: ['custom_simulation_failed']
+          }), 
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       const customData = await customResponse.json();
@@ -86,7 +108,15 @@ serve(async (req) => {
         customData.data?.[0]?.url;
 
       if (!customizedImage) {
-        throw new Error('No customized image received from AI');
+        console.warn('No customized image in response, using original');
+        return new Response(
+          JSON.stringify({ 
+            customizedImage: image,
+            parameters: customParameters,
+            warnings: ['no_image_generated']
+          }), 
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       return new Response(
@@ -368,45 +398,48 @@ REQUIREMENTS:
 
     // Primera simulación: correcciones con OpenAI GPT Image
     console.log('🎨 Aplicando correcciones estéticas con OpenAI GPT Image...');
+    
+    const correctionFormData = new FormData();
+    correctionFormData.append('model', 'gpt-image-1');
+    correctionFormData.append('prompt', correctionPrompt);
+    correctionFormData.append('image', dataUrlToBlob(imageBase64), 'image.png');
+    correctionFormData.append('size', 'auto');
+    correctionFormData.append('quality', 'high');
+    correctionFormData.append('output_format', 'png');
+
     const correctionResponse = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-image-1',
-        prompt: correctionPrompt,
-        image: imageBase64,
-        size: 'auto',
-        quality: 'high',
-        output_format: 'png'
-      }),
+      body: correctionFormData,
     });
+
+    let correctedImage = imageBase64;
+    const warnings: string[] = [];
 
     if (!correctionResponse.ok) {
       const errorText = await correctionResponse.text();
       console.error('Correction error:', correctionResponse.status, errorText);
-      if (correctionResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Límite de uso excedido, intenta más tarde.' }), 
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      console.warn('Using original image as correctedImage due to correction failure');
+      warnings.push('correction_failed');
+    } else {
+      try {
+        const correctionData = await correctionResponse.json();
+        correctedImage = correctionData.data?.[0]?.b64_json ? 
+          `data:image/png;base64,${correctionData.data[0].b64_json}` : 
+          correctionData.data?.[0]?.url;
+
+        if (!correctedImage) {
+          console.warn('No corrected image generated, using original as fallback');
+          correctedImage = imageBase64;
+          warnings.push('no_corrected_image');
+        }
+      } catch (parseError) {
+        console.error('Error parsing correction response:', parseError);
+        correctedImage = imageBase64;
+        warnings.push('correction_parse_failed');
       }
-      return new Response(
-        JSON.stringify({ error: 'Error en generación de imagen corregida' }), 
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const correctionData = await correctionResponse.json();
-    let correctedImage = correctionData.data?.[0]?.b64_json ? 
-      `data:image/png;base64,${correctionData.data[0].b64_json}` : 
-      correctionData.data?.[0]?.url;
-
-    if (!correctedImage) {
-      console.warn('No corrected image generated, using original as fallback');
-      correctedImage = imageBase64;
     }
 
     // Segunda simulación: diseño ideal con OpenAI GPT Image
@@ -435,47 +468,55 @@ REQUIREMENTS:
 - DO NOT change person's age, gender, or facial features
 - ONLY enhance teeth and smile area`;
 
+    const idealFormData = new FormData();
+    idealFormData.append('model', 'gpt-image-1');
+    idealFormData.append('prompt', recommendationPrompt);
+    idealFormData.append('image', dataUrlToBlob(correctedImage), 'image.png');
+    idealFormData.append('size', 'auto');
+    idealFormData.append('quality', 'high');
+    idealFormData.append('output_format', 'png');
+
     const idealResponse = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-image-1',
-        prompt: recommendationPrompt,
-        image: correctedImage,
-        size: 'auto',
-        quality: 'high',
-        output_format: 'png'
-      }),
+      body: idealFormData,
     });
 
-    if (!idealResponse.ok) {
-      console.error('Ideal simulation error:', idealResponse.status);
-      // Si falla la segunda simulación, devolvemos solo la corregida
-      return new Response(
-        JSON.stringify({ 
-          simulatedImage: correctedImage, 
-          idealImage: correctedImage,
-          facialAnalysis: facialMetrics,
-          qualityScore: qualityResult.quality_score
-        }), 
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    let idealImage = correctedImage;
 
-    const idealData = await idealResponse.json();
-    const idealImage = idealData.data?.[0]?.b64_json ? 
-      `data:image/png;base64,${idealData.data[0].b64_json}` : 
-      idealData.data?.[0]?.url;
+    if (!idealResponse.ok) {
+      const errorText = await idealResponse.text();
+      console.error('Ideal simulation error:', idealResponse.status, errorText);
+      console.warn('Using corrected image as ideal due to ideal simulation failure');
+      warnings.push('ideal_simulation_failed');
+    } else {
+      try {
+        const idealData = await idealResponse.json();
+        idealImage = idealData.data?.[0]?.b64_json ? 
+          `data:image/png;base64,${idealData.data[0].b64_json}` : 
+          idealData.data?.[0]?.url;
+
+        if (!idealImage) {
+          console.warn('No ideal image generated, using corrected as fallback');
+          idealImage = correctedImage;
+          warnings.push('no_ideal_image');
+        }
+      } catch (parseError) {
+        console.error('Error parsing ideal response:', parseError);
+        idealImage = correctedImage;
+        warnings.push('ideal_parse_failed');
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
         simulatedImage: correctedImage,
         idealImage: idealImage || correctedImage,
         facialAnalysis: facialMetrics,
-        qualityScore: qualityResult.quality_score
+        qualityScore: qualityResult.quality_score,
+        warnings: warnings.length > 0 ? warnings : undefined
       }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
