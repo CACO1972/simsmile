@@ -140,54 +140,91 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         </div>
       </div>
 
-      {/* Technology Section */}
+      {/* Success Stories & Testimonials Section */}
       <div className="w-full max-w-7xl z-10 mb-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           
           <div>
             <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-              Tecnología{" "}
+              Casos de{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Que Impulsa
+                Éxito Reales
               </span>
-              <br />
-              Resultados
             </h2>
+            <p className="text-muted-foreground text-lg mb-8">
+              Miles de personas ya han visualizado su sonrisa perfecta con nuestra tecnología de IA
+            </p>
           </div>
 
           <div className="flex flex-col gap-6">
-            {/* Card 1 */}
+            {/* Testimonial 1 */}
             <div className="group relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 hover:border-primary/50 transition-all overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/20 rounded-bl-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
-                <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
-                  40%
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
+                    MC
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">María C.</h3>
+                    <p className="text-sm text-muted-foreground">Paciente Clínica Miró</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Custom Software Development
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Soluciones personalizadas de software que se adaptan perfectamente a tus necesidades específicas.
+                <p className="text-foreground/80 mb-3">
+                  "Ver mi sonrisa simulada antes del tratamiento me dio total confianza. El resultado final fue exactamente como la simulación."
                 </p>
+                <div className="flex items-center gap-2 text-accent">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tratamiento: Diseño de Sonrisa Digital</span>
+                </div>
               </div>
             </div>
 
-            {/* Card 2 */}
+            {/* Testimonial 2 */}
             <div className="group relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 hover:border-primary/50 transition-all overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent/20 to-secondary/20 rounded-bl-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex items-center justify-between">
-                <div>
-                  <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
-                    5.5x
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-white font-bold text-lg">
+                    JR
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    Data Analytics & Business Intelligence
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Análisis avanzado de datos para decisiones más informadas.
-                  </p>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Jorge R.</h3>
+                    <p className="text-sm text-muted-foreground">Paciente Clínica Miró</p>
+                  </div>
                 </div>
-                <div className="hidden lg:block w-32 h-32 bg-gradient-to-br from-primary/30 to-accent/30 rounded-3xl" />
+                <p className="text-foreground/80 mb-3">
+                  "El análisis facial con IA me ayudó a entender qué necesitaba realmente. Los doctores usaron la simulación para explicarme todo paso a paso."
+                </p>
+                <div className="flex items-center gap-2 text-accent">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tratamiento: Ortodoncia + Blanqueamiento</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Card */}
+            <div className="group relative bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm border border-primary/30 rounded-2xl p-8 hover:border-primary/50 transition-all overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/30 to-accent/30 rounded-bl-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative grid grid-cols-3 gap-6 text-center">
+                <div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
+                    +5K
+                  </div>
+                  <p className="text-xs text-muted-foreground">Análisis Realizados</p>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
+                    98%
+                  </div>
+                  <p className="text-xs text-muted-foreground">Satisfacción</p>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
+                    24/7
+                  </div>
+                  <p className="text-xs text-muted-foreground">Disponible</p>
+                </div>
               </div>
             </div>
           </div>
