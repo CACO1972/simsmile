@@ -44,11 +44,11 @@ serve(async (req) => {
 
   try {
     const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
-    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY not configured');
@@ -98,8 +98,8 @@ serve(async (req) => {
       );
     }
 
-    // 1. Validación de calidad de imagen con Claude Opus 4
-    console.log('📸 Validando calidad de imagen con Claude Opus 4...');
+    // 1. Validación de calidad de imagen con Gemini
+    console.log('📸 Validando calidad de imagen con Gemini...');
     const qualityCheckPrompt = `You are an image quality expert. Analyze this photo for facial analysis suitability.
     
 Check for:
@@ -110,7 +110,7 @@ Check for:
 5. No obstructions (hands, objects covering face)
 6. Sufficient resolution
 
-Respond with a JSON object:
+Respond ONLY with a JSON object (no markdown, no extra text):
 {
   "isValid": boolean,
   "quality_score": number (0-100),
@@ -118,55 +118,51 @@ Respond with a JSON object:
   "recommendation": string (what to improve if invalid)
 }`;
 
-    const qualityResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    const qualityResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-1-20250805',
-        max_tokens: 1024,
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'user',
             content: [
               { 
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: imageBase64.startsWith('data:image/png') ? 'image/png' : 
-                              imageBase64.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/webp',
-                  data: imageBase64.split(',')[1]
+                type: 'image_url',
+                image_url: {
+                  url: imageBase64
                 }
               },
               { type: 'text', text: qualityCheckPrompt }
             ]
           }
         ],
+        max_tokens: 1024
       }),
     });
 
+    let qualityResult: any = { isValid: true, quality_score: 75 };
+    
     if (!qualityResponse.ok) {
       console.error('Quality check failed:', qualityResponse.status);
       const errorText = await qualityResponse.text();
       console.error('Error details:', errorText);
-      if (qualityResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Límite de solicitudes excedido',
-            message: 'Demasiadas solicitudes. Por favor, espera unos momentos e intenta de nuevo.'
-          }), 
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      
+      // Si falla el check de calidad, continuamos con valor por defecto
+      console.warn('Usando valores por defecto de calidad debido a error en API');
+    } else {
+      try {
+        const qualityData = await qualityResponse.json();
+        const qualityContent = qualityData.choices?.[0]?.message?.content || '{"isValid": true, "quality_score": 75}';
+        qualityResult = parseClaudeJSON(qualityContent);
+      } catch (parseError) {
+        console.error('Error parsing quality response:', parseError);
+        console.warn('Usando valores por defecto de calidad');
       }
-      throw new Error(`Quality check failed: ${errorText}`);
     }
-
-    const qualityData = await qualityResponse.json();
-    const qualityContent = qualityData.content?.[0]?.text || '{"isValid": true, "quality_score": 75}';
-    const qualityResult = parseClaudeJSON(qualityContent);
     
     console.log('✅ Quality check result:', qualityResult);
 
@@ -184,8 +180,8 @@ Respond with a JSON object:
       );
     }
 
-    // 2. Análisis facial REAL con mediciones sobre la imagen con Claude Opus 4
-    console.log('🔍 Realizando análisis facial profesional con Claude Opus 4...');
+    // 2. Análisis facial REAL con mediciones sobre la imagen con Gemini
+    console.log('🔍 Realizando análisis facial profesional con Gemini...');
     const facialAnalysisPrompt = `You are a professional facial analysis expert with clinical training. Analyze this photo by taking REAL MEASUREMENTS on the image.
 
 CRITICAL INSTRUCTIONS:
@@ -228,7 +224,7 @@ MEASUREMENTS TO TAKE:
    - Golden Ratio ideal: 0.618 (nose should be 61.8% of mouth width)
    - Explain: proportion balance
 
-Respond with JSON including measurements AND professional explanations:
+Respond ONLY with a JSON object (no markdown, no extra text):
 {
   "horizontal_ratio": {
     "upper": number (percentage),
@@ -267,55 +263,51 @@ Respond with JSON including measurements AND professional explanations:
   "overall_assessment": "comprehensive professional clinical summary"
 }`;
 
-    const facialResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    const facialResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-1-20250805',
-        max_tokens: 2048,
+        model: 'google/gemini-2.5-pro',
         messages: [
           {
             role: 'user',
             content: [
               { 
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: imageBase64.startsWith('data:image/png') ? 'image/png' : 
-                              imageBase64.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/webp',
-                  data: imageBase64.split(',')[1]
+                type: 'image_url',
+                image_url: {
+                  url: imageBase64
                 }
               },
               { type: 'text', text: facialAnalysisPrompt }
             ]
           }
         ],
+        max_tokens: 2048
       }),
     });
 
+    let facialMetrics = {};
+    
     if (!facialResponse.ok) {
       console.error('Facial analysis failed:', facialResponse.status);
       const errorText = await facialResponse.text();
       console.error('Error details:', errorText);
-      if (facialResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Límite de solicitudes excedido',
-            message: 'Demasiadas solicitudes. Por favor, espera unos momentos e intenta de nuevo.'
-          }), 
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      
+      // Si falla análisis facial, usamos métricas vacías
+      console.warn('Continuando sin análisis facial detallado debido a error en API');
+    } else {
+      try {
+        const facialData = await facialResponse.json();
+        const facialContent = facialData.choices?.[0]?.message?.content || '{}';
+        facialMetrics = parseClaudeJSON(facialContent);
+      } catch (parseError) {
+        console.error('Error parsing facial analysis:', parseError);
+        console.warn('Continuando sin análisis facial detallado');
       }
-      throw new Error(`Facial analysis failed: ${errorText}`);
     }
-
-    const facialData = await facialResponse.json();
-    const facialContent = facialData.content?.[0]?.text || '{}';
-    const facialMetrics = parseClaudeJSON(facialContent);
     
     console.log('✅ Facial analysis complete:', facialMetrics);
 
