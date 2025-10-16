@@ -115,24 +115,6 @@ Respond with a JSON object:
 
     if (!qualityResponse.ok) {
       console.error('Quality check failed:', qualityResponse.status);
-      if (qualityResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Sin créditos de IA',
-            message: 'Los créditos de Lovable AI se han agotado. Por favor, recarga créditos en Settings → Workspace → Usage.'
-          }), 
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (qualityResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Límite de solicitudes excedido',
-            message: 'Demasiadas solicitudes. Por favor, espera unos momentos e intenta de nuevo.'
-          }), 
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
     }
 
     const qualityData = await qualityResponse.json();
@@ -261,24 +243,6 @@ Respond with JSON including measurements AND simple explanations:
 
     if (!facialResponse.ok) {
       console.error('Facial analysis failed:', facialResponse.status);
-      if (facialResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Sin créditos de IA',
-            message: 'Los créditos de Lovable AI se han agotado. Por favor, recarga créditos en Settings → Workspace → Usage.'
-          }), 
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (facialResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Límite de solicitudes excedido',
-            message: 'Demasiadas solicitudes. Por favor, espera unos momentos e intenta de nuevo.'
-          }), 
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
       throw new Error('Facial analysis failed');
     }
 
