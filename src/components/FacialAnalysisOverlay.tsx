@@ -51,6 +51,10 @@ export const FacialAnalysisOverlay = ({ imageUrl, data }: FacialAnalysisOverlayP
 
       const { upper, middle, lower } = data.horizontal_ratio;
       
+      // Validate that all values exist and are numbers
+      if (upper === undefined || middle === undefined || lower === undefined) return;
+      if (isNaN(upper) || isNaN(middle) || isNaN(lower)) return;
+      
       // Calculate thirds positions
       const upperBoundary = (upper / 100) * h;
       const middleBoundary = upperBoundary + (middle / 100) * h;
