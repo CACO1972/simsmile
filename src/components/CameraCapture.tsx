@@ -72,7 +72,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
       setFacingMode(mode);
       setStream(mediaStream);
       setIsCameraActive(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error accessing camera:", error);
       
       let errorMsg = "";

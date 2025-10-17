@@ -16,8 +16,15 @@ export type SmileMetrics = {
 // Re-export recommendation functions
 export { analyzeFaceCharacteristics, generateSmileRecommendations, generateAnalysisText, type FaceAnalysis, type SmileRecommendation } from "./recommendations";
 
+// Type definitions for MediaPipe landmarks
+export type Landmark = {
+  x: number;
+  y: number;
+  z?: number;
+};
+
 // Distancia euclidiana
-const d = (a: any, b: any) => Math.hypot(a.x - b.x, a.y - b.y);
+const d = (a: Landmark, b: Landmark): number => Math.hypot(a.x - b.x, a.y - b.y);
 
 // mm estimados: normalizamos por distancia interpupilar (IPD) ~ 63 mm
 function toMM(normalizedDistance: number, ipdPixels: number, imageWidth: number) {
@@ -27,7 +34,10 @@ function toMM(normalizedDistance: number, ipdPixels: number, imageWidth: number)
 }
 
 export function computeMetrics(params: {
-  restLm: any[]; smileLm: any[]; imgW: number; imgH: number;
+  restLm: Landmark[]; 
+  smileLm: Landmark[]; 
+  imgW: number; 
+  imgH: number;
 }): SmileMetrics {
   const { smileLm, imgW } = params;
   // Indices aproximados (MediaPipe Face Landmarker 468 pts):
@@ -133,9 +143,9 @@ export function computeMetrics(params: {
 export function drawMidlineOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
-  lm: any[],
+  lm: Landmark[],
   m: SmileMetrics
-) {
+): void {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
 
@@ -143,7 +153,7 @@ export function drawMidlineOverlay(
   const chin = lm[152];
   const nose = lm[1];
   const noseBridge = lm[168];
-  const mouthL = lm[61], mouthR = lm[291];
+  const _mouthL = lm[61], _mouthR = lm[291];
   const upperLip = lm[13];
   
   // Calcular línea media facial (centro de la cara)
@@ -222,9 +232,9 @@ export function drawMidlineOverlay(
 export function drawProportionsOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
-  lm: any[],
+  lm: Landmark[],
   m: SmileMetrics
-) {
+): void {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
 
@@ -298,14 +308,14 @@ export function drawProportionsOverlay(
 export function drawSmileOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
-  lm: any[],
+  lm: Landmark[],
   m: SmileMetrics
-) {
+): void {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
 
   const mouthL = lm[61], mouthR = lm[291];
-  const upperLip = lm[13], lowerLip = lm[14];
+  const upperLip = lm[13], _lowerLip = lm[14];
   
   // Puntos clave de la sonrisa con sombra (comisuras y centro)
   ctx.shadowColor = "rgba(236, 72, 153, 0.8)";

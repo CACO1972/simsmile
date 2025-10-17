@@ -1,11 +1,34 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://simsmile.cl",
+  "https://www.simsmile.cl",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const isAllowed = origin && ALLOWED_ORIGINS.some(allowed => 
+    origin === allowed || origin.endsWith('.lovable.app')
+  );
+  
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Vary': 'Origin',
+  };
+}
+
+// Input validation schema
+const ContactEmailSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  phone: z.string().min(1).max(20),
+  message: z.string().min(1).max(2000),
+});
 
 interface ContactEmailRequest {
   name: string;
@@ -15,12 +38,19 @@ interface ContactEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("Origin");
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { name, email, phone, message }: ContactEmailRequest = await req.json();
+    const requestBody = await req.json();
+    
+    // Validate input
+    const validatedData = ContactEmailSchema.parse(requestBody);
+    const { name, email, phone, message }: ContactEmailRequest = validatedData;
 
     // Email a la clínica
     const clinicEmailResponse = await fetch("https://api.resend.com/emails", {
@@ -140,13 +170,28 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in send-contact-email:", error);
+    
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Datos de entrada inválidos",
+          details: error.errors 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...getCorsHeaders(null) },
+        }
+      );
+    }
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Error desconocido" }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(null) },
       }
     );
   }

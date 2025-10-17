@@ -9,7 +9,7 @@ export default function DynamicFaceGuide({ videoRef }: DynamicFaceGuideProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
   const animationFrameRef = useRef<number>();
-  const [faceDetected, setFaceDetected] = useState(false);
+  const [_faceDetected, setFaceDetected] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {

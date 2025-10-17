@@ -1,13 +1,68 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  "https://simsmile.cl",
+  "https://www.simsmile.cl",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const isAllowed = origin && ALLOWED_ORIGINS.some(allowed => 
+    origin === allowed || origin.endsWith('.lovable.app')
+  );
+  
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Vary': 'Origin',
+  };
+}
+
+// Input validation schemas
+const MetricsSchema = z.object({
+  smileArc: z.string().optional(),
+  gingival: z.object({
+    class: z.string().optional(),
+  }).optional(),
+  midline: z.object({
+    mm: z.number().optional(),
+  }).optional(),
+  buccalRatio: z.number().optional(),
+});
+
+const FaceAnalysisSchema = z.object({
+  teethAlignment: z.string().optional(),
+  faceShape: z.string().optional(),
+  gender: z.string().optional(),
+});
+
+const RecommendationsSchema = z.object({
+  missingTeeth: z.boolean().optional(),
+  teethShape: z.string().optional(),
+  teethSize: z.string().optional(),
+  smileWidth: z.string().optional(),
+  gingivalDisplay: z.string().optional(),
+  rationale: z.string().optional(),
+});
+
+const CustomSimulationSchema = z.object({
+  customPrompt: z.string(),
+  image: z.string(),
+  customParameters: z.record(z.unknown()).optional(),
+});
+
+const MainSimulationSchema = z.object({
+  imageBase64: z.string().max(7_000_000), // ~5MB base64
+  metrics: MetricsSchema,
+  faceAnalysis: FaceAnalysisSchema.optional(),
+  recommendations: RecommendationsSchema.optional(),
+});
 
 // Helper para parsear JSON de Claude (puede venir envuelto en ```json...``` o con texto extra)
-function parseClaudeJSON(text: string): any {
+function parseClaudeJSON(text: string): Record<string, unknown> {
   let clean = (text ?? '').trim();
 
   // Remover bloques de código markdown si existen
@@ -18,15 +73,15 @@ function parseClaudeJSON(text: string): any {
     .trim();
 
   try {
-    return JSON.parse(clean);
-  } catch (_) {
+    return JSON.parse(clean) as Record<string, unknown>;
+  } catch {
     // Intento secundario: extraer el primer objeto { ... } válido
     const start = clean.indexOf('{');
     const end = clean.lastIndexOf('}');
     if (start !== -1 && end !== -1 && end > start) {
       const candidate = clean.slice(start, end + 1);
       try {
-        return JSON.parse(candidate);
+        return JSON.parse(candidate) as Record<string, unknown>;
       } catch (e2) {
         console.error('Claude JSON candidate failed:', candidate);
         throw new Error(`Invalid JSON from Claude: ${e2 instanceof Error ? e2.message : 'Unknown error'}`);
@@ -38,6 +93,8 @@ function parseClaudeJSON(text: string): any {
 }
 
 // Helper para convertir data URL a Blob para multipart/form-data
+// Currently unused but kept for potential future use
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function dataUrlToBlob(dataUrl: string): Blob {
   const parts = dataUrl.split(',');
   const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
@@ -51,12 +108,33 @@ function dataUrlToBlob(dataUrl: string): Blob {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get("Origin");
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
+    const requestBody = await req.json();
+    
+    // Validate input based on request type
+    let validatedData;
+    if (requestBody.customPrompt && requestBody.image) {
+      validatedData = CustomSimulationSchema.parse(requestBody);
+    } else {
+      validatedData = MainSimulationSchema.parse(requestBody);
+    }
+    
+    const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = validatedData as {
+      imageBase64?: string;
+      metrics?: z.infer<typeof MetricsSchema>;
+      faceAnalysis?: z.infer<typeof FaceAnalysisSchema>;
+      recommendations?: z.infer<typeof RecommendationsSchema>;
+      image?: string;
+      customPrompt?: string;
+      customParameters?: Record<string, unknown>;
+    };
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
@@ -174,7 +252,14 @@ Respond ONLY with a JSON object (no markdown, no extra text):
       }),
     });
 
-    let qualityResult: any = { isValid: true, quality_score: 75 };
+    interface QualityResult {
+      isValid: boolean;
+      quality_score: number;
+      issues?: string[];
+      recommendation?: string;
+    }
+    
+    let qualityResult: QualityResult = { isValid: true, quality_score: 75 };
     
     if (!qualityResponse.ok) {
       console.error('Quality check failed:', qualityResponse.status);
@@ -187,7 +272,7 @@ Respond ONLY with a JSON object (no markdown, no extra text):
       try {
         const qualityData = await qualityResponse.json();
         const qualityContent = qualityData.choices?.[0]?.message?.content || '{"isValid": true, "quality_score": 75}';
-        qualityResult = parseClaudeJSON(qualityContent);
+        qualityResult = parseClaudeJSON(qualityContent) as QualityResult;
       } catch (parseError) {
         console.error('Error parsing quality response:', parseError);
         console.warn('Usando valores por defecto de calidad');
@@ -212,7 +297,24 @@ Respond ONLY with a JSON object (no markdown, no extra text):
 
     // 2. Análisis facial detallado
     console.log('📊 Realizando análisis facial detallado...');
-    let facialMetrics: any = null;
+    
+    interface FacialMetrics {
+      horizontal_ratio: {
+        upper_third: number;
+        middle_third: number;
+        lower_third: number;
+        deviation_from_ideal: number;
+      };
+      vertical_ratio: {
+        left_side: number;
+        right_side: number;
+        symmetry_score: number;
+      };
+      golden_ratio_score: number;
+      aspect_ratio: number;
+    }
+    
+    let facialMetrics: FacialMetrics | null = null;
     
     try {
       const facialPrompt = `You are a facial aesthetics analysis system. Based on this photo, provide approximate facial proportion metrics.
@@ -272,7 +374,7 @@ Visual estimation guidelines:
 
       const facialData = await facialResponse.json();
       const facialText = facialData.choices?.[0]?.message?.content;
-      facialMetrics = parseClaudeJSON(facialText);
+      facialMetrics = parseClaudeJSON(facialText) as FacialMetrics;
       console.log('✅ Análisis facial completado:', JSON.stringify(facialMetrics, null, 2));
     } catch (facialError) {
       console.error('❌ Error en análisis facial:', facialError);
@@ -527,9 +629,21 @@ TECHNICAL QUALITY REQUIREMENTS:
     
   } catch (error) {
     console.error('Error in simulate-smile:', error);
+    
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Datos de entrada inválidos',
+          details: error.errors 
+        }), 
+        { status: 400, headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' } }
+      );
+    }
+    
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Error desconocido' }), 
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' } }
     );
   }
 });

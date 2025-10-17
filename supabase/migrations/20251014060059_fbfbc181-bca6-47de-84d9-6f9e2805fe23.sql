@@ -9,17 +9,19 @@ VALUES (
 );
 
 -- RLS policies for smile-images bucket
-CREATE POLICY "Anyone can upload smile images"
+-- Allow INSERT only to specific path prefix for better security
+CREATE POLICY "Public insert to simsmile prefix"
 ON storage.objects FOR INSERT
-WITH CHECK (bucket_id = 'smile-images');
+WITH CHECK (
+  bucket_id = 'smile-images' 
+  AND (storage.foldername(name))[1] = 'public'
+);
 
 CREATE POLICY "Anyone can view smile images"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'smile-images');
 
-CREATE POLICY "Anyone can update their smile images"
-ON storage.objects FOR UPDATE
-USING (bucket_id = 'smile-images');
+-- UPDATE policy removed for security - use signed URLs via Edge Function for updates
 
 -- Add ideal_image_url column to smile_analyses if not exists
 ALTER TABLE public.smile_analyses 
