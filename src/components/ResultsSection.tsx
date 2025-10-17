@@ -8,16 +8,18 @@ import { WaitlistModal } from "./WaitlistModal";
 import { SmileCustomizer } from "./SmileCustomizer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
+import { logger } from "@/lib/logger";
+import type { Landmark } from "@/types/mediapipe";
 
 interface ResultsSectionProps {
   restImage: string;
   smileImage: string;
   idealImage: string;
   analysis: string;
-  metrics: any;
-  landmarks: any;
+  metrics: Record<string, unknown> | null;
+  landmarks: Landmark[] | null;
   contactEmail: string;
-  facialAnalysis?: any;
+  facialAnalysis?: Record<string, unknown>;
   qualityScore?: number;
 }
 
@@ -59,7 +61,7 @@ export const ResultsSection = ({
         toast.success("Compartido exitosamente");
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
-          console.error("Error sharing:", err);
+          logger.error("Error sharing:", err);
           toast.error("Error al compartir");
         }
       }

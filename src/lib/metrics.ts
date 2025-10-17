@@ -16,8 +16,10 @@ export type SmileMetrics = {
 // Re-export recommendation functions
 export { analyzeFaceCharacteristics, generateSmileRecommendations, generateAnalysisText, type FaceAnalysis, type SmileRecommendation } from "./recommendations";
 
+import type { Landmark } from "@/types/mediapipe";
+
 // Distancia euclidiana
-const d = (a: any, b: any) => Math.hypot(a.x - b.x, a.y - b.y);
+const d = (a: Landmark, b: Landmark) => Math.hypot(a.x - b.x, a.y - b.y);
 
 // mm estimados: normalizamos por distancia interpupilar (IPD) ~ 63 mm
 function toMM(normalizedDistance: number, ipdPixels: number, imageWidth: number) {
@@ -27,7 +29,7 @@ function toMM(normalizedDistance: number, ipdPixels: number, imageWidth: number)
 }
 
 export function computeMetrics(params: {
-  restLm: any[]; smileLm: any[]; imgW: number; imgH: number;
+  restLm: Landmark[]; smileLm: Landmark[]; imgW: number; imgH: number;
 }): SmileMetrics {
   const { smileLm, imgW } = params;
   // Indices aproximados (MediaPipe Face Landmarker 468 pts):
@@ -133,7 +135,7 @@ export function computeMetrics(params: {
 export function drawMidlineOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
-  lm: any[],
+  lm: Landmark[],
   m: SmileMetrics
 ) {
   const w = ctx.canvas.width;
@@ -222,7 +224,7 @@ export function drawMidlineOverlay(
 export function drawProportionsOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
-  lm: any[],
+  lm: Landmark[],
   m: SmileMetrics
 ) {
   const w = ctx.canvas.width;
@@ -298,7 +300,7 @@ export function drawProportionsOverlay(
 export function drawSmileOverlay(
   ctx: CanvasRenderingContext2D,
   image: HTMLImageElement,
-  lm: any[],
+  lm: Landmark[],
   m: SmileMetrics
 ) {
   const w = ctx.canvas.width;

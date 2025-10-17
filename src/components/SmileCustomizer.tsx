@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 interface SmileCustomizerProps {
   baseImage: string;
@@ -126,7 +127,7 @@ Output a high-quality edited image where the tooth modifications are CLEARLY APP
         throw new Error("No se recibió imagen personalizada");
       }
     } catch (error) {
-      console.error("Error simulating custom smile:", error);
+      logger.error("Error simulating custom smile:", error);
       toast.dismiss();
       toast.error("Error al generar la sonrisa personalizada");
     } finally {

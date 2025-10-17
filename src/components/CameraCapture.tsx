@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload, RotateCcw, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { logger } from "@/lib/logger";
 import DynamicFaceGuide from "./DynamicFaceGuide";
 
 interface CameraCaptureProps {
@@ -31,7 +32,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
       }
 
       if (!navigator.mediaDevices?.getUserMedia) {
-        console.error("getUserMedia not supported in this browser");
+        logger.error("getUserMedia not supported in this browser");
         const errorMsg = "Tu navegador no soporta acceso a la cámara. Intenta con Chrome, Firefox o Safari actualizado.";
         setCameraError(errorMsg);
         return;
@@ -56,7 +57,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia(constraintsPrimary);
       } catch (err) {
-        console.warn("Primary constraints failed, trying fallback", err);
+        logger.warn("Primary constraints failed, trying fallback", err);
         mediaStream = await navigator.mediaDevices.getUserMedia(constraintsFallback);
       }
 
@@ -65,31 +66,38 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         try {
           await videoRef.current.play();
         } catch (playErr) {
-          console.warn("Video play() was prevented by the browser", playErr);
+          logger.warn("Video play() was prevented by the browser", playErr);
         }
       }
 
       setFacingMode(mode);
       setStream(mediaStream);
       setIsCameraActive(true);
-    } catch (error: any) {
-      console.error("Error accessing camera:", error);
+    } catch (error) {
+      logger.error("Error accessing camera:", error);
       
       let errorMsg = "";
       let instructions = "";
       
-      if (error?.name === "NotAllowedError") {
-        errorMsg = "Permiso denegado para acceder a la cámara";
-        instructions = "En Android Chrome:\n1. Toca el icono de candado/info en la barra de direcciones\n2. Activa los permisos de Cámara\n3. Recarga la página\n\nEn iOS Safari:\n1. Ve a Ajustes > Safari > Cámara\n2. Cambia a 'Permitir'\n3. Recarga la página";
-      } else if (error?.name === "NotFoundError") {
-        errorMsg = "No se encontró cámara disponible";
-        instructions = "Verifica que tu dispositivo tenga una cámara funcional y que no esté siendo usada por otra aplicación.";
-      } else if (error?.name === "NotReadableError") {
-        errorMsg = "La cámara está siendo usada por otra aplicación";
-        instructions = "Cierra otras aplicaciones que puedan estar usando la cámara e intenta de nuevo.";
-      } else if (error?.name === "SecurityError") {
-        errorMsg = "Error de seguridad al acceder a la cámara";
-        instructions = "Asegúrate de estar accediendo desde una conexión segura (HTTPS). También puedes intentar usar 'Subir desde Galería' como alternativa.";
+      if (error && typeof error === 'object' && 'name' in error) {
+        const err = error as { name: string };
+        
+        if (err.name === "NotAllowedError") {
+          errorMsg = "Permiso denegado para acceder a la cámara";
+          instructions = "En Android Chrome:\n1. Toca el icono de candado/info en la barra de direcciones\n2. Activa los permisos de Cámara\n3. Recarga la página\n\nEn iOS Safari:\n1. Ve a Ajustes > Safari > Cámara\n2. Cambia a 'Permitir'\n3. Recarga la página";
+        } else if (err.name === "NotFoundError") {
+          errorMsg = "No se encontró cámara disponible";
+          instructions = "Verifica que tu dispositivo tenga una cámara funcional y que no esté siendo usada por otra aplicación.";
+        } else if (err.name === "NotReadableError") {
+          errorMsg = "La cámara está siendo usada por otra aplicación";
+          instructions = "Cierra otras aplicaciones que puedan estar usando la cámara e intenta de nuevo.";
+        } else if (err.name === "SecurityError") {
+          errorMsg = "Error de seguridad al acceder a la cámara";
+          instructions = "Asegúrate de estar accediendo desde una conexión segura (HTTPS). También puedes intentar usar 'Subir desde Galería' como alternativa.";
+        } else {
+          errorMsg = "No se pudo acceder a la cámara";
+          instructions = "Verifica los permisos del navegador o intenta usar 'Subir desde Galería' como alternativa.";
+        }
       } else {
         errorMsg = "No se pudo acceder a la cámara";
         instructions = "Verifica los permisos del navegador o intenta usar 'Subir desde Galería' como alternativa.";

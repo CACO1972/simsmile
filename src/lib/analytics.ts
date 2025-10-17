@@ -1,6 +1,7 @@
+import { logger } from "./logger";
+
 // Simple analytics tracking utility
-export function track(params: { name: string; data?: Record<string, any> }) {
-  console.log('[Analytics]', params.name, params.data);
+export function track(params: { name: string; data?: Record<string, unknown> }) {
+  logger.log('[Analytics]', params.name, params.data);
   // In production, this would send to your analytics service
-  // For now, we just log to console for debugging
 }

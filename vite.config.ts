@@ -15,4 +15,18 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          ui: ["@radix-ui/react-dialog", "@radix-ui/react-slider", "@radix-ui/react-tabs"],
+          vision: ["@mediapipe/tasks-vision"],
+          supabase: ["@supabase/supabase-js"]
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  }
 }));
+

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
+import { logger } from "@/lib/logger";
+import type { FaceLandmarkerResult, ImageSource } from "@/types/mediapipe";
 
 interface DynamicFaceGuideProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -38,7 +40,7 @@ export default function DynamicFaceGuide({ videoRef }: DynamicFaceGuideProps) {
           setIsInitialized(true);
         }
       } catch (error) {
-        console.error("Error initializing face landmarker:", error);
+        logger.error("Error initializing face landmarker:", error);
       }
     };
 
@@ -171,7 +173,7 @@ export default function DynamicFaceGuide({ videoRef }: DynamicFaceGuideProps) {
           ctx.fillText("Posiciona tu rostro en el óvalo", guideCenterX, guideCenterY - guideHeight/2 - 40);
         }
       } catch (error) {
-        console.error("Error detecting face:", error);
+        logger.error("Error detecting face:", error);
       }
 
       animationFrameRef.current = requestAnimationFrame(detectFace);

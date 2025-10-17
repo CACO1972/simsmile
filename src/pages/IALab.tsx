@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
+import { logger } from "@/lib/logger";
+import type { Landmark } from "@/types/mediapipe";
 
 type Step = "hero" | "capture" | "loading" | "contact" | "results";
 
@@ -18,10 +20,14 @@ const IALab = () => {
   const [smileImage, setSmileImage] = useState<string>("");
   const [idealImage, setIdealImage] = useState<string>("");
   const [analysis, setAnalysis] = useState<string>("");
-  const [metrics, setMetrics] = useState<any>(null);
-  const [landmarks, setLandmarks] = useState<any>(null);
-  const [contactData, setContactData] = useState<any>(null);
-  const [simulationData, setSimulationData] = useState<any>(null);
+  const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
+  const [landmarks, setLandmarks] = useState<Landmark[] | null>(null);
+  const [contactData, setContactData] = useState<Record<string, unknown> | null>(null);
+  const [simulationData, setSimulationData] = useState<{
+    facialAnalysis?: Record<string, unknown>;
+    qualityScore?: number;
+    warnings?: string[];
+  } | null>(null);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
   // Initialize MediaPipe Face Landmarker
@@ -42,9 +48,9 @@ const IALab = () => {
         });
         
         faceLandmarkerRef.current = faceLandmarker;
-        console.log("MediaPipe Face Landmarker initialized successfully");
+        logger.log("MediaPipe Face Landmarker initialized successfully");
       } catch (error) {
-        console.error("Error initializing Face Landmarker:", error);
+        logger.error("Error initializing Face Landmarker:", error);
         toast.error("Error al inicializar el sistema de análisis facial");
       }
     };
@@ -110,7 +116,7 @@ const IALab = () => {
         imgH: smileImg.height
       });
 
-      console.log("Métricas calculadas:", calculatedMetrics);
+      logger.log("Métricas calculadas:", calculatedMetrics);
 
       // Analizar características faciales
       const faceAnalysis = analyzeFaceCharacteristics(calculatedMetrics);
@@ -132,8 +138,9 @@ const IALab = () => {
       });
 
       if (error) {
-        console.error("Edge function error:", error);
-        const msg = (error as any)?.message || "";
+        logger.error("Edge function error:", error);
+        const errorObj = error as { message?: string };
+        const msg = errorObj.message || "";
 
         // Si es un error de calidad de imagen, continuamos con fallback
         if (typeof msg === "string" && msg.includes("Calidad de imagen insuficiente")) {
@@ -149,7 +156,7 @@ const IALab = () => {
         }
 
         // Para otros errores, mostrar mensaje y NO devolver a capture
-        console.error("Simulación falló pero continuamos con foto original:", msg);
+        logger.error("Simulación falló pero continuamos con foto original:", msg);
         toast.info("No pudimos generar la simulación ideal, pero continuaremos con tu análisis facial.", { duration: 5000 });
         setSmileImage(smile);
         setIdealImage(smile);
@@ -184,7 +191,7 @@ const IALab = () => {
       setStep("contact");
       
     } catch (error) {
-      console.error("Error processing smile:", error);
+      logger.error("Error processing smile:", error);
       toast.error(error instanceof Error ? error.message : "Error al procesar la imagen. Por favor intenta de nuevo con mejor iluminación.");
       setStep("capture");
     }
@@ -205,7 +212,7 @@ const IALab = () => {
       track({ name: "contact_submitted", data: { email: data.email } });
       toast.success("¡Análisis completado y enviado a tu correo!");
     } catch (error) {
-      console.error("Error sending emails:", error);
+      logger.error("Error sending emails:", error);
       toast.error("Error al enviar el correo. Por favor intenta de nuevo.");
     }
   };
@@ -228,7 +235,7 @@ const IALab = () => {
           analysis={analysis}
           metrics={metrics}
           landmarks={landmarks}
-          contactEmail={contactData?.email || ""}
+          contactEmail={(contactData?.email as string) || ""}
           facialAnalysis={simulationData?.facialAnalysis}
           qualityScore={simulationData?.qualityScore}
         />
