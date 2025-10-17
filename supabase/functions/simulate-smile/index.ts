@@ -488,11 +488,37 @@ TECHNICAL QUALITY REQUIREMENTS:
       }
     }
 
+    // Transform facialMetrics to match FacialAnalysisOverlay expected structure
+    const transformedFacialAnalysis = facialMetrics ? {
+      horizontal_ratio: {
+        upper: facialMetrics.horizontal_ratio?.upper_third ?? 33,
+        middle: facialMetrics.horizontal_ratio?.middle_third ?? 34,
+        lower: facialMetrics.horizontal_ratio?.lower_third ?? 33,
+        deviation_from_ideal: facialMetrics.horizontal_ratio?.deviation_from_ideal ?? 1
+      },
+      vertical_ratio: {
+        sections: [
+          facialMetrics.vertical_ratio?.left_side ?? 50,
+          facialMetrics.vertical_ratio?.right_side ?? 50
+        ],
+        left_side: facialMetrics.vertical_ratio?.left_side ?? 50,
+        right_side: facialMetrics.vertical_ratio?.right_side ?? 50,
+        symmetry_score: facialMetrics.vertical_ratio?.symmetry_score ?? 90
+      },
+      face_aspect_ratio: {
+        value: facialMetrics.aspect_ratio ?? 0.8,
+        golden_ratio_ideal: 1.618
+      },
+      symmetry_score: facialMetrics.vertical_ratio?.symmetry_score ?? 90,
+      overall_golden_ratio_score: facialMetrics.golden_ratio_score ?? 85,
+      aspect_ratio: facialMetrics.aspect_ratio ?? 0.8
+    } : undefined;
+
     return new Response(
       JSON.stringify({ 
         simulatedImage: correctedImage,
         idealImage: idealImage || correctedImage,
-        facialAnalysis: facialMetrics,
+        facialAnalysis: transformedFacialAnalysis,
         qualityScore: qualityResult.quality_score,
         warnings: warnings.length > 0 ? warnings : undefined
       }), 
