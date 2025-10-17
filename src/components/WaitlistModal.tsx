@@ -35,7 +35,7 @@ export const WaitlistModal = ({ open, onOpenChange }: WaitlistModalProps) => {
       setEmail("");
       setName("");
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error("Error al registrarse. Intenta de nuevo.");
     } finally {
       setIsSubmitting(false);

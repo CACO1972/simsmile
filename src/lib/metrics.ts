@@ -153,7 +153,7 @@ export function drawMidlineOverlay(
   const chin = lm[152];
   const nose = lm[1];
   const noseBridge = lm[168];
-  const mouthL = lm[61], mouthR = lm[291];
+  const _mouthL = lm[61], _mouthR = lm[291];
   const upperLip = lm[13];
   
   // Calcular línea media facial (centro de la cara)
@@ -315,7 +315,7 @@ export function drawSmileOverlay(
   const h = ctx.canvas.height;
 
   const mouthL = lm[61], mouthR = lm[291];
-  const upperLip = lm[13], lowerLip = lm[14];
+  const upperLip = lm[13], _lowerLip = lm[14];
   
   // Puntos clave de la sonrisa con sombra (comisuras y centro)
   ctx.shadowColor = "rgba(236, 72, 153, 0.8)";

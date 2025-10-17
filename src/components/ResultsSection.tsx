@@ -9,28 +9,50 @@ import { SmileCustomizer } from "./SmileCustomizer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
 
+import type { SmileMetrics, Landmark } from "@/lib/metrics";
+
 interface ResultsSectionProps {
   restImage: string;
   smileImage: string;
   idealImage: string;
   analysis: string;
-  metrics: any;
-  landmarks: any;
+  metrics: SmileMetrics;
+  landmarks: Landmark[][];
   contactEmail: string;
-  facialAnalysis?: any;
+  facialAnalysis?: {
+    horizontal_ratio?: {
+      upper: number;
+      middle: number;
+      lower: number;
+      deviation_from_ideal: number;
+    };
+    vertical_ratio?: {
+      sections: number[];
+      left_side: number;
+      right_side: number;
+      symmetry_score: number;
+    };
+    face_aspect_ratio?: {
+      value: number;
+      golden_ratio_ideal: number;
+    };
+    symmetry_score?: number;
+    overall_golden_ratio_score?: number;
+    aspect_ratio?: number;
+  };
   qualityScore?: number;
 }
 
 export const ResultsSection = ({
   restImage,
   smileImage,
-  idealImage,
-  analysis,
-  metrics,
-  landmarks,
+  idealImage: _idealImage,
+  analysis: _analysis,
+  metrics: _metrics,
+  landmarks: _landmarks,
   contactEmail,
   facialAnalysis,
-  qualityScore,
+  qualityScore: _qualityScore,
 }: ResultsSectionProps) => {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [customizedImage, setCustomizedImage] = useState<string | null>(null);

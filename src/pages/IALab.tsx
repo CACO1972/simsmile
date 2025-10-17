@@ -9,8 +9,21 @@ import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
+import type { SmileMetrics, Landmark } from "@/lib/metrics";
 
 type Step = "hero" | "capture" | "loading" | "contact" | "results";
+
+interface ContactData {
+  email: string;
+  phone?: string;
+  name?: string;
+}
+
+interface SimulationData {
+  idealImage?: string;
+  facialAnalysis?: Record<string, unknown>;
+  qualityScore?: number;
+}
 
 const IALab = () => {
   const [step, setStep] = useState<Step>("hero");
@@ -18,10 +31,10 @@ const IALab = () => {
   const [smileImage, setSmileImage] = useState<string>("");
   const [idealImage, setIdealImage] = useState<string>("");
   const [analysis, setAnalysis] = useState<string>("");
-  const [metrics, setMetrics] = useState<any>(null);
-  const [landmarks, setLandmarks] = useState<any>(null);
-  const [contactData, setContactData] = useState<any>(null);
-  const [simulationData, setSimulationData] = useState<any>(null);
+  const [metrics, setMetrics] = useState<SmileMetrics | null>(null);
+  const [landmarks, setLandmarks] = useState<Landmark[][] | null>(null);
+  const [contactData, setContactData] = useState<ContactData | null>(null);
+  const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
   // Initialize MediaPipe Face Landmarker
@@ -133,7 +146,7 @@ const IALab = () => {
 
       if (error) {
         console.error("Edge function error:", error);
-        const msg = (error as any)?.message || "";
+        const msg = error instanceof Error ? error.message : String(error);
 
         // Si es un error de calidad de imagen, continuamos con fallback
         if (typeof msg === "string" && msg.includes("Calidad de imagen insuficiente")) {
@@ -190,7 +203,7 @@ const IALab = () => {
     }
   };
 
-  const handleContactSubmit = async (data: any) => {
+  const handleContactSubmit = async (data: ContactData) => {
     setContactData(data);
     
     try {
