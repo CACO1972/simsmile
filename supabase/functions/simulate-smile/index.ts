@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const ALLOWED_ORIGINS = [
   "https://simsmile.cl",
@@ -19,6 +20,46 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
     'Vary': 'Origin',
   };
 }
+
+// Input validation schemas
+const MetricsSchema = z.object({
+  smileArc: z.string().optional(),
+  gingival: z.object({
+    class: z.string().optional(),
+  }).optional(),
+  midline: z.object({
+    mm: z.number().optional(),
+  }).optional(),
+  buccalRatio: z.number().optional(),
+});
+
+const FaceAnalysisSchema = z.object({
+  teethAlignment: z.string().optional(),
+  faceShape: z.string().optional(),
+  gender: z.string().optional(),
+});
+
+const RecommendationsSchema = z.object({
+  missingTeeth: z.boolean().optional(),
+  teethShape: z.string().optional(),
+  teethSize: z.string().optional(),
+  smileWidth: z.string().optional(),
+  gingivalDisplay: z.string().optional(),
+  rationale: z.string().optional(),
+});
+
+const CustomSimulationSchema = z.object({
+  customPrompt: z.string(),
+  image: z.string(),
+  customParameters: z.record(z.unknown()).optional(),
+});
+
+const MainSimulationSchema = z.object({
+  imageBase64: z.string().max(7_000_000), // ~5MB base64
+  metrics: MetricsSchema,
+  faceAnalysis: FaceAnalysisSchema.optional(),
+  recommendations: RecommendationsSchema.optional(),
+});
 
 // Helper para parsear JSON de Claude (puede venir envuelto en ```json...``` o con texto extra)
 function parseClaudeJSON(text: string): any {
@@ -73,7 +114,17 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
+    const requestBody = await req.json();
+    
+    // Validate input based on request type
+    let validatedData;
+    if (requestBody.customPrompt && requestBody.image) {
+      validatedData = CustomSimulationSchema.parse(requestBody);
+    } else {
+      validatedData = MainSimulationSchema.parse(requestBody);
+    }
+    
+    const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = validatedData as any;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
@@ -544,9 +595,21 @@ TECHNICAL QUALITY REQUIREMENTS:
     
   } catch (error) {
     console.error('Error in simulate-smile:', error);
+    
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Datos de entrada inválidos',
+          details: error.errors 
+        }), 
+        { status: 400, headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' } }
+      );
+    }
+    
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Error desconocido' }), 
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' } }
     );
   }
 });
