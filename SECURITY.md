@@ -1,6 +1,39 @@
 # Security & Performance Improvements
 
-This document outlines the security and performance optimizations implemented in SimSmile.
+## 🚨 CRITICAL ACTION REQUIRED - READ THIS FIRST
+
+### ROTATE SUPABASE CREDENTIALS IMMEDIATELY
+
+The `.env` file containing Supabase credentials was previously committed to Git. Even though it's now excluded, **the credentials are still in the Git history and must be considered compromised**.
+
+**Steps to rotate Supabase keys:**
+
+1. **Go to Supabase Dashboard**
+   - Navigate to: https://supabase.com/dashboard/project/[your-project-id]
+   - Go to Settings > API
+
+2. **Rotate the `anon` (publishable) key**
+   - Under "Project API keys"
+   - Click "Rotate" next to the `anon` key
+   - Copy the new key
+
+3. **Update your environment**
+   - Update `.env.local` with the new `VITE_SUPABASE_PUBLISHABLE_KEY`
+   - Update production environment variables
+   - **DO NOT commit the new keys to Git**
+
+4. **Deploy immediately**
+   - Deploy the updated environment variables to production
+   - Test that the application still works
+
+5. **Optional: Remove from Git history**
+   - See `remove-env-from-history.sh` for a script to remove the old `.env` from Git history
+   - ⚠️ This requires force-push and coordination with all team members
+   - Often it's better to just rotate keys and move forward
+
+**Timeline**: Complete this within 24 hours. Consider the old keys compromised.
+
+---
 
 ## Security Enhancements
 
