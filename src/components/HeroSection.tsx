@@ -26,6 +26,8 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             src={logoSimSmile} 
             alt="SimSmile" 
             className="w-32 md:w-40 animate-fade-in"
+            width="500"
+            height="500"
           />
         </div>
         <Button
