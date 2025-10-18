@@ -212,15 +212,15 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
               <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                El Futuro{" "}
+                Visualiza tu{" "}
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  de tu Sonrisa
+                  Sonrisa Perfecta
                 </span>
                 <br />
-                Hoy Mismo
+                Antes del Tratamiento
               </h2>
               <p className="text-muted-foreground mb-6">
-                Transforma tu sonrisa con la tecnología más avanzada del mercado. Resultados instantáneos y precisos.
+                Nuestra tecnología de IA te permite <span className="font-semibold text-foreground">previsualizar tu sonrisa transformada antes de iniciar cualquier tratamiento dental</span>. Toma decisiones informadas con confianza y visualiza tu resultado final desde el primer día.
               </p>
               <Button
                 size="lg"
@@ -250,8 +250,16 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Clínica Miró Badge */}
-      <div className="text-center text-base font-medium text-foreground/80 z-10">
-        Desarrollado por Clínica Miró
+      <div className="text-center z-10 space-y-4">
+        <div className="text-base font-medium text-foreground/80">
+          Desarrollado por Clínica Miró
+        </div>
+        <div className="text-xs text-muted-foreground max-w-3xl mx-auto px-4">
+          <p className="mb-2 font-semibold">Disclaimer:</p>
+          <p>
+            Las simulaciones generadas por SimSmile son representaciones visuales aproximadas con fines informativos y educativos. Los resultados reales pueden variar según la condición dental individual, el tipo de tratamiento y otros factores clínicos. Esta herramienta no constituye un diagnóstico médico ni reemplaza la consulta profesional con un odontólogo certificado. Siempre consulte con un profesional de la salud dental antes de tomar decisiones sobre tratamientos dentales.
+          </p>
+        </div>
       </div>
     </div>
   );
