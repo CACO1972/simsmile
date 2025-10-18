@@ -21,7 +21,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user"); // Always starts in selfie mode
   const [cameraError, setCameraError] = useState<string>("");
 
-  const startCamera = async (mode: "user" | "environment" = facingMode) => {
+  const startCamera = async (mode: "user" | "environment" = "user") => {
     try {
       setCameraError(""); // Clear any previous errors
       
@@ -255,10 +255,10 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Marco cuadrado simple de guía */}
+                {/* Marco rectangular tipo retrato */}
                 {showGuide && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-[70%] aspect-square border-4 border-primary/60 rounded-lg" />
+                    <div className="w-[75%] aspect-[3/4] border-4 border-primary/60 rounded-lg" />
                   </div>
                 )}
               </div>
