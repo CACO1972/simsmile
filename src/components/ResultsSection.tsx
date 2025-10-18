@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Share2, Mail, Download, CheckCircle2, Sparkles, X } from "lucide-react";
+import { Share2, Mail, Download, CheckCircle2, Sparkles, X, Phone } from "lucide-react";
 import { toast } from "sonner";
 import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 import { Card } from "@/components/ui/card";
@@ -39,6 +39,18 @@ export const ResultsSection = ({
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
   const [beforeAfterPosition, setBeforeAfterPosition] = useState(50);
+  const [showFloatingCTA, setShowFloatingCTA] = useState(false);
+
+  // Detectar scroll para mostrar CTA flotante
+  useEffect(() => {
+    const handleScroll = () => {
+      // Mostrar después de 300px de scroll
+      setShowFloatingCTA(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleCustomizedSimulation = (newImage: string) => {
     setCustomizedImage(newImage);
@@ -74,6 +86,34 @@ export const ResultsSection = ({
 
   return (
     <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
+      {/* CTA Flotante - aparece al hacer scroll */}
+      {showFloatingCTA && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+          <div className="bg-gradient-to-r from-primary via-accent to-primary text-white rounded-full shadow-2xl px-6 py-3 flex items-center gap-4 hover:shadow-primary/50 transition-all hover:scale-105">
+            <div className="flex items-center gap-2">
+              <Phone className="h-5 w-5 animate-pulse" />
+              <span className="font-bold text-sm md:text-base">¡Agenda tu Consulta GRATIS!</span>
+            </div>
+            <Button 
+              size="sm"
+              className="bg-white text-primary hover:bg-white/90 font-bold shadow-lg"
+              asChild
+            >
+              <a href="https://wa.me/56988085850?text=Hola,%20quiero%20agendar%20mi%20consulta%20de%20SimSmile" target="_blank" rel="noopener noreferrer">
+                Contactar Ahora
+              </a>
+            </Button>
+            <button 
+              onClick={() => setShowFloatingCTA(false)}
+              className="ml-2 hover:bg-white/20 rounded-full p-1 transition-colors"
+              aria-label="Cerrar"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
@@ -249,6 +289,46 @@ export const ResultsSection = ({
           </div>
         )}
 
+        {/* CTA Intermedio - aparece después del análisis */}
+        <Card className="mb-8 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border-2 border-primary/30 overflow-hidden">
+          <div className="p-6 md:p-8 text-center relative">
+            {/* Efecto de brillo animado */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[slide-in-right_3s_ease-in-out_infinite]" />
+            
+            <div className="relative z-10">
+              <h3 className="text-2xl md:text-3xl font-heading font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ¿Te gustó tu simulación?
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Da el siguiente paso hacia tu sonrisa ideal. Primera consulta <span className="font-bold text-primary">completamente GRATIS</span>.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  size="lg" 
+                  className="gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl text-lg px-8"
+                  asChild
+                >
+                  <a href="https://wa.me/56988085850?text=Hola,%20vi%20mi%20simulación%20de%20SimSmile%20y%20quiero%20agendar%20una%20consulta" target="_blank" rel="noopener noreferrer">
+                    <Phone className="h-5 w-5" />
+                    Agendar por WhatsApp
+                  </a>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="gap-2 border-2 border-primary/50 hover:bg-primary/5 text-lg px-8"
+                  asChild
+                >
+                  <a href="tel:+56988085850">
+                    <Phone className="h-5 w-5" />
+                    Llamar: +56 9 8808 5850
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+
         {/* Botones de acción secundarios */}
         <div className="flex flex-wrap gap-3 justify-center mb-12">
           <Button size="default" onClick={handleDownloadReport} variant="outline" className="gap-2">
@@ -273,21 +353,58 @@ export const ResultsSection = ({
           </p>
         </div>
 
-        {/* Contact CTA */}
-        <div className="text-center bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-8">
-          <h3 className="text-2xl font-heading font-bold mb-4">
+        {/* Contact CTA Final */}
+        <div className="text-center bg-gradient-to-br from-card/80 to-muted/50 backdrop-blur-sm border-2 border-primary/30 rounded-2xl p-8 shadow-xl">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-4">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Último Paso</span>
+          </div>
+          <h3 className="text-2xl md:text-3xl font-heading font-bold mb-3">
             ¿Listo para tu Transformación?
           </h3>
-          <p className="text-muted-foreground mb-6">
-            Agenda tu consulta con nuestros especialistas
+          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+            Nuestros especialistas están listos para diseñar tu sonrisa perfecta
           </p>
-          <Button size="lg" className="text-base md:text-lg px-8 py-6" asChild>
-            <a href="https://www.clinicamiro.cl" target="_blank" rel="noopener noreferrer">
-              Contáctanos
-            </a>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="text-base md:text-lg px-8 py-6 bg-gradient-to-r from-primary to-accent shadow-lg hover:shadow-xl" asChild>
+              <a href="https://www.clinicamiro.cl" target="_blank" rel="noopener noreferrer">
+                Visitar Clínica Miro
+              </a>
+            </Button>
+            <Button size="lg" variant="outline" className="text-base md:text-lg px-8 py-6 border-2" asChild>
+              <a href="https://wa.me/56988085850?text=Quiero%20más%20información%20sobre%20SimSmile" target="_blank" rel="noopener noreferrer">
+                Hacer una Pregunta
+              </a>
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* CTA Sticky Bottom - aparece cuando el usuario scrollea hacia abajo */}
+      {showFloatingCTA && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 animate-slide-in-right">
+          <div className="bg-gradient-to-r from-primary via-accent to-primary text-white px-4 py-4 shadow-2xl backdrop-blur-sm border-t-2 border-white/20">
+            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <p className="font-bold text-lg mb-1">💎 Primera Consulta GRATIS</p>
+                <p className="text-sm text-white/90">Transforma tu sonrisa hoy mismo</p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  size="lg"
+                  className="bg-white text-primary hover:bg-white/90 font-bold shadow-lg"
+                  asChild
+                >
+                  <a href="https://wa.me/56988085850?text=Hola,%20quiero%20agendar%20mi%20consulta%20de%20SimSmile" target="_blank" rel="noopener noreferrer">
+                    <Phone className="h-5 w-5 mr-2" />
+                    Agendar Ahora
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <WaitlistModal open={showWaitlistModal} onOpenChange={setShowWaitlistModal} />
 
