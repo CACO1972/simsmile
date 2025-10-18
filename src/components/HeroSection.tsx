@@ -20,11 +20,11 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Navigation bar */}
-      <nav className="w-full max-w-7xl mb-12 z-10 flex flex-col items-center justify-center gap-3">
+      <nav className="w-full max-w-7xl mb-6 z-10 flex flex-col items-center justify-center gap-3">
         <img 
           src={logoSimSmile} 
           alt="SimSmile" 
-          className="w-32 md:w-40 animate-fade-in"
+          className="w-40 md:w-48 animate-fade-in"
           width="500"
           height="500"
         />
