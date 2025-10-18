@@ -20,24 +20,19 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Navigation bar */}
-      <nav className="w-full max-w-7xl mb-12 z-10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img 
-            src={logoSimSmile} 
-            alt="SimSmile" 
-            className="w-32 md:w-40 animate-fade-in"
-            width="500"
-            height="500"
-          />
+      <nav className="w-full max-w-7xl mb-12 z-10 flex flex-col items-center justify-center gap-3">
+        <img 
+          src={logoSimSmile} 
+          alt="SimSmile" 
+          className="w-32 md:w-40 animate-fade-in"
+          width="500"
+          height="500"
+        />
+        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-primary/10 border border-primary/20">
+          <span className="text-sm md:text-base font-semibold text-primary">
+            ¡Gratis por Tiempo Limitado!
+          </span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="border-primary/30 hover:bg-primary/10 text-foreground"
-          onClick={onStart}
-        >
-          ¡Gratis por Tiempo Limitado!
-        </Button>
       </nav>
 
       {/* Hero Section */}
