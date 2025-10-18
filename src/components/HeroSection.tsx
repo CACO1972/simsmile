@@ -36,7 +36,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           className="border-primary/30 hover:bg-primary/10 text-foreground"
           onClick={onStart}
         >
-          Empezar
+          ¡Gratis por Tiempo Limitado!
         </Button>
       </nav>
 
