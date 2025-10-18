@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Camera, Upload, RotateCcw, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { logger } from "@/lib/logger";
-import DynamicFaceGuide from "./DynamicFaceGuide";
 
 interface CameraCaptureProps {
   onCapture: (imageBase64: string) => void;
@@ -247,7 +246,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
             </div>
           ) : (
             <div className="space-y-4">
-              <div className={`relative rounded-xl overflow-hidden bg-black aspect-[3/4] max-w-md mx-auto ${showGuide ? 'border-4 border-primary' : ''}`}>
+              <div className="relative rounded-xl overflow-hidden bg-black aspect-[3/4] max-w-md mx-auto">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -256,8 +255,12 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Marco de guía dinámico con detección facial */}
-                {showGuide && <DynamicFaceGuide videoRef={videoRef} />}
+                {/* Marco cuadrado simple de guía */}
+                {showGuide && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-[70%] aspect-square border-4 border-primary/60 rounded-lg" />
+                  </div>
+                )}
               </div>
 
               <canvas ref={canvasRef} className="hidden" />
