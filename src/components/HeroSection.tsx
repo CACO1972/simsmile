@@ -199,31 +199,6 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
                 </div>
               </div>
             </div>
-
-            {/* Stats Card */}
-            <div className="group relative bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm border border-primary/30 rounded-2xl p-8 hover:border-primary/50 transition-all overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/30 to-accent/30 rounded-bl-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative grid grid-cols-3 gap-6 text-center">
-                <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
-                    +5K
-                  </div>
-                  <p className="text-xs text-muted-foreground">Análisis Realizados</p>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
-                    98%
-                  </div>
-                  <p className="text-xs text-muted-foreground">Satisfacción</p>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
-                    24/7
-                  </div>
-                  <p className="text-xs text-muted-foreground">Disponible</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
