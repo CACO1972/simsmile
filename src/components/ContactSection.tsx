@@ -109,6 +109,18 @@ export const ContactSection = ({ onSubmit }: ContactSectionProps) => {
             />
           </div>
 
+          <div className="bg-muted/30 border border-border/50 rounded-lg p-4 space-y-2">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              Protección de Datos y Privacidad
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong>Tus datos están seguros:</strong> La información personal que nos proporcionas (nombre, email, teléfono) y las fotografías faciales se utilizan exclusivamente para generar tu simulación de sonrisa y enviarte los resultados del análisis. No compartimos tu información con terceros y está protegida bajo las normativas de protección de datos vigentes. Las imágenes se procesan de forma segura y se almacenan temporalmente solo para completar el análisis. Tienes derecho a solicitar la eliminación de tus datos en cualquier momento contactando a Clínica Miró.
+            </p>
+          </div>
+
           <Button type="submit" size="lg" className="w-full">
             Continuar al Análisis
           </Button>
