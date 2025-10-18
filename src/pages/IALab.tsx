@@ -199,27 +199,9 @@ const IALab = () => {
 
   const handleContactSubmit = async (data: any) => {
     setContactData(data);
-    
-    try {
-      // Enviar emails con las imágenes
-      const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: {
-          ...data,
-          restImage: restImage || undefined,
-          smileImage: smileImage || undefined,
-          idealImage: idealImage || undefined
-        }
-      });
-
-      if (error) throw error;
-
-      setStep("results");
-      track({ name: "contact_submitted", data: { email: data.email } });
-      toast.success("¡Análisis completado y enviado a tu correo!");
-    } catch (error) {
-      logger.error("Error sending emails:", error);
-      toast.error("Error al enviar el correo. Por favor intenta de nuevo.");
-    }
+    setStep("results");
+    track({ name: "contact_submitted", data: { email: data.email } });
+    toast.success("¡Análisis completado!");
   };
 
   return (

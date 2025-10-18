@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Share2, Mail, Download, CheckCircle2, Sparkles, X, Phone } from "lucide-react";
+import { Share2, Mail, Download, CheckCircle2, Sparkles, X, Phone, MessageCircle, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import simsmileLogo from "@/assets/simsmile-logo-pink.png";
 import { Card } from "@/components/ui/card";
@@ -62,25 +62,31 @@ export const ResultsSection = ({
     toast.info("Descarga de reportes disponible en versión Premium");
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Mi Análisis SimSmile",
-          text: "Mira mi simulación de sonrisa con SimSmile",
-          url: window.location.href,
-        });
-        toast.success("Compartido exitosamente");
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') {
-          logger.error("Error sharing:", err);
-          toast.error("Error al compartir");
-        }
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copiado al portapapeles");
-    }
+  const handleShareWhatsApp = () => {
+    const text = encodeURIComponent(
+      `¡Mira mi análisis de sonrisa con SimSmile! 😁\n\nDescubrí cómo se vería mi sonrisa ideal. Tú también puedes hacerlo en: ${window.location.origin}`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+    toast.success("Abriendo WhatsApp...");
+  };
+
+  const handleShareInstagram = () => {
+    toast.info("Instagram se abrirá. Comparte tu experiencia en tu historia o feed!", { duration: 4000 });
+    // Instagram no permite compartir directamente con texto, pero podemos abrir la app
+    window.open('instagram://story-camera', '_blank');
+    // Fallback para web
+    setTimeout(() => {
+      window.open('https://www.instagram.com/', '_blank');
+    }, 1000);
+  };
+
+  const handleSendEmail = () => {
+    const subject = encodeURIComponent("Mi Análisis de Sonrisa SimSmile");
+    const body = encodeURIComponent(
+      `Hola,\n\nQuiero compartir contigo mi análisis de sonrisa realizado con SimSmile.\n\nLos resultados incluyen un análisis detallado de proporciones faciales y recomendaciones personalizadas.\n\nPuedes hacer tu propio análisis en: ${window.location.origin}\n\n¡Saludos!`
+    );
+    window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`;
+    toast.success("Abriendo tu cliente de correo...");
   };
 
 
@@ -141,17 +147,44 @@ export const ResultsSection = ({
           </p>
           
           {/* Botones de acción principales */}
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button size="lg" onClick={handleShare} className="gap-2 bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:shadow-xl">
-              <Share2 className="h-5 w-5" />
-              Compartir Resultado
-            </Button>
-            <Button size="lg" className="gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl" asChild>
+          <div className="flex flex-col gap-4 max-w-lg mx-auto">
+            <Button
+              size="lg"
+              className="w-full bg-[#25D366] hover:bg-[#20BA59] text-white gap-2 h-14 text-lg font-semibold shadow-lg hover:shadow-xl"
+              asChild
+            >
               <a href="https://wa.me/56988085850?text=Hola,%20quiero%20agendar%20mi%20consulta%20de%20SimSmile" target="_blank" rel="noopener noreferrer">
-                <Mail className="h-5 w-5" />
+                <Phone className="h-5 w-5" />
                 Agendar Consulta GRATIS
               </a>
             </Button>
+            
+            <div className="grid grid-cols-3 gap-3">
+              <Button
+                onClick={handleShareWhatsApp}
+                variant="outline"
+                className="flex-col h-20 gap-2 border-2"
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span className="text-xs font-semibold">WhatsApp</span>
+              </Button>
+              <Button
+                onClick={handleShareInstagram}
+                variant="outline"
+                className="flex-col h-20 gap-2 border-2"
+              >
+                <Instagram className="h-5 w-5" />
+                <span className="text-xs font-semibold">Instagram</span>
+              </Button>
+              <Button
+                onClick={handleSendEmail}
+                variant="outline"
+                className="flex-col h-20 gap-2 border-2"
+              >
+                <Mail className="h-5 w-5" />
+                <span className="text-xs font-semibold">Email</span>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -335,12 +368,6 @@ export const ResultsSection = ({
             <Download className="h-4 w-4" />
             Descargar PDF
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">Premium</span>
-          </Button>
-          <Button size="default" variant="outline" className="gap-2" asChild>
-            <a href={`mailto:${contactEmail}`}>
-              <Mail className="h-4 w-4" />
-              Reenviar Email
-            </a>
           </Button>
         </div>
 
