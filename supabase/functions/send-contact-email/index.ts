@@ -168,24 +168,57 @@ const handler = async (req: Request): Promise<Response> => {
         to: [email],
         subject: "¡Hemos recibido tu mensaje!",
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #333;">¡Gracias por contactarnos, ${safeName}!</h1>
-            <p style="font-size: 16px; line-height: 1.6;">
-              Hemos recibido tu análisis de sonrisa y nos pondremos en contacto contigo lo antes posible.
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #333; margin-bottom: 20px;">¡Gracias por contactarnos, ${safeName}!</h1>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #555;">
+              Hemos recibido tu análisis de sonrisa. Nuestro equipo de especialistas está listo para ayudarte a lograr la sonrisa que deseas.
             </p>
+
             ${idealImage ? `
               <div style="margin: 30px 0; text-align: center;">
-                <h2 style="color: #333;">Tu Simulación de Sonrisa</h2>
+                <h2 style="color: #333; margin-bottom: 15px;">Tu Simulación de Sonrisa</h2>
                 <img src="${idealImage}" alt="Simulación de sonrisa" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
               </div>
             ` : ''}
-            <p style="font-size: 16px; line-height: 1.6;">
-              Nuestro equipo de especialistas revisará tu caso y te contactaremos para coordinar una consulta.
+
+            <!-- CTA Principal -->
+            <div style="background: linear-gradient(135deg, #EC4899 0%, #F97316 100%); border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center;">
+              <h2 style="color: white; margin: 0 0 15px 0; font-size: 24px;">
+                🎉 ¡Agenda tu Consulta GRATIS!
+              </h2>
+              <p style="color: white; margin: 0 0 20px 0; font-size: 16px; opacity: 0.95;">
+                Primera evaluación sin costo. Hablemos de tu sonrisa ideal.
+              </p>
+              <a href="https://wa.me/56988085850?text=Hola,%20quiero%20agendar%20mi%20consulta%20de%20SimSmile" 
+                 style="display: inline-block; background: white; color: #EC4899; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                Agendar por WhatsApp
+              </a>
+            </div>
+
+            <div style="background: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">📞 Otras formas de contacto:</h3>
+              <p style="margin: 5px 0; color: #666;">
+                <strong>Email:</strong> <a href="mailto:administracion@clinicamiro.cl" style="color: #EC4899;">administracion@clinicamiro.cl</a>
+              </p>
+              <p style="margin: 5px 0; color: #666;">
+                <strong>Teléfono:</strong> +56 9 8808 5850
+              </p>
+              <p style="margin: 5px 0; color: #666;">
+                <strong>Web:</strong> <a href="https://www.clinicamiro.cl" style="color: #EC4899;">www.clinicamiro.cl</a>
+              </p>
+            </div>
+
+            <p style="font-size: 16px; line-height: 1.6; color: #555; margin-top: 30px;">
+              Nuestros especialistas revisarán tu caso y estarán encantados de diseñar un plan personalizado para ti.
             </p>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-              <p style="color: #666; font-size: 14px;">
-                Clínica Dental Miro<br>
-                Tu sonrisa es nuestra prioridad
+
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+              <p style="color: #999; font-size: 13px; margin: 5px 0;">
+                Clínica Dental Miro
+              </p>
+              <p style="color: #999; font-size: 13px; margin: 5px 0;">
+                Tu sonrisa es nuestra prioridad ✨
               </p>
             </div>
           </div>

@@ -175,20 +175,18 @@ const AnalysisCard = ({
   if (locked) {
     return (
       <Card className="relative overflow-hidden bg-muted/50 border-muted">
-        <div className="absolute inset-0 backdrop-blur-sm bg-background/80 z-10 flex items-center justify-center">
-          <div className="text-center">
-            <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm font-medium text-muted-foreground">Premium</p>
+        <div className="absolute inset-0 backdrop-blur-sm bg-background/90 z-10 flex items-center justify-center">
+          <div className="text-center p-6">
+            <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-3" />
+            <p className="text-lg font-bold text-foreground mb-1">Análisis Premium</p>
+            <p className="text-sm text-muted-foreground">Desbloquea para ver detalles</p>
           </div>
         </div>
         
-        <div className="p-6">
-          <h3 className="text-xl font-heading font-bold mb-4">{item.title}</h3>
-          {'description' in item && (
-            <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
-          )}
-          <div className="bg-muted/30 rounded-lg p-4 mb-4">
-            <p className="text-2xl font-bold text-primary">••• : ••• : •••</p>
+        <div className="p-6 blur-sm">
+          <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+          <div className="bg-muted/30 rounded-lg p-4">
+            <p className="text-2xl font-bold text-primary">•••</p>
           </div>
         </div>
       </Card>
@@ -196,51 +194,63 @@ const AnalysisCard = ({
   }
 
   return (
-    <Card className="bg-gradient-to-br from-card to-muted/20 border-primary/20">
+    <Card className="bg-gradient-to-br from-card to-muted/10 border-primary/20 hover:border-primary/40 transition-all">
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-heading font-bold mb-1">{item.title}</h3>
-            {'description' in item && (
-              <p className="text-sm text-muted-foreground">{item.description}</p>
-            )}
-          </div>
+          <h3 className="text-lg font-bold flex-1">{item.title}</h3>
           {item.free && (
-            <span className="px-2 py-1 text-xs font-semibold bg-primary/20 text-primary rounded-full">
+            <span className="px-3 py-1 text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
               GRATIS
             </span>
           )}
         </div>
         
-        {/* Tus mediciones */}
-        <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg p-4 mb-3 border border-primary/20">
-          <p className="text-xs text-muted-foreground mb-1">Tu Medición Real</p>
-          <p className="text-2xl font-bold text-primary">{value || "N/A"}</p>
+        {/* Comparación visual TU vs IDEAL */}
+        <div className="space-y-3 mb-4">
+          {/* Tu medición */}
+          <div className="bg-gradient-to-r from-primary/20 to-primary/10 rounded-xl p-4 border-2 border-primary/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-primary mb-1">TU MEDICIÓN</p>
+                <p className="text-2xl font-bold text-primary">{value || "N/A"}</p>
+              </div>
+              <div className="text-4xl">📊</div>
+            </div>
+          </div>
+
+          {/* Golden Ratio Ideal */}
+          {'getIdeal' in item && (
+            <div className="bg-gradient-to-r from-yellow-100/50 to-orange-100/50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-4 border-2 border-yellow-400/30 dark:border-yellow-600/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 mb-1">GOLDEN RATIO IDEAL</p>
+                  <p className="text-lg font-bold text-yellow-800 dark:text-yellow-300">{item.getIdeal()}</p>
+                </div>
+                <div className="text-3xl">φ</div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Golden Ratio Ideal */}
-        {'getIdeal' in item && (
-          <div className="bg-gradient-to-br from-accent/5 to-accent/10 rounded-lg p-3 mb-4 border border-accent/20">
-            <p className="text-xs text-muted-foreground mb-1">Golden Ratio Ideal φ</p>
-            <p className="text-lg font-semibold text-accent-foreground">{item.getIdeal()}</p>
-          </div>
-        )}
-
-        {/* Explicación simple */}
-        {'getExplanation' in item && item.getExplanation(data) && (
-          <div className="mb-4 p-4 bg-muted/20 rounded-lg border border-muted">
-            <p className="text-sm leading-relaxed whitespace-pre-line">
-              {item.getExplanation(data)}
-            </p>
-          </div>
-        )}
-
-        {/* Nota Golden Ratio */}
+        {/* Nota Golden Ratio - prominente */}
         {'getGoldenRatioNote' in item && item.getGoldenRatioNote(data) && (
-          <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
-            <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-            <p className="text-sm font-medium">{item.getGoldenRatioNote(data)}</p>
+          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl border border-green-300 dark:border-green-700 mb-4">
+            <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+            <p className="text-sm font-semibold text-green-800 dark:text-green-300">{item.getGoldenRatioNote(data)}</p>
           </div>
+        )}
+
+        {/* Explicación colapsable */}
+        {'getExplanation' in item && item.getExplanation(data) && (
+          <details className="group">
+            <summary className="cursor-pointer text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-2">
+              <span>Ver explicación detallada</span>
+              <span className="group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div className="mt-3 p-4 bg-muted/30 rounded-lg border border-muted text-sm leading-relaxed">
+              {item.getExplanation(data)}
+            </div>
+          </details>
         )}
       </div>
     </Card>
@@ -253,101 +263,151 @@ export const FacialAnalysisReport = ({
   onUnlockPremium 
 }: FacialAnalysisReportProps) => {
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8">
+      {/* Header mejorado */}
       <div className="text-center">
-        <h2 className="text-3xl md:text-4xl font-heading font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Análisis de Proporciones Faciales
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30 mb-4">
+          <CheckCircle2 className="h-5 w-5 text-primary" />
+          <span className="text-sm font-medium">Análisis Facial Completo</span>
+        </div>
+        <h2 className="text-3xl md:text-5xl font-heading font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          Proporciones de Tu Rostro
         </h2>
-        <p className="text-muted-foreground">
-          6 análisis profesionales • 2 gratis, 4 premium
+        <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+          Comparación con el <span className="font-semibold text-primary">Golden Ratio φ (1.618)</span>, 
+          la proporción áurea de la belleza universal
         </p>
       </div>
 
-      {/* Photo de referencia */}
-      <Card className="bg-gradient-to-br from-primary/5 to-card/50 p-6">
-        <div className="max-w-md mx-auto">
-          <img 
-            src={imageUrl} 
-            alt="Análisis facial"
-            className="w-full aspect-square object-cover rounded-lg border-2 border-primary/30 shadow-xl"
-          />
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            <span>Calidad de imagen: Excelente</span>
+      {/* Resumen Golden Ratio - PRIMERO */}
+      <Card className="bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 border-2 border-primary/30 overflow-hidden">
+        <div className="p-8">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl md:text-3xl font-heading font-bold mb-2">
+              Tu Puntuación Golden Ratio
+            </h3>
+            <p className="text-muted-foreground">
+              Proximidad a las proporciones perfectas de la naturaleza
+            </p>
+          </div>
+          
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-8">
+            {/* Score principal */}
+            <div className="text-center">
+              <div className="relative inline-block">
+                <div className="h-32 w-32 rounded-full bg-gradient-to-br from-primary via-accent to-primary/70 flex items-center justify-center shadow-2xl">
+                  <span className="text-5xl font-bold text-white">
+                    {data.overall_golden_ratio_score || 'N/A'}
+                  </span>
+                </div>
+                <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg shadow-lg">
+                  φ
+                </div>
+              </div>
+              <p className="text-lg font-semibold mt-4">Golden Ratio Score</p>
+              <p className="text-sm text-muted-foreground">de 100 puntos</p>
+            </div>
+            
+            {/* Simetría */}
+            {data.symmetry_score && (
+              <div className="text-center">
+                <div className="h-32 w-32 rounded-full bg-gradient-to-br from-accent to-primary/50 flex items-center justify-center shadow-2xl">
+                  <span className="text-5xl font-bold text-white">
+                    {data.symmetry_score}
+                  </span>
+                </div>
+                <p className="text-lg font-semibold mt-4">Simetría Facial</p>
+                <p className="text-sm text-muted-foreground">Balance perfecto</p>
+              </div>
+            )}
+          </div>
+
+          {/* Interpretación */}
+          {data.overall_assessment && (
+            <div className="bg-white/50 dark:bg-black/20 rounded-xl p-6 border border-primary/20">
+              <p className="text-base leading-relaxed text-center">
+                {data.overall_assessment}
+              </p>
+            </div>
+          )}
+
+          {/* Barra visual del score */}
+          <div className="mt-6">
+            <div className="h-4 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-1000"
+                style={{ width: `${data.overall_golden_ratio_score || 0}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground mt-2">
+              <span>0</span>
+              <span>50</span>
+              <span>100</span>
+            </div>
           </div>
         </div>
       </Card>
 
-      {/* Grid de análisis */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {ANALYSIS_ITEMS.map((item) => (
-          <AnalysisCard 
-            key={item.id}
-            item={item}
-            data={data}
-            locked={!item.free}
+      {/* Photo de referencia */}
+      <Card className="bg-gradient-to-br from-card to-muted/20 border-primary/20 p-6">
+        <h3 className="text-xl font-heading font-bold text-center mb-4">Tu Foto Analizada</h3>
+        <div className="max-w-sm mx-auto">
+          <img 
+            src={imageUrl} 
+            alt="Análisis facial"
+            className="w-full aspect-square object-cover rounded-xl border-2 border-primary/30 shadow-xl"
           />
-        ))}
+        </div>
+      </Card>
+
+      {/* Explicación simple del Golden Ratio */}
+      <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-300 dark:border-yellow-700 p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center text-2xl font-bold text-yellow-900">
+            φ
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-2">¿Qué es el Golden Ratio φ?</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              El Golden Ratio (φ = 1.618) es una proporción matemática que aparece en la naturaleza, el arte y la arquitectura. 
+              En el rostro humano, esta proporción define las medidas consideradas más armoniosas y estéticamente agradables.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Grid de análisis - SIMPLIFICADO */}
+      <div>
+        <h3 className="text-2xl font-heading font-bold text-center mb-6">
+          Análisis Detallado de Proporciones
+        </h3>
+        <div className="grid gap-6 md:grid-cols-2">
+          {ANALYSIS_ITEMS.map((item) => (
+            <AnalysisCard 
+              key={item.id}
+              item={item}
+              data={data}
+              locked={!item.free}
+            />
+          ))}
+        </div>
       </div>
 
       {/* CTA Premium */}
       <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30 p-8 text-center">
         <h3 className="text-2xl font-heading font-bold mb-3">
-          Desbloquea los 4 Análisis Premium
+          🔓 Desbloquea los 4 Análisis Premium
         </h3>
         <p className="text-muted-foreground mb-6">
-          Obtén acceso completo a todos los análisis faciales profesionales
+          Obtén el análisis facial completo con todas las mediciones profesionales
         </p>
         <Button 
           size="lg" 
           onClick={onUnlockPremium}
-          className="text-lg px-8"
+          className="text-lg px-8 bg-gradient-to-r from-primary to-accent"
         >
           Ver Planes Premium
         </Button>
-      </Card>
-
-      {/* Resumen general con Golden Ratio Score */}
-      <Card className="bg-gradient-to-br from-primary/5 via-accent/5 to-card p-6 border-primary/30">
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-heading font-bold mb-2">
-            Golden Ratio Score General
-          </h3>
-          <p className="text-muted-foreground">
-            Proximidad de tus proporciones faciales al Golden Ratio φ (1.618)
-          </p>
-        </div>
-        
-        <div className="flex items-center justify-center gap-6 mb-6">
-          <div className="text-center">
-            <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-2 mx-auto">
-              <span className="text-3xl font-bold text-white">
-                {data.overall_golden_ratio_score || 'N/A'}
-              </span>
-            </div>
-            <p className="text-sm font-semibold">Score φ</p>
-          </div>
-          
-          {data.symmetry_score && (
-            <div className="text-center">
-              <div className="h-24 w-24 rounded-full bg-gradient-to-br from-accent to-primary/50 flex items-center justify-center mb-2 mx-auto">
-                <span className="text-3xl font-bold text-white">
-                  {data.symmetry_score}
-                </span>
-              </div>
-              <p className="text-sm font-semibold">Simetría</p>
-            </div>
-          )}
-        </div>
-
-        {data.overall_assessment && (
-          <div className="bg-muted/30 rounded-lg p-4 border border-muted">
-            <p className="text-sm leading-relaxed text-center">
-              {data.overall_assessment}
-            </p>
-          </div>
-        )}
       </Card>
     </div>
   );

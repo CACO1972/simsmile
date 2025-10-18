@@ -96,9 +96,23 @@ export const ResultsSection = ({
           <h1 className="text-3xl md:text-5xl font-heading font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Tu Sonrisa Mejorada
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground">
+          <p className="text-base md:text-lg text-muted-foreground mb-6">
             Resultado con correcciones aplicadas por IA
           </p>
+          
+          {/* Botones de acción principales */}
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button size="lg" onClick={handleShare} className="gap-2 bg-gradient-to-r from-primary to-accent text-white shadow-lg hover:shadow-xl">
+              <Share2 className="h-5 w-5" />
+              Compartir Resultado
+            </Button>
+            <Button size="lg" className="gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl" asChild>
+              <a href="https://wa.me/56988085850?text=Hola,%20quiero%20agendar%20mi%20consulta%20de%20SimSmile" target="_blank" rel="noopener noreferrer">
+                <Mail className="h-5 w-5" />
+                Agendar Consulta GRATIS
+              </a>
+            </Button>
+          </div>
         </div>
 
         {/* 1. IMAGEN Y PERSONALIZACIÓN INTEGRADA */}
@@ -235,21 +249,17 @@ export const ResultsSection = ({
           </div>
         )}
 
-        {/* Botones de acción */}
-        <div className="flex flex-wrap gap-4 justify-center mb-12">
-          <Button size="lg" onClick={handleShare} variant="outline" className="gap-2">
-            <Share2 className="h-5 w-5" />
-            Compartir
-          </Button>
-          <Button size="lg" onClick={handleDownloadReport} variant="outline" className="gap-2">
-            <Download className="h-5 w-5" />
+        {/* Botones de acción secundarios */}
+        <div className="flex flex-wrap gap-3 justify-center mb-12">
+          <Button size="default" onClick={handleDownloadReport} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
             Descargar PDF
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">Premium</span>
           </Button>
-          <Button size="lg" className="gap-2" asChild>
+          <Button size="default" variant="outline" className="gap-2" asChild>
             <a href={`mailto:${contactEmail}`}>
-              <Mail className="h-5 w-5" />
-              Reenviar por Email
+              <Mail className="h-4 w-4" />
+              Reenviar Email
             </a>
           </Button>
         </div>
