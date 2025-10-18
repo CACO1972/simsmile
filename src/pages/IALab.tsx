@@ -201,9 +201,14 @@ const IALab = () => {
     setContactData(data);
     
     try {
-      // Enviar emails
+      // Enviar emails con las imágenes
       const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: data
+        body: {
+          ...data,
+          restImage: restImage || undefined,
+          smileImage: smileImage || undefined,
+          idealImage: idealImage || undefined
+        }
       });
 
       if (error) throw error;

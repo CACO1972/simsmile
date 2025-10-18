@@ -30,7 +30,10 @@ const ContactSchema = z.object({
   name: z.string().trim().min(1, "Name required").max(100, "Name too long"),
   email: z.string().trim().email("Invalid email").max(255, "Email too long"),
   phone: z.string().trim().max(20, "Phone too long").optional().default(""),
-  message: z.string().trim().max(2000, "Message too long").optional().default("")
+  message: z.string().trim().max(2000, "Message too long").optional().default(""),
+  restImage: z.string().optional(),
+  smileImage: z.string().optional(),
+  idealImage: z.string().optional()
 });
 
 // HTML escaping to prevent XSS
@@ -56,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Validate and sanitize input
     const validatedData = ContactSchema.parse(rawBody);
-    const { name, email, phone, message } = validatedData;
+    const { name, email, phone, message, restImage, smileImage, idealImage } = validatedData;
 
     // Escape HTML in user inputs
     const safeName = escapeHtml(name);
@@ -120,6 +123,18 @@ const handler = async (req: Request): Promise<Response> => {
                   <p><strong>Mensaje:</strong></p>
                   <p style="white-space: pre-wrap;">${safeMessage || 'N/A'}</p>
                 </div>
+                ${restImage ? `
+                  <div style="margin: 20px 0;">
+                    <h3 style="color: #333;">Foto Original</h3>
+                    <img src="${restImage}" alt="Foto original" style="max-width: 100%; border-radius: 8px;" />
+                  </div>
+                ` : ''}
+                ${idealImage ? `
+                  <div style="margin: 20px 0;">
+                    <h3 style="color: #333;">Simulación de Sonrisa</h3>
+                    <img src="${idealImage}" alt="Simulación" style="max-width: 100%; border-radius: 8px;" />
+                  </div>
+                ` : ''}
                 <p style="color:#666; font-size:12px">Motivo fallback: ${errorData}</p>
               </div>
             `,
@@ -138,6 +153,9 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Delay para evitar rate limit de Resend (2 req/seg)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     // Email de confirmación al usuario
     const userEmailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -153,10 +171,16 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #333;">¡Gracias por contactarnos, ${safeName}!</h1>
             <p style="font-size: 16px; line-height: 1.6;">
-              Hemos recibido tu mensaje y nos pondremos en contacto contigo lo antes posible.
+              Hemos recibido tu análisis de sonrisa y nos pondremos en contacto contigo lo antes posible.
             </p>
+            ${idealImage ? `
+              <div style="margin: 30px 0; text-align: center;">
+                <h2 style="color: #333;">Tu Simulación de Sonrisa</h2>
+                <img src="${idealImage}" alt="Simulación de sonrisa" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" />
+              </div>
+            ` : ''}
             <p style="font-size: 16px; line-height: 1.6;">
-              Nuestro equipo revisará tu consulta y te responderemos pronto.
+              Nuestro equipo de especialistas revisará tu caso y te contactaremos para coordinar una consulta.
             </p>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <p style="color: #666; font-size: 14px;">
