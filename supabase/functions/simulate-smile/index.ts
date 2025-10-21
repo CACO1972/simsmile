@@ -229,38 +229,57 @@ Respond ONLY with a JSON object (no markdown, no extra text):
       );
     }
 
-    // 2. Análisis facial detallado
+    // 2. Análisis facial detallado según formato Perfect Corp
     console.log('📊 Realizando análisis facial detallado...');
     let facialMetrics: any = null;
     
     try {
-      const facialPrompt = `You are a facial aesthetics analysis system. Based on this photo, provide approximate facial proportion metrics.
+      const facialPrompt = `You are a professional facial aesthetics analysis system similar to Perfect Corp. Analyze this face and provide precise measurements.
 
-IMPORTANT: Provide your BEST VISUAL ESTIMATION even if you cannot measure precisely. Return ONLY valid JSON, no other text.
+IMPORTANT: Return ONLY valid JSON, no other text.
 
-JSON structure (provide numbers that seem visually reasonable):
+JSON structure (provide accurate visual estimations):
 {
   "horizontal_ratio": {
-    "upper_third": 33,
-    "middle_third": 33,
-    "lower_third": 34,
-    "deviation_from_ideal": 1.0
+    "upper": 32,
+    "middle": 33,
+    "lower": 35
   },
   "vertical_ratio": {
-    "left_side": 50,
-    "right_side": 50,
-    "symmetry_score": 95
+    "sections": [17, 19, 29, 19, 16]
   },
-  "golden_ratio_score": 85,
-  "aspect_ratio": 0.75
+  "eye_distance": {
+    "category": "wide"
+  },
+  "eye_width": {
+    "category": "balanced"
+  },
+  "nose_aspect_ratio": {
+    "ratio": 1.256,
+    "category": "wide"
+  },
+  "nose_to_mouth_ratio": {
+    "ratio": 1.32
+  },
+  "nose_to_chin_ratio": {
+    "ratio": 2.63,
+    "lower_face_category": "long"
+  },
+  "lip_ratio": {
+    "ratio": 1.521,
+    "category": "balanced"
+  }
 }
 
-Visual estimation guidelines:
-- Horizontal thirds: estimate forehead, midface, and lower face proportions (should sum to 100%)
-- Vertical halves: estimate left vs right side balance (should sum to 100%)
-- Symmetry score: 90-100 is very symmetric, 70-89 is good, below 70 needs attention
-- Golden ratio score: 80-100 is excellent harmony, 60-79 is good, below 60 shows imbalances
-- Aspect ratio: width/height of face (typically 0.7-0.8)`;
+Guidelines:
+- horizontal_ratio: % for upper (hairline to brows), middle (brows to nose), lower (nose to chin) facial thirds - must sum to 100
+- vertical_ratio.sections: 5 values in % representing facial fifths from left to right - must sum to 100
+- eye_distance.category: "narrow" if eyes are close, "wide" if far apart, "balanced" if ideal
+- eye_width.category: "narrow" for small eyes, "wide" for large eyes, "balanced" for proportionate
+- nose_aspect_ratio: width to height ratio of nose (typically 1.0-1.5), category: "wide" if >1.3, "narrow" if <1.1, "balanced" between
+- nose_to_mouth_ratio: ratio of nose width to mouth width (typically 1.0-1.5)
+- nose_to_chin_ratio: distance from nose base to upper lip vs upper lip to chin (typically 1.5-3.0), lower_face_category: "short" if <2.0, "long" if >2.5, "balanced" between
+- lip_ratio: upper lip height to lower lip height ratio (typically 1.3-1.6), category: "full_upper" if <1.3, "full_lower" if >1.6, "balanced" between`;
 
       const facialResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -298,18 +317,34 @@ Visual estimation guidelines:
       // Fallback con valores estimados basados en proporciones promedio
       facialMetrics = {
         horizontal_ratio: {
-          upper_third: 33,
-          middle_third: 34,
-          lower_third: 33,
-          deviation_from_ideal: 1.0
+          upper: 32,
+          middle: 33,
+          lower: 35
         },
         vertical_ratio: {
-          left_side: 50,
-          right_side: 50,
-          symmetry_score: 90
+          sections: [17, 19, 29, 19, 16]
         },
-        golden_ratio_score: 80,
-        aspect_ratio: 0.75
+        eye_distance: {
+          category: "balanced"
+        },
+        eye_width: {
+          category: "balanced"
+        },
+        nose_aspect_ratio: {
+          ratio: 1.25,
+          category: "balanced"
+        },
+        nose_to_mouth_ratio: {
+          ratio: 1.32
+        },
+        nose_to_chin_ratio: {
+          ratio: 2.5,
+          lower_face_category: "balanced"
+        },
+        lip_ratio: {
+          ratio: 1.5,
+          category: "balanced"
+        }
       };
       console.log('⚠️ Usando análisis facial estimado (fallback)');
     }
