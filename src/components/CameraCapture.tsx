@@ -39,7 +39,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
 
       const constraintsPrimary: MediaStreamConstraints = {
         video: {
-          facingMode: { ideal: mode },
+          facingMode: { exact: mode }, // Use exact to force the specified camera
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
