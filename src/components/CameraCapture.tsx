@@ -106,7 +106,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
     }
   };
 
-  const handleStartCamera = () => startCamera();
+  const handleStartCamera = () => startCamera("user"); // Always start in selfie mode
 
   const stopCamera = () => {
     if (stream) {
