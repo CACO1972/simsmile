@@ -21,6 +21,32 @@ export default function CameraCapture({ onCapture, title, description, showGuide
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user"); // Always starts in selfie mode
   const [cameraError, setCameraError] = useState<string>("");
 
+  // Try to select the correct physical camera (front/back) using deviceId
+  const getDeviceIdForMode = async (mode: "user" | "environment"): Promise<string | null> => {
+    try {
+      let devices = await navigator.mediaDevices.enumerateDevices();
+      const hasLabels = devices.some((d) => d.label);
+      if (!hasLabels) {
+        // Request minimal access to reveal labels, then stop it immediately
+        const temp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        temp.getTracks().forEach((t) => t.stop());
+        devices = await navigator.mediaDevices.enumerateDevices();
+      }
+
+      const keywords = mode === "user"
+        ? ["front", "user", "frontal", "selfie", "face"]
+        : ["back", "environment", "rear", "trasera"];
+
+      const videoInputs = devices.filter((d) => d.kind === "videoinput");
+      const match = videoInputs.find((d) => keywords.some((k) => d.label.toLowerCase().includes(k)));
+
+      return match?.deviceId ?? videoInputs[0]?.deviceId ?? null;
+    } catch (e) {
+      logger.warn("enumerateDevices failed", e);
+      return null;
+    }
+  };
+
   const startCamera = async (mode: "user" | "environment" = "user") => {
     try {
       setCameraError(""); // Clear any previous errors
@@ -37,27 +63,41 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         return;
       }
 
-      const constraintsPrimary: MediaStreamConstraints = {
-        video: {
-          facingMode: { exact: mode }, // Use exact to force the specified camera
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      };
-
-      const constraintsFallback: MediaStreamConstraints = {
-        video: true,
-        audio: false,
-      };
-
       let mediaStream: MediaStream | null = null;
 
+      // 1) Prefer strict facingMode selection
       try {
+        const constraintsPrimary: MediaStreamConstraints = {
+          video: {
+            facingMode: { exact: mode }, // Force specific camera
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        };
         mediaStream = await navigator.mediaDevices.getUserMedia(constraintsPrimary);
       } catch (err) {
-        logger.warn("Primary constraints failed, trying fallback", err);
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraintsFallback);
+        logger.warn("facingMode exact failed, will try deviceId", err);
+      }
+
+      // 2) If not obtained, try selecting by concrete deviceId (most reliable on Android)
+      if (!mediaStream) {
+        const deviceId = await getDeviceIdForMode(mode);
+        if (deviceId) {
+          try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+              video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } },
+              audio: false,
+            });
+          } catch (e) {
+            logger.warn("deviceId selection failed", e);
+          }
+        }
+      }
+
+      // 3) Final fallback: generic camera (may be back camera)
+      if (!mediaStream) {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       }
 
       if (videoRef.current && mediaStream) {
@@ -67,6 +107,10 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         } catch (playErr) {
           logger.warn("Video play() was prevented by the browser", playErr);
         }
+        // Debug which camera was selected on the device
+        const track = mediaStream.getVideoTracks()[0];
+        const settings = track?.getSettings?.() || {};
+        logger.info?.("Camera started", { label: track?.label, facingMode: (settings as any).facingMode, deviceId: (settings as any).deviceId });
       }
 
       setFacingMode(mode);
