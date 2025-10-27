@@ -34,13 +34,18 @@ export default function CameraCapture({ onCapture, title, description, showGuide
       }
 
       const keywords = mode === "user"
-        ? ["front", "user", "frontal", "selfie", "face"]
-        : ["back", "environment", "rear", "trasera"];
+        ? ["front", "user", "frontal", "selfie", "face", "delantera", "frente"]
+        : ["back", "environment", "rear", "trasera", "posterior", "backside"];
 
       const videoInputs = devices.filter((d) => d.kind === "videoinput");
       const match = videoInputs.find((d) => keywords.some((k) => d.label.toLowerCase().includes(k)));
 
-      return match?.deviceId ?? videoInputs[0]?.deviceId ?? null;
+      if (match) return match.deviceId;
+      // Heurística: en muchos Android la frontal suele ser el último dispositivo
+      if (mode === "user") {
+        return videoInputs[videoInputs.length - 1]?.deviceId ?? videoInputs[0]?.deviceId ?? null;
+      }
+      return videoInputs[0]?.deviceId ?? null;
     } catch (e) {
       logger.warn("enumerateDevices failed", e);
       return null;
@@ -107,8 +112,18 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         } catch (playErr) {
           logger.warn("Video play() was prevented by the browser", playErr);
         }
-        // Debug which camera was selected on the device
         const track = mediaStream.getVideoTracks()[0];
+        // Intento extra de forzar el modo deseado en algunos navegadores
+        try {
+          const current = track?.getSettings?.();
+          const currentFacing = (current as any)?.facingMode;
+          if (currentFacing !== mode && (track as any)?.applyConstraints) {
+            await (track as any).applyConstraints({ facingMode: mode } as any);
+          }
+        } catch (e) {
+          logger.warn("applyConstraints facingMode failed", e);
+        }
+        // Debug cuál cámara quedó seleccionada
         const settings = track?.getSettings?.() || {};
         logger.info?.("Camera started", { label: track?.label, facingMode: (settings as any).facingMode, deviceId: (settings as any).deviceId });
       }
@@ -296,7 +311,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
                 />
                 
                 {/* Marco rectangular tipo retrato */}
