@@ -82,21 +82,54 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         };
         mediaStream = await navigator.mediaDevices.getUserMedia(constraintsPrimary);
       } catch (err) {
-        logger.warn("facingMode exact failed, will try deviceId", err);
+        logger.warn("facingMode exact failed, will try non-exact facingMode first", err);
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: mode, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false,
+          });
+        } catch (err2) {
+          logger.warn("Non-exact facingMode failed, will try deviceId", err2);
+        }
       }
 
       // 2) If not obtained, try selecting by concrete deviceId (most reliable on Android)
       if (!mediaStream) {
-        const deviceId = await getDeviceIdForMode(mode);
-        if (deviceId) {
-          try {
-            mediaStream = await navigator.mediaDevices.getUserMedia({
-              video: { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } },
-              audio: false,
-            });
-          } catch (e) {
-            logger.warn("deviceId selection failed", e);
+        try {
+          const devicesAll = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "videoinput");
+          const primaryId = await getDeviceIdForMode(mode);
+          const ordered = [
+            ...(primaryId ? [primaryId] : []),
+            ...devicesAll.map(d => d.deviceId).filter(id => id !== primaryId),
+          ];
+          for (const id of ordered) {
+            try {
+              const candidate = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: id }, width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false,
+              });
+              const t = candidate.getVideoTracks()[0];
+              const s = t?.getSettings?.() || {};
+              const lbl = t?.label?.toLowerCase?.() || "";
+              const okFacing = (s as any).facingMode ? (s as any).facingMode === mode : true;
+              const keywords = mode === "user" ? ["front","user","frontal","selfie","face","delantera","frente"] : ["back","environment","rear","trasera","posterior","backside"];
+              const okLabel = keywords.some(k => lbl.includes(k));
+              if (okFacing || okLabel) {
+                mediaStream = candidate;
+                break;
+              }
+              // Not a match: release and continue
+              candidate.getTracks().forEach(tr => tr.stop());
+            } catch (e) {
+              // try next
+            }
           }
+          if (!mediaStream && devicesAll.length) {
+            // last resort: take first device
+            mediaStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: devicesAll[0].deviceId } }, audio: false });
+          }
+        } catch (e) {
+          logger.warn("deviceId selection failed", e);
         }
       }
 
