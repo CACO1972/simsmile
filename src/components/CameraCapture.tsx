@@ -111,7 +111,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
               const t = candidate.getVideoTracks()[0];
               const s = t?.getSettings?.() || {};
               const lbl = t?.label?.toLowerCase?.() || "";
-              const okFacing = (s as any).facingMode ? (s as any).facingMode === mode : true;
+              const okFacing = 'facingMode' in s && s.facingMode ? s.facingMode === mode : true;
               const keywords = mode === "user" ? ["front","user","frontal","selfie","face","delantera","frente"] : ["back","environment","rear","trasera","posterior","backside"];
               const okLabel = keywords.some(k => lbl.includes(k));
               if (okFacing || okLabel) {
@@ -149,16 +149,20 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         // Intento extra de forzar el modo deseado en algunos navegadores
         try {
           const current = track?.getSettings?.();
-          const currentFacing = (current as any)?.facingMode;
-          if (currentFacing !== mode && (track as any)?.applyConstraints) {
-            await (track as any).applyConstraints({ facingMode: mode } as any);
+          const currentFacing = 'facingMode' in (current || {}) ? (current as MediaTrackSettings).facingMode : undefined;
+          if (currentFacing !== mode && track?.applyConstraints) {
+            await track.applyConstraints({ facingMode: mode } as MediaTrackConstraints);
           }
         } catch (e) {
           logger.warn("applyConstraints facingMode failed", e);
         }
         // Debug cuál cámara quedó seleccionada
         const settings = track?.getSettings?.() || {};
-        logger.info?.("Camera started", { label: track?.label, facingMode: (settings as any).facingMode, deviceId: (settings as any).deviceId });
+        logger.info?.("Camera started", { 
+          label: track?.label, 
+          facingMode: 'facingMode' in settings ? settings.facingMode : undefined, 
+          deviceId: 'deviceId' in settings ? settings.deviceId : undefined 
+        });
       }
 
       setFacingMode(mode);

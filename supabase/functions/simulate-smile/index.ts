@@ -23,7 +23,7 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
 }
 
 // Helper para parsear JSON de Claude (puede venir envuelto en ```json...``` o con texto extra)
-function parseClaudeJSON(text: string): any {
+function parseClaudeJSON(text: string): Record<string, unknown> {
   let clean = (text ?? '').trim();
 
   // Remover bloques de código markdown si existen
@@ -193,7 +193,7 @@ Respond ONLY with a JSON object (no markdown, no extra text):
       }),
     });
 
-    let qualityResult: any = { isValid: true, quality_score: 75 };
+    let qualityResult: Record<string, unknown> = { isValid: true, quality_score: 75 };
     
     if (!qualityResponse.ok) {
       console.error('Quality check failed:', qualityResponse.status);
@@ -231,7 +231,7 @@ Respond ONLY with a JSON object (no markdown, no extra text):
 
     // 2. Análisis facial detallado según formato Perfect Corp
     console.log('📊 Realizando análisis facial detallado...');
-    let facialMetrics: any = null;
+    let facialMetrics: Record<string, unknown> | null = null;
     
     try {
       const facialPrompt = `You are a professional facial aesthetics analysis system similar to Perfect Corp. Analyze this face and provide precise measurements.
