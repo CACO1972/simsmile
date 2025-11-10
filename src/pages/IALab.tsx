@@ -197,7 +197,7 @@ const IALab = () => {
     }
   };
 
-  const handleContactSubmit = async (data: any) => {
+  const handleContactSubmit = async (data: Record<string, unknown>) => {
     setContactData(data);
     setStep("results");
     track({ name: "contact_submitted", data: { email: data.email } });
