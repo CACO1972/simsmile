@@ -21,9 +21,9 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Navigation bar with Clínica Miró logo as main header */}
-      <nav className="w-full max-w-7xl mb-2 md:mb-4 z-10 flex flex-col items-center justify-center gap-1 md:gap-2">
+      <nav className="w-full max-w-7xl mb-1 md:mb-2 z-10 flex flex-col items-center justify-center gap-0.5 md:gap-1">
         {/* Clínica Miró Logo - Main Brand */}
-        <div className="flex flex-col items-center gap-1 md:gap-1.5">
+        <div className="flex flex-col items-center gap-0.5 md:gap-1">
           <img 
             src={logoClinicaMiro} 
             alt="Clínica Miró" 
@@ -31,13 +31,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             width="800"
             height="200"
           />
-          <p className="text-sm md:text-base text-muted-foreground font-medium text-center max-w-md mt-1">
+          <p className="text-sm md:text-base text-muted-foreground font-medium text-center max-w-md">
             Tecnología única y exclusiva desarrollada por Miró
           </p>
           <img 
             src={logoSimSmile} 
             alt="SimSmile - Producto de Clínica Miró" 
-            className="w-32 sm:w-40 md:w-48 opacity-90 mt-1"
+            className="w-32 sm:w-40 md:w-48 opacity-90"
             width="400"
             height="400"
           />
