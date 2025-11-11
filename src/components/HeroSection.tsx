@@ -11,7 +11,7 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-8 md:py-16 relative overflow-hidden bg-background">
+    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 md:py-12 relative overflow-hidden bg-background">
       
       {/* Animated gradient background with glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -45,7 +45,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </nav>
 
       {/* Hero Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-4 md:gap-6 lg:gap-10 text-center lg:text-left z-10 max-w-7xl w-full mb-8 md:mb-12">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-6 md:gap-8 lg:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-10 md:mb-16">
         
         {/* Left side - 3D Visual Element */}
         <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[250px] sm:min-h-[350px] md:min-h-[500px] order-2 lg:order-1">
@@ -54,7 +54,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         </div>
 
         {/* Right side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-2 md:space-y-4 order-1 lg:order-2">
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-3 md:space-y-5 order-1 lg:order-2">
           
           <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">
@@ -78,7 +78,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </p>
 
           {/* Process Flow - Professional Version */}
-          <div className="w-full max-w-2xl mt-4 md:mt-8 px-2">
+          <div className="w-full max-w-2xl mt-6 md:mt-10 px-2">
             <h3 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 md:mb-8 text-center lg:text-left">
               Cómo Funciona
             </h3>
@@ -147,7 +147,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Success Stories & Testimonials Section */}
-      <div className="w-full max-w-7xl z-10 mb-20">
+      <div className="w-full max-w-7xl z-10 mb-16 md:mb-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           
           <div>
@@ -213,7 +213,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Bottom CTA Section */}
-      <div className="w-full max-w-7xl z-10 mb-12">
+      <div className="w-full max-w-7xl z-10 mb-16 md:mb-20">
         <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl p-12 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px]" />
