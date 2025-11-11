@@ -21,50 +21,50 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Navigation bar with Clínica Miró logo as main header */}
-      <nav className="w-full max-w-7xl mb-8 z-10 flex flex-col items-center justify-center gap-4">
+      <nav className="w-full max-w-7xl mb-4 md:mb-8 z-10 flex flex-col items-center justify-center gap-2 md:gap-4">
         {/* Clínica Miró Logo - Main Brand */}
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-2 md:gap-3">
           <img 
             src={logoClinicaMiro} 
             alt="Clínica Miró" 
-            className="w-64 md:w-80 lg:w-96 animate-fade-in"
+            className="w-48 sm:w-56 md:w-72 lg:w-96 animate-fade-in"
             width="800"
             height="200"
           />
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-sm md:text-base text-muted-foreground font-medium">
+          <div className="flex flex-col items-center gap-1 md:gap-2">
+            <p className="text-xs md:text-sm text-muted-foreground font-medium">
               Presenta
             </p>
             <img 
               src={logoSimSmile} 
               alt="SimSmile - Producto de Clínica Miró" 
-              className="w-32 md:w-40 opacity-90"
+              className="w-24 sm:w-28 md:w-36 opacity-90"
               width="400"
               height="400"
             />
           </div>
         </div>
         
-        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-sm md:text-base font-semibold text-primary">
+        <div className="inline-flex items-center gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20">
+          <span className="text-xs md:text-sm font-semibold text-primary">
             ¡Gratis por Tiempo Limitado!
           </span>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-12 md:gap-16 text-center lg:text-left z-10 max-w-7xl w-full mb-20">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-6 md:gap-12 lg:gap-16 text-center lg:text-left z-10 max-w-7xl w-full mb-12 md:mb-20">
         
         {/* Left side - 3D Visual Element */}
-        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[400px] md:min-h-[500px] order-2 lg:order-1">
+        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[250px] sm:min-h-[350px] md:min-h-[500px] order-2 lg:order-1">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-3xl" />
           <SmileTransformationAnimation />
         </div>
 
         {/* Right side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-6 order-1 lg:order-2">
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-3 md:space-y-6 order-1 lg:order-2">
           
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -72,7 +72,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             100% GRATIS | SIMULACIÓN | TECNOLOGÍA
           </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-foreground leading-tight tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight px-2">
             Simulador{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Profesional
@@ -81,13 +81,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             de Sonrisa con IA
           </h1>
           
-          <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
+          <p className="text-sm md:text-base lg:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed px-4">
             <span className="font-semibold text-primary">100% Gratis.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
           {/* Process Flow - Professional Version */}
-          <div className="w-full max-w-2xl mt-8">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8 text-center lg:text-left">
+          <div className="w-full max-w-2xl mt-4 md:mt-8 px-2">
+            <h3 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 md:mb-8 text-center lg:text-left">
               Cómo Funciona
             </h3>
             
@@ -137,15 +137,15 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               </div>
             </div>
 
-            <div className="flex justify-center lg:justify-start">
+            <div className="flex justify-center lg:justify-start mt-4 md:mt-0">
               <Button
                 size="lg"
                 onClick={onStart}
-                className="group relative bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white font-semibold rounded-2xl px-10 py-7 text-lg transition-all duration-500 hover:scale-[1.02] shadow-[0_8px_30px_rgb(168,85,247,0.3)] hover:shadow-[0_12px_40px_rgb(168,85,247,0.5)] border border-white/10"
+                className="group relative bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white font-semibold rounded-2xl px-6 md:px-10 py-5 md:py-7 text-base md:text-lg transition-all duration-500 hover:scale-[1.02] shadow-[0_8px_30px_rgb(168,85,247,0.3)] hover:shadow-[0_12px_40px_rgb(168,85,247,0.5)] border border-white/10"
               >
-                <span className="relative z-10 flex items-center gap-3">
+                <span className="relative z-10 flex items-center gap-2 md:gap-3">
                   Empezar Ahora
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Button>
