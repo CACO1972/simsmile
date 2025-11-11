@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Sparkles, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/safeClient";
 import { logger } from "@/lib/logger";
 
 interface SmileCustomizerProps {
@@ -104,7 +104,7 @@ CRITICAL REQUIREMENTS:
 
 Output a high-quality edited image where the tooth modifications are CLEARLY APPARENT.`;
 
-      const { data, error } = await supabase.functions.invoke('simulate-smile', {
+      const { data, error } = await getSupabase().functions.invoke('simulate-smile', {
         body: {
           image: baseImage,
           customPrompt: customPrompt,
