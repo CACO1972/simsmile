@@ -21,39 +21,31 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Navigation bar with Clínica Miró logo as main header */}
-      <nav className="w-full max-w-7xl mb-4 md:mb-8 z-10 flex flex-col items-center justify-center gap-2 md:gap-4">
+      <nav className="w-full max-w-7xl mb-6 md:mb-10 z-10 flex flex-col items-center justify-center gap-3 md:gap-4">
         {/* Clínica Miró Logo - Main Brand */}
         <div className="flex flex-col items-center gap-2 md:gap-3">
           <img 
             src={logoClinicaMiro} 
             alt="Clínica Miró" 
-            className="w-48 sm:w-56 md:w-72 lg:w-96 animate-fade-in"
+            className="w-64 sm:w-80 md:w-[500px] lg:w-[600px] animate-fade-in"
             width="800"
             height="200"
           />
-          <div className="flex flex-col items-center gap-1 md:gap-2">
-            <p className="text-xs md:text-sm text-muted-foreground font-medium">
-              Presenta
-            </p>
-            <img 
-              src={logoSimSmile} 
-              alt="SimSmile - Producto de Clínica Miró" 
-              className="w-24 sm:w-28 md:w-36 opacity-90"
-              width="400"
-              height="400"
-            />
-          </div>
-        </div>
-        
-        <div className="inline-flex items-center gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-xs md:text-sm font-semibold text-primary">
-            ¡Gratis por Tiempo Limitado!
-          </span>
+          <p className="text-sm md:text-base text-muted-foreground font-medium text-center max-w-md">
+            Tecnología única y exclusiva desarrollada por Miró
+          </p>
+          <img 
+            src={logoSimSmile} 
+            alt="SimSmile - Producto de Clínica Miró" 
+            className="w-32 sm:w-40 md:w-48 opacity-90 mt-2"
+            width="400"
+            height="400"
+          />
         </div>
       </nav>
 
       {/* Hero Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-6 md:gap-12 lg:gap-16 text-center lg:text-left z-10 max-w-7xl w-full mb-12 md:mb-20">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-6 md:gap-8 lg:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-12 md:mb-16">
         
         {/* Left side - 3D Visual Element */}
         <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[250px] sm:min-h-[350px] md:min-h-[500px] order-2 lg:order-1">
