@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText } from "lucide-react";
-import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
-import logoClinicaMiro from "@/assets/clinica-miro-logo-main.png";
+import logoSimSmileBy from "@/assets/simsmile-by-logo.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
 
@@ -20,28 +19,15 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-secondary/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Navigation bar with Clínica Miró logo as main header */}
-      <nav className="w-full max-w-7xl mb-1 md:mb-2 z-10 flex flex-col items-center justify-center gap-0.5 md:gap-1">
-        {/* Clínica Miró Logo - Main Brand */}
-        <div className="flex flex-col items-center gap-0.5 md:gap-1">
-          <img 
-            src={logoClinicaMiro} 
-            alt="Clínica Miró" 
-            className="w-56 sm:w-72 md:w-96 lg:w-[480px] animate-fade-in"
-            width="800"
-            height="200"
-          />
-          <p className="text-xs md:text-sm text-muted-foreground font-medium text-center max-w-md">
-            Tecnología única y exclusiva desarrollada por Miró
-          </p>
-          <img 
-            src={logoSimSmile} 
-            alt="SimSmile - Producto de Clínica Miró" 
-            className="w-36 sm:w-44 md:w-56 opacity-90"
-            width="400"
-            height="400"
-          />
-        </div>
+      {/* Logo principal SimSmile By */}
+      <nav className="w-full max-w-7xl mb-6 md:mb-8 z-10 flex flex-col items-center justify-center">
+        <img 
+          src={logoSimSmileBy} 
+          alt="SimSmile By" 
+          className="w-64 sm:w-80 md:w-96 lg:w-[420px] animate-fade-in"
+          width="500"
+          height="500"
+        />
       </nav>
 
       {/* Hero Section */}
