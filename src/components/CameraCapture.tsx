@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Upload, RotateCcw, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { logger } from "@/lib/logger";
+import FaceGuideOverlay from "./FaceGuideOverlay";
 
 interface CameraCaptureProps {
   onCapture: (imageBase64: string) => void;
@@ -252,7 +253,10 @@ export default function CameraCapture({ onCapture, title, description, showGuide
     startCamera();
   };
 
+  // Auto-start camera in selfie mode when component mounts
   useEffect(() => {
+    startCamera("user");
+    
     return () => {
       stopCamera();
     };
@@ -347,10 +351,30 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                   className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
                 />
                 
-                {/* Marco rectangular tipo retrato */}
+                {/* Guía de rostro con óvalo y zona de sonrisa */}
                 {showGuide && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-[75%] aspect-[3/4] border-4 border-primary/60 rounded-lg" />
+                    <div className="w-full h-full relative">
+                      <FaceGuideOverlay />
+                      
+                      {/* Texto instructivo */}
+                      <div className="absolute top-4 left-0 right-0 text-center">
+                        <div className="inline-block bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/40">
+                          <p className="text-white text-sm font-semibold">
+                            Posiciona tu rostro en el óvalo
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Indicador de sonrisa */}
+                      <div className="absolute bottom-24 left-0 right-0 text-center">
+                        <div className="inline-block bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full border-2 border-primary/60">
+                          <p className="text-white text-xs font-semibold">
+                            😊 Sonríe naturalmente
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
