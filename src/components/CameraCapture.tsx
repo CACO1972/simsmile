@@ -1,32 +1,25 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, RotateCcw, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Camera, Upload, RotateCcw, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { logger } from "@/lib/logger";
-import FaceGuideOverlay from "./FaceGuideOverlay";
-import DynamicFaceGuide from "./DynamicFaceGuide";
 
 interface CameraCaptureProps {
   onCapture: (imageBase64: string) => void;
   title: string;
   description?: string;
   showGuide?: boolean;
-  useDynamicGuide?: boolean;
 }
 
-export default function CameraCapture({ onCapture, title, description, showGuide = true, useDynamicGuide = true }: CameraCaptureProps) {
+export default function CameraCapture({ onCapture, title, description, showGuide = true }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const hasAutoStartedRef = useRef<boolean>(false);
-  const restartAttemptedRef = useRef<boolean>(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>("");
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user"); // Always starts in selfie mode
   const [cameraError, setCameraError] = useState<string>("");
-  const [faceDetected, setFaceDetected] = useState(false);
-  const [isFaceWellPositioned, setIsFaceWellPositioned] = useState(false);
 
   // Try to select the correct physical camera (front/back) using deviceId
   const getDeviceIdForMode = async (mode: "user" | "environment"): Promise<string | null> => {
@@ -166,23 +159,6 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         // Debug cuál cámara quedó seleccionada
         const settings = track?.getSettings?.() || {};
         logger.info?.("Camera started", { label: track?.label, facingMode: (settings as any).facingMode, deviceId: (settings as any).deviceId });
-
-        // Detección de pantalla negra: si no hay dimensiones de video, reintenta una vez
-        setTimeout(async () => {
-          const v = videoRef.current;
-          if (!v) return;
-          const hasSize = v.videoWidth > 0 && v.videoHeight > 0;
-          if (!hasSize && !restartAttemptedRef.current) {
-            restartAttemptedRef.current = true;
-            logger.warn("Cámara en negro detectada; reintentando con cambio de cámara temporal");
-            try {
-              await startCamera(mode === "user" ? "environment" : "user");
-              await startCamera(mode);
-            } catch (retryErr) {
-              logger.error("Reintento de cámara falló", retryErr);
-            }
-          }
-        }, 800);
       }
 
       setFacingMode(mode);
@@ -276,54 +252,9 @@ export default function CameraCapture({ onCapture, title, description, showGuide
     startCamera();
   };
 
-  // Cleanup al desmontar
   useEffect(() => {
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [stream]);
-
-  // Detener cámara cuando la página se oculta o se navega
-  useEffect(() => {
-    const onPageHide = () => stopCamera();
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') stopCamera();
-    };
-    document.addEventListener('pagehide', onPageHide);
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => {
-      document.removeEventListener('pagehide', onPageHide);
-      document.removeEventListener('visibilitychange', onVisibility);
-    };
-  }, []);
-
-  // Auto-start camera in selfie mode when component mounts
-  useEffect(() => {
-    // Solo iniciar automáticamente una vez
-    if (hasAutoStartedRef.current) {
-      return;
-    }
-    
-    hasAutoStartedRef.current = true;
-    
-    const initCamera = async () => {
-      try {
-        await startCamera("user");
-        logger.log("Cámara iniciada automáticamente en modo selfie");
-      } catch (error) {
-        logger.error("Error al iniciar cámara automáticamente:", error);
-      }
-    };
-    
-    // Pequeño delay para asegurar que el DOM esté listo
-    const timer = setTimeout(() => {
-      initCamera();
-    }, 200);
-    
-    return () => {
-      clearTimeout(timer);
+      stopCamera();
     };
   }, []);
 
@@ -416,60 +347,10 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                   className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
                 />
                 
-                {/* Detección dinámica con MediaPipe o guía estática */}
-                {showGuide && useDynamicGuide ? (
-                  <DynamicFaceGuide 
-                    videoRef={videoRef}
-                    onFaceDetected={setFaceDetected}
-                    onFaceWellPositioned={setIsFaceWellPositioned}
-                  />
-                ) : showGuide ? (
+                {/* Marco rectangular tipo retrato */}
+                {showGuide && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-full h-full relative">
-                      <FaceGuideOverlay />
-                      
-                      {/* Texto instructivo */}
-                      <div className="absolute top-4 left-0 right-0 text-center">
-                        <div className="inline-block bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/40">
-                          <p className="text-white text-sm font-semibold">
-                            Posiciona tu rostro en el óvalo
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Indicador de sonrisa */}
-                      <div className="absolute bottom-24 left-0 right-0 text-center">
-                        <div className="inline-block bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full border-2 border-primary/60">
-                          <p className="text-white text-xs font-semibold">
-                            😊 Sonríe naturalmente
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                {/* Indicador de rostro detectado y bien posicionado */}
-                {faceDetected && isFaceWellPositioned && (
-                  <div className="absolute top-4 right-4 z-20">
-                    <div className="flex items-center gap-2 bg-green-500/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg animate-fade-in">
-                      <CheckCircle2 className="h-5 w-5 text-white" />
-                      <span className="text-white text-sm font-semibold">
-                        ¡Perfecto!
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Indicador de rostro detectado pero mal posicionado */}
-                {faceDetected && !isFaceWellPositioned && (
-                  <div className="absolute top-4 right-4 z-20">
-                    <div className="flex items-center gap-2 bg-yellow-500/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg animate-fade-in">
-                      <AlertCircle className="h-5 w-5 text-white" />
-                      <span className="text-white text-sm font-semibold">
-                        Ajusta posición
-                      </span>
-                    </div>
+                    <div className="w-[75%] aspect-[3/4] border-4 border-primary/60 rounded-lg" />
                   </div>
                 )}
               </div>

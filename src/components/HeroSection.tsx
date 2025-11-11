@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText } from "lucide-react";
-import logoSimSmileBy from "@/assets/simsmile-by-logo.png";
+import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
 
@@ -10,7 +10,7 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 md:py-12 relative overflow-hidden bg-background">
+    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-8 md:py-16 relative overflow-hidden bg-background">
       
       {/* Animated gradient background with glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -19,30 +19,35 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-secondary/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Logo principal SimSmile By */}
-      <nav className="w-full max-w-7xl mb-2 md:mb-3 z-10 flex flex-col items-center justify-center">
+      {/* Navigation bar */}
+      <nav className="w-full max-w-7xl mb-6 z-10 flex flex-col items-center justify-center gap-3">
         <img 
-          src={logoSimSmileBy} 
-          alt="SimSmile By" 
-          className="w-64 sm:w-80 md:w-96 lg:w-[420px] animate-fade-in"
+          src={logoSimSmile} 
+          alt="SimSmile" 
+          className="w-40 md:w-48 animate-fade-in"
           width="500"
           height="500"
         />
+        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-primary/10 border border-primary/20">
+          <span className="text-sm md:text-base font-semibold text-primary">
+            ¡Gratis por Tiempo Limitado!
+          </span>
+        </div>
       </nav>
 
       {/* Hero Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-6 md:gap-8 lg:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-10 md:mb-16">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-12 md:gap-16 text-center lg:text-left z-10 max-w-7xl w-full mb-20">
         
         {/* Left side - 3D Visual Element */}
-        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[250px] sm:min-h-[350px] md:min-h-[500px] order-2 lg:order-1">
+        <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[400px] md:min-h-[500px] order-2 lg:order-1">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-full blur-3xl" />
           <SmileTransformationAnimation />
         </div>
 
         {/* Right side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-2 md:space-y-3 order-1 lg:order-2">
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-6 order-1 lg:order-2">
           
-          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -50,7 +55,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             100% GRATIS | SIMULACIÓN | TECNOLOGÍA
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold text-foreground leading-tight tracking-tight px-2">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-foreground leading-tight tracking-tight">
             Simulador{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Profesional
@@ -59,13 +64,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             de Sonrisa con IA
           </h1>
           
-          <p className="text-sm md:text-base lg:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed px-4">
+          <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
             <span className="font-semibold text-primary">100% Gratis.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
           {/* Process Flow - Professional Version */}
-          <div className="w-full max-w-2xl mt-6 md:mt-10 px-2">
-            <h3 className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 md:mb-8 text-center lg:text-left">
+          <div className="w-full max-w-2xl mt-8">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8 text-center lg:text-left">
               Cómo Funciona
             </h3>
             
@@ -115,15 +120,15 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               </div>
             </div>
 
-            <div className="flex justify-center lg:justify-start mt-4 md:mt-0">
+            <div className="flex justify-center lg:justify-start">
               <Button
                 size="lg"
                 onClick={onStart}
-                className="group relative bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white font-semibold rounded-2xl px-6 md:px-10 py-5 md:py-7 text-base md:text-lg transition-all duration-500 hover:scale-[1.02] shadow-[0_8px_30px_rgb(168,85,247,0.3)] hover:shadow-[0_12px_40px_rgb(168,85,247,0.5)] border border-white/10"
+                className="group relative bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white font-semibold rounded-2xl px-10 py-7 text-lg transition-all duration-500 hover:scale-[1.02] shadow-[0_8px_30px_rgb(168,85,247,0.3)] hover:shadow-[0_12px_40px_rgb(168,85,247,0.5)] border border-white/10"
               >
-                <span className="relative z-10 flex items-center gap-2 md:gap-3">
+                <span className="relative z-10 flex items-center gap-3">
                   Empezar Ahora
-                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Button>
@@ -133,7 +138,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Success Stories & Testimonials Section */}
-      <div className="w-full max-w-7xl z-10 mb-16 md:mb-24">
+      <div className="w-full max-w-7xl z-10 mb-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           
           <div>
@@ -199,7 +204,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Bottom CTA Section */}
-      <div className="w-full max-w-7xl z-10 mb-16 md:mb-20">
+      <div className="w-full max-w-7xl z-10 mb-12">
         <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl p-12 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px]" />

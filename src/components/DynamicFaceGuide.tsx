@@ -5,11 +5,9 @@ import type { FaceLandmarkerResult, ImageSource } from "@/types/mediapipe";
 
 interface DynamicFaceGuideProps {
   videoRef: React.RefObject<HTMLVideoElement>;
-  onFaceDetected?: (detected: boolean) => void;
-  onFaceWellPositioned?: (wellPositioned: boolean) => void;
 }
 
-export default function DynamicFaceGuide({ videoRef, onFaceDetected, onFaceWellPositioned }: DynamicFaceGuideProps) {
+export default function DynamicFaceGuide({ videoRef }: DynamicFaceGuideProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
   const animationFrameRef = useRef<number>();
@@ -105,39 +103,20 @@ export default function DynamicFaceGuide({ videoRef, onFaceDetected, onFaceWellP
           const width = maxX - minX;
           const height = maxY - minY;
 
-          // Validar si el rostro está bien posicionado
-          const canvasCenterX = canvas.width / 2;
-          const canvasCenterY = canvas.height / 2;
-          const offsetX = Math.abs(centerX - canvasCenterX);
-          const offsetY = Math.abs(centerY - canvasCenterY);
-          
-          // Criterios para buena posición:
-          // - Centrado horizontal (tolerancia 15% del ancho)
-          // - Centrado vertical (tolerancia 15% del alto)
-          // - Tamaño adecuado (entre 40% y 70% del frame)
-          const sizeRatio = (width / canvas.width + height / canvas.height) / 2;
-          const isWellCentered = offsetX < canvas.width * 0.15 && offsetY < canvas.height * 0.15;
-          const isGoodSize = sizeRatio > 0.4 && sizeRatio < 0.7;
-          const isWellPositioned = isWellCentered && isGoodSize;
-
-          // Notificar al componente padre
-          onFaceDetected?.(true);
-          onFaceWellPositioned?.(isWellPositioned);
-
           // Draw larger oval guide around face with padding
           const padding = 40;
           const ovalWidth = width + padding * 2;
           const ovalHeight = height + padding * 2;
 
-          // Draw pulsing glow effect - color basado en posición
+          // Draw pulsing glow effect
           ctx.save();
-          ctx.shadowColor = isWellPositioned ? "hsl(142, 76%, 36%)" : "hsl(38, 92%, 50%)";
+          ctx.shadowColor = "hsl(var(--primary))";
           ctx.shadowBlur = 20;
           
           // Main oval
           ctx.beginPath();
           ctx.ellipse(centerX, centerY, ovalWidth / 2, ovalHeight / 2, 0, 0, Math.PI * 2);
-          ctx.strokeStyle = isWellPositioned ? "hsl(142, 76%, 36%)" : "hsl(38, 92%, 50%)";
+          ctx.strokeStyle = "hsl(var(--primary))";
           ctx.lineWidth = 4;
           ctx.stroke();
           
@@ -148,7 +127,7 @@ export default function DynamicFaceGuide({ videoRef, onFaceDetected, onFaceWellP
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(angle);
-            ctx.strokeStyle = isWellPositioned ? "hsl(142, 76%, 36%)" : "hsl(38, 92%, 50%)";
+            ctx.strokeStyle = "hsl(var(--primary))";
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(0, 0);
@@ -166,18 +145,12 @@ export default function DynamicFaceGuide({ videoRef, onFaceDetected, onFaceWellP
           drawCornerIndicator(centerX - ovalWidth/2 + margin, centerY + ovalHeight/2 - margin, -Math.PI / 2);
 
           // Success indicator
-          ctx.fillStyle = isWellPositioned ? "hsl(142, 76%, 36%)" : "hsl(38, 92%, 50%)";
+          ctx.fillStyle = "hsl(var(--primary))";
           ctx.font = "bold 18px Inter";
           ctx.textAlign = "center";
-          ctx.fillText(
-            isWellPositioned ? "✓ Posición perfecta" : "Ajusta tu posición", 
-            centerX, 
-            centerY - ovalHeight/2 - 40
-          );
+          ctx.fillText("✓ Rostro detectado", centerX, centerY - ovalHeight/2 - 40);
         } else {
           setFaceDetected(false);
-          onFaceDetected?.(false);
-          onFaceWellPositioned?.(false);
           
           // Draw static guide when no face detected
           const guideWidth = canvas.width * 0.6;
