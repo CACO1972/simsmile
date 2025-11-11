@@ -27,17 +27,17 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           <img 
             src={logoClinicaMiro} 
             alt="Clínica Miró" 
-            className="w-64 sm:w-80 md:w-[500px] lg:w-[600px] animate-fade-in"
+            className="w-56 sm:w-72 md:w-96 lg:w-[480px] animate-fade-in"
             width="800"
             height="200"
           />
-          <p className="text-sm md:text-base text-muted-foreground font-medium text-center max-w-md">
+          <p className="text-xs md:text-sm text-muted-foreground font-medium text-center max-w-md">
             Tecnología única y exclusiva desarrollada por Miró
           </p>
           <img 
             src={logoSimSmile} 
             alt="SimSmile - Producto de Clínica Miró" 
-            className="w-32 sm:w-40 md:w-48 opacity-90"
+            className="w-36 sm:w-44 md:w-56 opacity-90"
             width="400"
             height="400"
           />
