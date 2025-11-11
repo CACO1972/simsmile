@@ -16,6 +16,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasAutoStartedRef = useRef<boolean>(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>("");
@@ -253,12 +254,40 @@ export default function CameraCapture({ onCapture, title, description, showGuide
     startCamera();
   };
 
+  // Cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
+
   // Auto-start camera in selfie mode when component mounts
   useEffect(() => {
-    startCamera("user");
+    // Solo iniciar automáticamente una vez
+    if (hasAutoStartedRef.current) {
+      return;
+    }
+    
+    hasAutoStartedRef.current = true;
+    
+    const initCamera = async () => {
+      try {
+        await startCamera("user");
+        logger.log("Cámara iniciada automáticamente en modo selfie");
+      } catch (error) {
+        logger.error("Error al iniciar cámara automáticamente:", error);
+      }
+    };
+    
+    // Pequeño delay para asegurar que el DOM esté listo
+    const timer = setTimeout(() => {
+      initCamera();
+    }, 200);
     
     return () => {
-      stopCamera();
+      clearTimeout(timer);
     };
   }, []);
 
