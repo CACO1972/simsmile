@@ -64,7 +64,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             100% GRATIS | SIMULACIÓN | TECNOLOGÍA
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight px-2">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold text-foreground leading-tight tracking-tight px-2">
             Simulador{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Profesional
