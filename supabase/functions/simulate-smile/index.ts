@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import Replicate from "https://esm.sh/replicate@0.25.2";
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
@@ -77,39 +78,69 @@ serve(async (req) => {
   try {
     const { imageBase64, metrics, faceAnalysis, recommendations: smileRecommendations, image, customPrompt, customParameters } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const REPLICATE_API_KEY = Deno.env.get('REPLICATE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
+    
+    if (!REPLICATE_API_KEY) {
+      throw new Error('REPLICATE_API_KEY not configured');
+    }
+    
+    const replicate = new Replicate({ auth: REPLICATE_API_KEY });
 
     // Si es una llamada de personalización (customPrompt presente)
     if (customPrompt && image) {
-      console.log('Processing custom smile simulation with parameters:', customParameters);
+      console.log('Processing custom smile simulation with Replicate flux-schnell:', customParameters);
       
-      const customResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-image-preview',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: customPrompt },
-                { type: 'image_url', image_url: { url: image } }
-              ]
+      try {
+        const customReplicatePrompt = `${customPrompt}. Professional dental photography, photorealistic, high-resolution, natural lighting`;
+        
+        const customOutput = await replicate.run(
+          "black-forest-labs/flux-schnell",
+          {
+            input: {
+              prompt: customReplicatePrompt,
+              go_fast: true,
+              megapixels: "1",
+              num_outputs: 1,
+              aspect_ratio: "1:1",
+              output_format: "webp",
+              output_quality: 90,
+              num_inference_steps: 4
             }
-          ],
-          modalities: ['image', 'text']
-        }),
-      });
+          }
+        );
 
-      if (!customResponse.ok) {
-        const errorText = await customResponse.text();
-        console.error('Custom simulation error:', customResponse.status, errorText);
+        if (Array.isArray(customOutput) && customOutput.length > 0) {
+          const imageUrl = customOutput[0];
+          const imageResponse = await fetch(imageUrl);
+          const imageBlob = await imageResponse.blob();
+          const arrayBuffer = await imageBlob.arrayBuffer();
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          const customizedImage = `data:image/webp;base64,${base64}`;
+          
+          return new Response(
+            JSON.stringify({ 
+              customizedImage: customizedImage,
+              parameters: customParameters
+            }), 
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          console.warn('No customized image in Replicate response, using original');
+          return new Response(
+            JSON.stringify({ 
+              customizedImage: image,
+              parameters: customParameters,
+              warnings: ['no_image_generated']
+            }), 
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (customError) {
+        console.error('Custom Replicate simulation error:', customError);
         
         // Fallback a imagen original
         return new Response(
@@ -121,29 +152,6 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      const customData = await customResponse.json();
-      const customizedImage = customData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-      if (!customizedImage) {
-        console.warn('No customized image in response, using original');
-        return new Response(
-          JSON.stringify({ 
-            customizedImage: image,
-            parameters: customParameters,
-            warnings: ['no_image_generated']
-          }), 
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ 
-          customizedImage: customizedImage,
-          parameters: customParameters
-        }), 
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
     // 1. Validación de calidad de imagen con Gemini
@@ -412,57 +420,54 @@ QUALITY STANDARDS:
     const smileWidthRec = smileRecommendations?.smileWidth || 'balanced and natural';
     const gingivalRec = smileRecommendations?.gingivalDisplay || 'adequate gingival exposure';
 
-    // Primera simulación: correcciones con Lovable AI (Gemini Image Preview)
-    console.log('🎨 Aplicando correcciones estéticas con Gemini Image...');
+    // Primera simulación: correcciones con Replicate (flux-schnell)
+    console.log('🎨 Aplicando correcciones estéticas con Replicate flux-schnell...');
     
-    const correctionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: correctionPrompt },
-              { type: 'image_url', image_url: { url: imageBase64 } }
-            ]
-          }
-        ],
-        modalities: ['image', 'text']
-      }),
-    });
-
     let correctedImage = imageBase64;
     const warnings: string[] = [];
 
-    if (!correctionResponse.ok) {
-      const errorText = await correctionResponse.text();
-      console.error('Correction error:', correctionResponse.status, errorText);
-      console.warn('Using original image as correctedImage due to correction failure');
-      warnings.push('correction_failed');
-    } else {
-      try {
-        const correctionData = await correctionResponse.json();
-        correctedImage = correctionData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-        if (!correctedImage) {
-          console.warn('No corrected image generated, using original as fallback');
-          correctedImage = imageBase64;
-          warnings.push('no_corrected_image');
+    try {
+      const replicatePrompt = `Professional dental photography of a person with corrected smile: ${corrections.join(', ')}. Photorealistic, clinical precision, natural lighting, high-resolution dental photography, natural tooth color, proper bite alignment`;
+      
+      const correctionOutput = await replicate.run(
+        "black-forest-labs/flux-schnell",
+        {
+          input: {
+            prompt: replicatePrompt,
+            go_fast: true,
+            megapixels: "1",
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "webp",
+            output_quality: 90,
+            num_inference_steps: 4
+          }
         }
-      } catch (parseError) {
-        console.error('Error parsing correction response:', parseError);
+      );
+
+      if (Array.isArray(correctionOutput) && correctionOutput.length > 0) {
+        // Replicate devuelve URLs, necesitamos convertir a base64
+        const imageUrl = correctionOutput[0];
+        const imageResponse = await fetch(imageUrl);
+        const imageBlob = await imageResponse.blob();
+        const arrayBuffer = await imageBlob.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        correctedImage = `data:image/webp;base64,${base64}`;
+        console.log('✅ Corrected image generated with Replicate');
+      } else {
+        console.warn('No corrected image generated, using original as fallback');
         correctedImage = imageBase64;
-        warnings.push('correction_parse_failed');
+        warnings.push('no_corrected_image');
       }
+    } catch (correctionError) {
+      console.error('Replicate correction error:', correctionError);
+      console.warn('Using original image as correctedImage due to correction failure');
+      correctedImage = imageBase64;
+      warnings.push('correction_failed');
     }
 
-    // Segunda simulación: diseño ideal con Lovable AI (Gemini Image Preview)
-    console.log('✨ Generando simulación de sonrisa ideal con Gemini Image...');
+    // Segunda simulación: diseño ideal con Replicate (flux-schnell)
+    console.log('✨ Generando simulación de sonrisa ideal con Replicate flux-schnell...');
     const recommendationPrompt = `You are an elite cosmetic dentist and digital smile design specialist. Create a WORLD-CLASS IDEAL smile simulation following professional aesthetic dentistry principles.
 
 PATIENT FACIAL ANALYSIS:
@@ -497,49 +502,46 @@ TECHNICAL QUALITY REQUIREMENTS:
 - Proper contact points and embrasure form
 - Symmetrical gingival architecture with ideal soft tissue proportions`;
 
-    const idealResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: recommendationPrompt },
-              { type: 'image_url', image_url: { url: correctedImage } }
-            ]
-          }
-        ],
-        modalities: ['image', 'text']
-      }),
-    });
-
     let idealImage = correctedImage;
 
-    if (!idealResponse.ok) {
-      const errorText = await idealResponse.text();
-      console.error('Ideal simulation error:', idealResponse.status, errorText);
-      console.warn('Using corrected image as ideal due to ideal simulation failure');
-      warnings.push('ideal_simulation_failed');
-    } else {
-      try {
-        const idealData = await idealResponse.json();
-        idealImage = idealData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-        if (!idealImage) {
-          console.warn('No ideal image generated, using corrected as fallback');
-          idealImage = correctedImage;
-          warnings.push('no_ideal_image');
+    try {
+      const idealReplicatePrompt = `Professional dental photography, ideal smile design: ${teethShapeRec} teeth, ${teethSizeRec}, ${smileWidthRec} smile, ${gingivalRec}. Golden ratio proportions, consonant smile arc, photorealistic, clinical dental photography, natural lighting, high-resolution, professional aesthetic dentistry`;
+      
+      const idealOutput = await replicate.run(
+        "black-forest-labs/flux-schnell",
+        {
+          input: {
+            prompt: idealReplicatePrompt,
+            go_fast: true,
+            megapixels: "1",
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "webp",
+            output_quality: 90,
+            num_inference_steps: 4
+          }
         }
-      } catch (parseError) {
-        console.error('Error parsing ideal response:', parseError);
+      );
+
+      if (Array.isArray(idealOutput) && idealOutput.length > 0) {
+        // Replicate devuelve URLs, necesitamos convertir a base64
+        const imageUrl = idealOutput[0];
+        const imageResponse = await fetch(imageUrl);
+        const imageBlob = await imageResponse.blob();
+        const arrayBuffer = await imageBlob.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        idealImage = `data:image/webp;base64,${base64}`;
+        console.log('✅ Ideal image generated with Replicate');
+      } else {
+        console.warn('No ideal image generated, using corrected as fallback');
         idealImage = correctedImage;
-        warnings.push('ideal_parse_failed');
+        warnings.push('no_ideal_image');
       }
+    } catch (idealError) {
+      console.error('Replicate ideal simulation error:', idealError);
+      console.warn('Using corrected image as ideal due to ideal simulation failure');
+      idealImage = correctedImage;
+      warnings.push('ideal_simulation_failed');
     }
 
     // Transform facialMetrics to match FacialAnalysisOverlay expected structure
