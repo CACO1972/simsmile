@@ -7,7 +7,7 @@ import { ResultsSection } from "@/components/ResultsSection";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
-import { getSupabase } from "@/integrations/supabase/safeClient";
+import { supabase } from "@/integrations/supabase/client";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
@@ -128,7 +128,7 @@ const IALab = () => {
       const analysisText = generateAnalysisText(faceAnalysis, calculatedMetrics, recommendations);
 
       // Llamar a la edge function para simular la sonrisa
-      const { data, error } = await getSupabase().functions.invoke("simulate-smile", {
+      const { data, error } = await supabase.functions.invoke("simulate-smile", {
         body: {
           imageBase64: smile,
           metrics: calculatedMetrics,

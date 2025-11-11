@@ -19,6 +19,7 @@ export default function CameraCapture({ onCapture, title, description, showGuide
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasAutoStartedRef = useRef<boolean>(false);
+  const restartAttemptedRef = useRef<boolean>(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>("");
@@ -165,6 +166,23 @@ export default function CameraCapture({ onCapture, title, description, showGuide
         // Debug cuál cámara quedó seleccionada
         const settings = track?.getSettings?.() || {};
         logger.info?.("Camera started", { label: track?.label, facingMode: (settings as any).facingMode, deviceId: (settings as any).deviceId });
+
+        // Detección de pantalla negra: si no hay dimensiones de video, reintenta una vez
+        setTimeout(async () => {
+          const v = videoRef.current;
+          if (!v) return;
+          const hasSize = v.videoWidth > 0 && v.videoHeight > 0;
+          if (!hasSize && !restartAttemptedRef.current) {
+            restartAttemptedRef.current = true;
+            logger.warn("Cámara en negro detectada; reintentando con cambio de cámara temporal");
+            try {
+              await startCamera(mode === "user" ? "environment" : "user");
+              await startCamera(mode);
+            } catch (retryErr) {
+              logger.error("Reintento de cámara falló", retryErr);
+            }
+          }
+        }, 800);
       }
 
       setFacingMode(mode);
@@ -266,6 +284,20 @@ export default function CameraCapture({ onCapture, title, description, showGuide
       }
     };
   }, [stream]);
+
+  // Detener cámara cuando la página se oculta o se navega
+  useEffect(() => {
+    const onPageHide = () => stopCamera();
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') stopCamera();
+    };
+    document.addEventListener('pagehide', onPageHide);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('pagehide', onPageHide);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   // Auto-start camera in selfie mode when component mounts
   useEffect(() => {
