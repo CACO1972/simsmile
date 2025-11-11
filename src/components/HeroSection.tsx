@@ -21,9 +21,9 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Navigation bar with Clínica Miró logo as main header */}
-      <nav className="w-full max-w-7xl mb-6 md:mb-10 z-10 flex flex-col items-center justify-center gap-3 md:gap-4">
+      <nav className="w-full max-w-7xl mb-2 md:mb-4 z-10 flex flex-col items-center justify-center gap-1 md:gap-2">
         {/* Clínica Miró Logo - Main Brand */}
-        <div className="flex flex-col items-center gap-2 md:gap-3">
+        <div className="flex flex-col items-center gap-1 md:gap-1.5">
           <img 
             src={logoClinicaMiro} 
             alt="Clínica Miró" 
@@ -31,13 +31,13 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             width="800"
             height="200"
           />
-          <p className="text-sm md:text-base text-muted-foreground font-medium text-center max-w-md">
+          <p className="text-sm md:text-base text-muted-foreground font-medium text-center max-w-md mt-1">
             Tecnología única y exclusiva desarrollada por Miró
           </p>
           <img 
             src={logoSimSmile} 
             alt="SimSmile - Producto de Clínica Miró" 
-            className="w-32 sm:w-40 md:w-48 opacity-90 mt-2"
+            className="w-32 sm:w-40 md:w-48 opacity-90 mt-1"
             width="400"
             height="400"
           />
@@ -45,7 +45,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </nav>
 
       {/* Hero Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-6 md:gap-8 lg:gap-12 text-center lg:text-left z-10 max-w-7xl w-full mb-12 md:mb-16">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-4 md:gap-6 lg:gap-10 text-center lg:text-left z-10 max-w-7xl w-full mb-8 md:mb-12">
         
         {/* Left side - 3D Visual Element */}
         <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center min-h-[250px] sm:min-h-[350px] md:min-h-[500px] order-2 lg:order-1">
@@ -54,7 +54,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         </div>
 
         {/* Right side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-3 md:space-y-6 order-1 lg:order-2">
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-2 md:space-y-4 order-1 lg:order-2">
           
           <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">
