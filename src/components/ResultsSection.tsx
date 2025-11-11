@@ -9,6 +9,7 @@ import { SmileCustomizer } from "./SmileCustomizer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
 import { GoldenRatioReveal } from "./GoldenRatioReveal";
+import { FacialAnalysis3D } from "./FacialAnalysis3D";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
@@ -40,6 +41,7 @@ export const ResultsSection = ({
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
   const [beforeAfterPosition, setBeforeAfterPosition] = useState(50);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
 
   // CTA flotante removido - demasiado invasivo
 
@@ -151,15 +153,42 @@ export const ResultsSection = ({
           </div>
         </div>
 
+        {/* Selector de modo de vista */}
+        {facialAnalysis && (
+          <div className="mb-4 flex justify-center gap-2">
+            <Button
+              onClick={() => setViewMode('2d')}
+              variant={viewMode === '2d' ? 'default' : 'outline'}
+              className="gap-2"
+            >
+              Vista 2D
+            </Button>
+            <Button
+              onClick={() => setViewMode('3d')}
+              variant={viewMode === '3d' ? 'default' : 'outline'}
+              className="gap-2"
+            >
+              Vista 3D Interactiva
+            </Button>
+          </div>
+        )}
+
         {/* 1. GOLDEN RATIO REVEAL - EFECTO WOW PRINCIPAL */}
         {facialAnalysis && (
           <div className="mb-8">
-            <GoldenRatioReveal 
-              smileImage={customizedImage || smileImage}
-              restImage={restImage}
-              facialAnalysis={facialAnalysis}
-              onFullscreen={() => setShowFullscreen(true)}
-            />
+            {viewMode === '2d' ? (
+              <GoldenRatioReveal 
+                smileImage={customizedImage || smileImage}
+                restImage={restImage}
+                facialAnalysis={facialAnalysis}
+                onFullscreen={() => setShowFullscreen(true)}
+              />
+            ) : (
+              <FacialAnalysis3D
+                smileImage={customizedImage || smileImage}
+                facialAnalysis={facialAnalysis}
+              />
+            )}
           </div>
         )}
 
