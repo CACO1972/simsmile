@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText } from "lucide-react";
 import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
+import logoClinicaMiro from "@/assets/clinica-miro-logo-main.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
 
@@ -19,15 +20,31 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-secondary/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Navigation bar */}
-      <nav className="w-full max-w-7xl mb-6 z-10 flex flex-col items-center justify-center gap-3">
-        <img 
-          src={logoSimSmile} 
-          alt="SimSmile" 
-          className="w-40 md:w-48 animate-fade-in"
-          width="500"
-          height="500"
-        />
+      {/* Navigation bar with Clínica Miró logo as main header */}
+      <nav className="w-full max-w-7xl mb-8 z-10 flex flex-col items-center justify-center gap-4">
+        {/* Clínica Miró Logo - Main Brand */}
+        <div className="flex flex-col items-center gap-3">
+          <img 
+            src={logoClinicaMiro} 
+            alt="Clínica Miró" 
+            className="w-64 md:w-80 lg:w-96 animate-fade-in"
+            width="800"
+            height="200"
+          />
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-sm md:text-base text-muted-foreground font-medium">
+              Presenta
+            </p>
+            <img 
+              src={logoSimSmile} 
+              alt="SimSmile - Producto de Clínica Miró" 
+              className="w-32 md:w-40 opacity-90"
+              width="400"
+              height="400"
+            />
+          </div>
+        </div>
+        
         <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-primary/10 border border-primary/20">
           <span className="text-sm md:text-base font-semibold text-primary">
             ¡Gratis por Tiempo Limitado!
