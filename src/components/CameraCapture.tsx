@@ -1,18 +1,20 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, RotateCcw, AlertCircle } from "lucide-react";
+import { Camera, Upload, RotateCcw, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { logger } from "@/lib/logger";
 import FaceGuideOverlay from "./FaceGuideOverlay";
+import DynamicFaceGuide from "./DynamicFaceGuide";
 
 interface CameraCaptureProps {
   onCapture: (imageBase64: string) => void;
   title: string;
   description?: string;
   showGuide?: boolean;
+  useDynamicGuide?: boolean;
 }
 
-export default function CameraCapture({ onCapture, title, description, showGuide = true }: CameraCaptureProps) {
+export default function CameraCapture({ onCapture, title, description, showGuide = true, useDynamicGuide = true }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -20,8 +22,10 @@ export default function CameraCapture({ onCapture, title, description, showGuide
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string>("");
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("user"); // Always starts in selfie mode
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [cameraError, setCameraError] = useState<string>("");
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [isFaceWellPositioned, setIsFaceWellPositioned] = useState(false);
 
   // Try to select the correct physical camera (front/back) using deviceId
   const getDeviceIdForMode = async (mode: "user" | "environment"): Promise<string | null> => {
@@ -380,8 +384,14 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                   className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
                 />
                 
-                {/* Guía de rostro con óvalo y zona de sonrisa */}
-                {showGuide && (
+                {/* Detección dinámica con MediaPipe o guía estática */}
+                {showGuide && useDynamicGuide ? (
+                  <DynamicFaceGuide 
+                    videoRef={videoRef}
+                    onFaceDetected={setFaceDetected}
+                    onFaceWellPositioned={setIsFaceWellPositioned}
+                  />
+                ) : showGuide ? (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="w-full h-full relative">
                       <FaceGuideOverlay />
@@ -403,6 +413,30 @@ export default function CameraCapture({ onCapture, title, description, showGuide
                           </p>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Indicador de rostro detectado y bien posicionado */}
+                {faceDetected && isFaceWellPositioned && (
+                  <div className="absolute top-4 right-4 z-20">
+                    <div className="flex items-center gap-2 bg-green-500/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg animate-fade-in">
+                      <CheckCircle2 className="h-5 w-5 text-white" />
+                      <span className="text-white text-sm font-semibold">
+                        ¡Perfecto!
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Indicador de rostro detectado pero mal posicionado */}
+                {faceDetected && !isFaceWellPositioned && (
+                  <div className="absolute top-4 right-4 z-20">
+                    <div className="flex items-center gap-2 bg-yellow-500/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg animate-fade-in">
+                      <AlertCircle className="h-5 w-5 text-white" />
+                      <span className="text-white text-sm font-semibold">
+                        Ajusta posición
+                      </span>
                     </div>
                   </div>
                 )}
