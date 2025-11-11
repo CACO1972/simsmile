@@ -20,7 +20,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       </div>
 
       {/* Logo principal SimSmile By */}
-      <nav className="w-full max-w-7xl mb-6 md:mb-8 z-10 flex flex-col items-center justify-center">
+      <nav className="w-full max-w-7xl mb-2 md:mb-3 z-10 flex flex-col items-center justify-center">
         <img 
           src={logoSimSmileBy} 
           alt="SimSmile By" 
@@ -40,7 +40,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         </div>
 
         {/* Right side - Text content */}
-        <div className="flex flex-col items-center lg:items-start justify-center space-y-3 md:space-y-5 order-1 lg:order-2">
+        <div className="flex flex-col items-center lg:items-start justify-center space-y-2 md:space-y-3 order-1 lg:order-2">
           
           <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-xs md:text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">
