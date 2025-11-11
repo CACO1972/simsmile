@@ -8,6 +8,7 @@ import { WaitlistModal } from "./WaitlistModal";
 import { SmileCustomizer } from "./SmileCustomizer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
+import { GoldenRatioReveal } from "./GoldenRatioReveal";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
@@ -150,14 +151,26 @@ export const ResultsSection = ({
           </div>
         </div>
 
-        {/* 1. IMAGEN Y PERSONALIZACIÓN INTEGRADA */}
+        {/* 1. GOLDEN RATIO REVEAL - EFECTO WOW PRINCIPAL */}
+        {facialAnalysis && (
+          <div className="mb-8">
+            <GoldenRatioReveal 
+              smileImage={customizedImage || smileImage}
+              restImage={restImage}
+              facialAnalysis={facialAnalysis}
+              onFullscreen={() => setShowFullscreen(true)}
+            />
+          </div>
+        )}
+
+        {/* 2. IMAGEN Y PERSONALIZACIÓN INTEGRADA */}
         <Card className="bg-gradient-to-br from-primary/5 to-card/50 backdrop-blur border-primary/30 p-6 md:p-8 mb-8">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-heading font-bold mb-2">
-              ✨ Tu Sonrisa Mejorada
+              ✨ Personaliza Tu Sonrisa
             </h2>
             <p className="text-sm text-muted-foreground">
-              {customizedImage ? 'Sonrisa personalizada generada' : 'Correcciones aplicadas por IA'}
+              {customizedImage ? 'Sonrisa personalizada generada' : 'Ajusta y mejora tu sonrisa con IA'}
             </p>
           </div>
           
@@ -273,16 +286,6 @@ export const ResultsSection = ({
             </div>
           </div>
         </Card>
-
-        {/* 2. ANÁLISIS FACIAL CON OVERLAY VISUAL */}
-        {facialAnalysis && (
-          <div className="mb-8">
-            <FacialAnalysisOverlay 
-              data={facialAnalysis}
-              imageUrl={restImage}
-            />
-          </div>
-        )}
 
         {/* CTA intermedio removido - demasiado invasivo */}
 
