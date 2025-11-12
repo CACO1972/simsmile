@@ -28,6 +28,7 @@ const IALab = () => {
     qualityScore?: number;
     warnings?: string[];
   } | null>(null);
+  const [perfectCorpAnalysis, setPerfectCorpAnalysis] = useState<any>(null);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
   // Initialize MediaPipe Face Landmarker
@@ -70,6 +71,24 @@ const IALab = () => {
     track({ name: "photos_captured" });
 
     try {
+      // 1. Perfect Corp API Analysis (World-Class)
+      console.log('🌟 Calling Perfect Corp API for professional analysis...');
+      const { data: perfectCorpData, error: perfectCorpError } = await getSupabase().functions.invoke("perfect-corp-analysis", {
+        body: { imageBase64: smile }
+      });
+
+      if (perfectCorpError) {
+        logger.error("Perfect Corp API error:", perfectCorpError);
+        toast.info("Usando análisis estándar. Perfect Corp no disponible.", { duration: 3000 });
+      } else if (perfectCorpData?.success) {
+        setPerfectCorpAnalysis(perfectCorpData.data);
+        logger.log("✅ Perfect Corp analysis completed:", perfectCorpData.data);
+      } else if (perfectCorpData?.useFallback) {
+        setPerfectCorpAnalysis(perfectCorpData.data);
+        logger.log("⚠️ Using Perfect Corp fallback data");
+      }
+
+      // 2. Continue with existing MediaPipe + smile simulation
       if (!faceLandmarkerRef.current) {
         throw new Error("Face Landmarker not initialized");
       }
@@ -225,6 +244,7 @@ const IALab = () => {
           contactEmail={(contactData?.email as string) || ""}
           facialAnalysis={simulationData?.facialAnalysis}
           qualityScore={simulationData?.qualityScore}
+          perfectCorpAnalysis={perfectCorpAnalysis}
         />
       )}
 
