@@ -252,7 +252,10 @@ export default function CameraCapture({ onCapture, title, description, showGuide
     startCamera();
   };
 
+  // Auto-start camera in selfie mode when component mounts
   useEffect(() => {
+    startCamera("user");
+    
     return () => {
       stopCamera();
     };
