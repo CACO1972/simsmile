@@ -3,11 +3,14 @@
 # 🦷 SimSmile - AI-Powered Smile Simulation Platform
 ### Nobel Biocare Edition - Enterprise Dental Solution
 
+> **✅ DEPLOYMENT READY** - All deployment issues have been fixed! See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment instructions.
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](package.json)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-82%25-yellowgreen.svg)]()
 [![Security](https://img.shields.io/badge/security-A+-brightgreen.svg)]()
+[![Deployment](https://img.shields.io/badge/deployment-ready-success.svg)](DEPLOYMENT.md)
 
 <p align="center">
   <img src="src/assets/simsmile-logo-transparent.png" alt="SimSmile Logo" width="400"/>
@@ -287,26 +290,55 @@ src/
 
 ## 🚢 Deployment
 
+> **📖 For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+> 
+> **✅ Deployment Fixed (Nov 2025)** - All deployment issues resolved:
+> - Fixed GitHub Actions workflow (was broken)
+> - Fixed TypeScript linting errors
+> - Added Vercel and Netlify configurations
+> - See [FIXES_SUMMARY.md](FIXES_SUMMARY.md) for details
+
+### Quick Deployment
+
+#### Option 1: Vercel (Recommended)
+```bash
+npm install -g vercel
+vercel login
+vercel
+```
+
+#### Option 2: Netlify
+```bash
+npm install -g netlify-cli
+netlify login
+netlify init
+netlify deploy --prod
+```
+
+#### Option 3: Manual Build
+```bash
+npm run build
+# Upload the 'dist/' folder to your hosting platform
+```
+
+### Required Environment Variables
+
+Before deploying, configure these environment variables:
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete environment variable list and detailed instructions.
+
 ### Automatic Deployment (CI/CD)
 
-Push to `main` branch triggers automatic deployment:
-
-```bash
-git push origin main
-```
-
-### Manual Deployment
-
-```bash
-# Deploy to staging
-npm run deploy:staging
-
-# Deploy to production (requires approval)
-npm run deploy:production
-
-# Rollback to previous version
-npm run deploy:rollback
-```
+The GitHub Actions workflow automatically runs on push to `main` branch:
+- Builds the project
+- Runs linting
+- Tests on Node.js 18.x, 20.x, and 22.x
+- Uploads build artifacts
 
 ### Environment-Specific Builds
 
@@ -314,11 +346,11 @@ npm run deploy:rollback
 # Development build
 npm run build:dev
 
-# Staging build
-npm run build:staging
-
 # Production build
 npm run build:prod
+
+# Build with type checking
+npm run predeploy
 ```
 
 ## 📚 API Documentation
