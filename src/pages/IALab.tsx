@@ -7,7 +7,7 @@ import { ResultsSection } from "@/components/ResultsSection";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
-import { getSupabase } from "@/integrations/supabase/safeClient";
+import { supabase } from "@/integrations/supabase/client";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
@@ -73,9 +73,11 @@ const IALab = () => {
     try {
       // 1. Perfect Corp API Analysis (World-Class)
       console.log('🌟 Calling Perfect Corp API for professional analysis...');
-      const { data: perfectCorpData, error: perfectCorpError } = await getSupabase().functions.invoke("perfect-corp-analysis", {
+      const { data: perfectCorpData, error: perfectCorpError } = await supabase.functions.invoke("perfect-corp-analysis", {
         body: { imageBase64: smile }
       });
+      
+      console.log('Perfect Corp response:', { data: perfectCorpData, error: perfectCorpError });
 
       if (perfectCorpError) {
         logger.error("Perfect Corp API error:", perfectCorpError);
@@ -147,7 +149,7 @@ const IALab = () => {
       const analysisText = generateAnalysisText(faceAnalysis, calculatedMetrics, recommendations);
 
       // Llamar a la edge function para simular la sonrisa
-      const { data, error } = await getSupabase().functions.invoke("simulate-smile", {
+      const { data, error } = await supabase.functions.invoke("simulate-smile", {
         body: {
           imageBase64: smile,
           metrics: calculatedMetrics,
