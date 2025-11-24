@@ -217,7 +217,7 @@ const IALab = () => {
       
       {step === "capture" && <CaptureSection onCapture={handleCapture} />}
       
-      {step === "loading" && <LoadingAnimation />}
+      {step === "loading" && <LoadingAnimation userImage={smileImage} />}
       
       {step === "contact" && <ContactSection onSubmit={handleContactSubmit} />}
       
