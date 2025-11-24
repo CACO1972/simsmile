@@ -1,6 +1,6 @@
-import { useRef, useState, useEffect, Suspense } from "react";
+import { useRef, useState, useEffect, Suspense, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Text, Line } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Text, Line, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,7 +17,77 @@ interface FacialAnalysis3DProps {
 
 type ViewAngle = 'front' | 'left' | 'right';
 
-// Componente que renderiza la cara como un plano 3D con textura
+// Shader personalizado para efecto de profundidad y relieve
+const depthMaterialVertexShader = `
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  uniform float time;
+  
+  // Simular depth map basado en la posición
+  float getDepth(vec2 uv) {
+    // Centro de la cara tiene más profundidad (nariz)
+    float centerDist = distance(uv, vec2(0.5, 0.5));
+    float noseBridge = smoothstep(0.4, 0.2, distance(uv, vec2(0.5, 0.45)));
+    float cheeks = smoothstep(0.5, 0.3, distance(uv, vec2(0.3, 0.6))) * 0.3;
+    float cheeksRight = smoothstep(0.5, 0.3, distance(uv, vec2(0.7, 0.6))) * 0.3;
+    float forehead = smoothstep(0.5, 0.2, distance(uv, vec2(0.5, 0.2))) * 0.2;
+    float chin = smoothstep(0.4, 0.2, distance(uv, vec2(0.5, 0.85))) * 0.15;
+    
+    return (noseBridge * 0.3 + cheeks + cheeksRight + forehead + chin);
+  }
+  
+  void main() {
+    vUv = uv;
+    vNormal = normalize(normalMatrix * normal);
+    
+    // Aplicar desplazamiento basado en depth map
+    float depth = getDepth(uv);
+    vec3 newPosition = position + normal * depth * 0.5;
+    
+    // Añadir respiración sutil
+    newPosition.z += sin(time * 0.5) * 0.02;
+    
+    vPosition = newPosition;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+  }
+`;
+
+const depthMaterialFragmentShader = `
+  uniform sampler2D map;
+  uniform float time;
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  
+  void main() {
+    vec4 texColor = texture2D(map, vUv);
+    
+    // Calcular iluminación mejorada
+    vec3 lightDir = normalize(vec3(1.0, 1.0, 2.0));
+    float diffuse = max(dot(vNormal, lightDir), 0.0);
+    
+    // Ambient occlusion simulado
+    float ao = 1.0 - (length(vPosition) * 0.05);
+    
+    // Rim lighting para contornos
+    vec3 viewDir = normalize(cameraPosition - vPosition);
+    float rim = 1.0 - max(dot(viewDir, vNormal), 0.0);
+    rim = pow(rim, 3.0) * 0.5;
+    
+    // Subsurface scattering simulado (efecto de piel)
+    float sss = pow(max(dot(vNormal, lightDir), 0.0), 2.0) * 0.3;
+    
+    // Combinar efectos
+    vec3 lighting = vec3(0.4 + diffuse * 0.6 + sss);
+    lighting *= ao;
+    vec3 finalColor = texColor.rgb * lighting + vec3(rim);
+    
+    gl_FragColor = vec4(finalColor, texColor.a);
+  }
+`;
+
+// Componente que renderiza la cara con geometría 3D realista
 function FaceModel({ imageUrl, facialAnalysis, showLines, viewAngle }: { 
   imageUrl: string; 
   facialAnalysis: FacialAnalysis3DProps['facialAnalysis'];
@@ -27,11 +97,32 @@ function FaceModel({ imageUrl, facialAnalysis, showLines, viewAngle }: {
   const meshRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
   const texture = useLoader(THREE.TextureLoader, imageUrl);
+  const [time, setTime] = useState(0);
   
-  // Animación sutil de respiración
+  // Material personalizado con shader
+  const customMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        map: { value: texture },
+        time: { value: 0 }
+      },
+      vertexShader: depthMaterialVertexShader,
+      fragmentShader: depthMaterialFragmentShader,
+      side: THREE.DoubleSide,
+      transparent: true
+    });
+  }, [texture]);
+  
+  // Actualizar tiempo para animación
   useFrame((state) => {
+    setTime(state.clock.elapsedTime);
+    if (customMaterial) {
+      customMaterial.uniforms.time.value = state.clock.elapsedTime;
+    }
+    
+    // Rotación suave de grupo
     if (meshRef.current) {
-      meshRef.current.position.z = Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
+      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.02;
     }
   });
 
@@ -41,24 +132,23 @@ function FaceModel({ imageUrl, facialAnalysis, showLines, viewAngle }: {
       let targetRotation = 0;
       switch (viewAngle) {
         case 'left':
-          targetRotation = Math.PI * 0.3; // 54 grados
+          targetRotation = Math.PI * 0.35;
           break;
         case 'right':
-          targetRotation = -Math.PI * 0.3; // -54 grados
+          targetRotation = -Math.PI * 0.35;
           break;
         default:
           targetRotation = 0;
       }
       
-      // Animación suave de rotación
-      const duration = 1000;
+      const duration = 1200;
       const startRotation = groupRef.current.rotation.y;
       const startTime = Date.now();
       
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        const eased = 1 - Math.pow(1 - progress, 3);
         
         if (groupRef.current) {
           groupRef.current.rotation.y = startRotation + (targetRotation - startRotation) * eased;
@@ -76,23 +166,25 @@ function FaceModel({ imageUrl, facialAnalysis, showLines, viewAngle }: {
   const aspect = texture.image ? texture.image.width / texture.image.height : 1;
   const width = 4;
   const height = width / aspect;
+  const segments = 128; // Mayor resolución para mejor deformación
 
   return (
     <group ref={groupRef}>
-      {/* Plano principal con la imagen */}
-      <mesh ref={meshRef} position={[0, 0, 0]}>
-        <planeGeometry args={[width, height, 32, 32]} />
-        <meshStandardMaterial 
-          map={texture} 
-          side={THREE.DoubleSide}
-          transparent
-          opacity={0.95}
-        />
+      {/* Plano principal con geometría deformable y shader personalizado */}
+      <mesh ref={meshRef} position={[0, 0, 0]} castShadow receiveShadow>
+        <planeGeometry args={[width, height, segments, segments]} />
+        <primitive object={customMaterial} attach="material" />
+      </mesh>
+
+      {/* Sombra proyectada */}
+      <mesh position={[0, -2.8, -0.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[8, 8]} />
+        <shadowMaterial opacity={0.3} />
       </mesh>
 
       {/* Líneas del Golden Ratio en 3D */}
       {showLines && facialAnalysis.horizontal_ratio && viewAngle === 'front' && (
-        <group position={[0, 0, 0.1]}>
+        <group position={[0, 0, 0.15]}>
           {/* Línea superior */}
           <Line
             points={[
@@ -231,7 +323,6 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
-    // Reset camera cuando cambia fullscreen
     if (controlsRef.current) {
       controlsRef.current.reset();
     }
@@ -271,10 +362,10 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
         transition={{ duration: 0.8 }}
       >
         <h2 className="text-3xl md:text-4xl font-heading font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-          Vista 3D Interactiva
+          Modelo 3D Realista
         </h2>
         <p className="text-muted-foreground mt-2">
-          Explora tu análisis desde múltiples ángulos
+          Reconstrucción con profundidad y geometría avanzada
         </p>
       </motion.div>
 
@@ -286,7 +377,7 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           size="sm"
           className="gap-2"
         >
-          Perfil Izquierdo
+          ◀ Perfil Izquierdo
         </Button>
         <Button
           onClick={() => setViewAngle('front')}
@@ -294,7 +385,7 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           size="sm"
           className="gap-2"
         >
-          Frontal
+          👤 Frontal
         </Button>
         <Button
           onClick={() => setViewAngle('right')}
@@ -302,21 +393,48 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           size="sm"
           className="gap-2"
         >
-          Perfil Derecho
+          Perfil Derecho ▶
         </Button>
       </div>
 
       {/* Canvas 3D */}
       <div className={`relative ${isFullscreen ? 'h-[calc(100vh-250px)]' : 'aspect-square'} bg-gradient-to-br from-background via-background/50 to-background`}>
-        <Canvas shadows>
+        <Canvas shadows gl={{ antialias: true, alpha: true }}>
           <PerspectiveCamera makeDefault position={[0, 0, 6]} />
           
-          {/* Iluminación mejorada */}
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[10, 10, 5]} intensity={1.2} castShadow />
-          <directionalLight position={[-10, 10, 5]} intensity={0.8} />
-          <pointLight position={[-10, -10, -5]} intensity={0.6} color="#a855f7" />
-          <spotLight position={[0, 5, 5]} angle={0.3} intensity={0.7} color="#fbbf24" />
+          {/* Iluminación cinematográfica mejorada */}
+          <ambientLight intensity={0.4} />
+          
+          {/* Key light - luz principal */}
+          <directionalLight 
+            position={[5, 5, 5]} 
+            intensity={1.5} 
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+          />
+          
+          {/* Fill light - luz de relleno */}
+          <directionalLight position={[-3, 3, 2]} intensity={0.6} />
+          
+          {/* Rim light - luz de contorno */}
+          <pointLight position={[-5, 0, -3]} intensity={0.8} color="#a855f7" />
+          <pointLight position={[5, 0, -3]} intensity={0.8} color="#60a5fa" />
+          
+          {/* Back light */}
+          <spotLight 
+            position={[0, 3, -3]} 
+            angle={0.4} 
+            intensity={0.7} 
+            color="#fbbf24"
+            castShadow
+          />
+
+          {/* Environment para reflejos realistas */}
+          <Environment preset="studio" />
+
+          {/* Niebla sutil */}
+          <fog attach="fog" args={['#000000', 8, 15]} />
 
           {/* Controles de órbita */}
           <OrbitControls
@@ -330,6 +448,8 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
             autoRotate={autoRotate}
             autoRotateSpeed={2}
             onStart={() => setAutoRotate(false)}
+            maxPolarAngle={Math.PI / 1.5}
+            minPolarAngle={Math.PI / 3}
           />
 
           {/* Modelo de la cara */}
@@ -342,16 +462,19 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
             />
           </Suspense>
 
-          {/* Grid de referencia */}
-          <gridHelper args={[10, 10, '#333333', '#222222']} position={[0, -2.5, 0]} />
+          {/* Grid de referencia con mejor estilo */}
+          <gridHelper 
+            args={[10, 20, '#444444', '#222222']} 
+            position={[0, -2.5, 0]} 
+          />
         </Canvas>
 
         {/* Controles flotantes */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/80 backdrop-blur-sm rounded-full p-2 border border-primary/30">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/90 backdrop-blur-sm rounded-full p-2 border border-primary/30 shadow-xl">
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-full text-white hover:text-primary hover:bg-white/10"
+            className="rounded-full text-white hover:text-primary hover:bg-white/10 text-xs"
             onClick={() => setShowLines(!showLines)}
           >
             {showLines ? 'Ocultar Líneas' : 'Mostrar Líneas'}
@@ -394,26 +517,29 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           </Button>
         </div>
 
-        {/* Instrucciones flotantes */}
+        {/* Instrucciones flotantes mejoradas */}
         <motion.div
-          className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm max-w-xs"
+          className="absolute top-4 left-4 bg-black/80 backdrop-blur-sm text-white px-4 py-3 rounded-xl text-sm max-w-xs border border-primary/30"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 1 }}
         >
-          <p className="font-semibold mb-1">💡 Controles:</p>
+          <p className="font-semibold mb-2 text-primary">💡 Controles 3D:</p>
           <ul className="text-xs space-y-1 text-muted-foreground">
             <li>• Clic + Arrastrar = Rotar</li>
             <li>• Clic derecho + Arrastrar = Mover</li>
             <li>• Rueda = Zoom</li>
-            <li>• Usa los botones para cambiar vista</li>
+            <li>• Usa botones para vistas predefinidas</li>
           </ul>
+          <div className="mt-2 pt-2 border-t border-primary/20">
+            <p className="text-xs text-accent">✨ Con geometría deformable y efectos de profundidad</p>
+          </div>
         </motion.div>
 
-        {/* Badge de score flotante */}
+        {/* Badge de score flotante mejorado */}
         {facialAnalysis.overall_golden_ratio_score !== undefined && (
           <motion.div
-            className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm border-2 border-primary rounded-2xl px-6 py-3 shadow-2xl"
+            className="absolute top-4 right-4 bg-gradient-to-br from-primary/90 to-accent/90 backdrop-blur-sm border-2 border-white/20 rounded-2xl px-6 py-3 shadow-2xl"
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ 
@@ -424,18 +550,18 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
             }}
           >
             <div className="text-center">
-              <div className="text-xs text-muted-foreground mb-1">Golden Score</div>
-              <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <div className="text-xs text-white/70 mb-1 font-semibold">Golden Score 3D</div>
+              <div className="text-3xl font-bold text-white">
                 {facialAnalysis.overall_golden_ratio_score}
               </div>
-              <div className="text-xs text-primary">φ 3D</div>
+              <div className="text-xs text-white/70 mt-1">φ Realista</div>
             </div>
           </motion.div>
         )}
 
-        {/* Indicador de ángulo actual */}
+        {/* Indicador de ángulo actual mejorado */}
         <motion.div
-          className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-primary/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg"
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-accent backdrop-blur-sm text-white px-5 py-2 rounded-full text-sm font-bold shadow-xl border border-white/20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           key={viewAngle}
@@ -444,45 +570,59 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           {viewAngle === 'left' && '◀️ Perfil Izquierdo'}
           {viewAngle === 'right' && '▶️ Perfil Derecho'}
         </motion.div>
+
+        {/* Badge de tecnología */}
+        <motion.div
+          className="absolute top-20 left-4 bg-black/80 backdrop-blur-sm border border-accent/30 rounded-lg px-3 py-2 text-xs"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.5 }}
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+            <span className="text-accent font-semibold">WebGL + Shaders</span>
+          </div>
+          <div className="text-muted-foreground mt-1">Geometría deformable</div>
+        </motion.div>
       </div>
 
-      {/* Footer con información de tercios */}
+      {/* Footer con información de tercios mejorado */}
       {facialAnalysis.horizontal_ratio && (
-        <div className="p-6 grid grid-cols-3 gap-3 bg-gradient-to-t from-background/80 to-transparent backdrop-blur-sm">
+        <div className="p-6 grid grid-cols-3 gap-3 bg-gradient-to-t from-background/90 to-transparent backdrop-blur-sm">
           <motion.div 
-            className="bg-primary/10 backdrop-blur-sm border border-primary/30 rounded-lg p-3 text-center"
+            className="bg-gradient-to-br from-primary/20 to-primary/10 backdrop-blur-sm border-2 border-primary/40 rounded-xl p-4 text-center shadow-lg"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="text-xs text-muted-foreground mb-1">Superior</div>
-            <div className="text-xl font-bold text-primary">
+            <div className="text-xs text-muted-foreground mb-1 font-semibold">Superior</div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {facialAnalysis.horizontal_ratio.upper.toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground mt-1">φ: 33.3%</div>
           </motion.div>
           
           <motion.div 
-            className="bg-primary/10 backdrop-blur-sm border border-primary/30 rounded-lg p-3 text-center"
+            className="bg-gradient-to-br from-accent/20 to-accent/10 backdrop-blur-sm border-2 border-accent/40 rounded-xl p-4 text-center shadow-lg"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="text-xs text-muted-foreground mb-1">Medio</div>
-            <div className="text-xl font-bold text-primary">
+            <div className="text-xs text-muted-foreground mb-1 font-semibold">Medio</div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
               {facialAnalysis.horizontal_ratio.middle.toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground mt-1">φ: 33.3%</div>
           </motion.div>
           
           <motion.div 
-            className="bg-primary/10 backdrop-blur-sm border border-primary/30 rounded-lg p-3 text-center"
+            className="bg-gradient-to-br from-primary/20 to-accent/10 backdrop-blur-sm border-2 border-primary/40 rounded-xl p-4 text-center shadow-lg"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="text-xs text-muted-foreground mb-1">Inferior</div>
-            <div className="text-xl font-bold text-primary">
+            <div className="text-xs text-muted-foreground mb-1 font-semibold">Inferior</div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {facialAnalysis.horizontal_ratio.lower.toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground mt-1">φ: 33.3%</div>
