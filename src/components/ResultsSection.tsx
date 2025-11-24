@@ -10,8 +10,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
 import { GoldenRatioReveal } from "./GoldenRatioReveal";
 import { FacialAnalysis3D } from "./FacialAnalysis3D";
-import { AgeRevealEffect } from "./AgeRevealEffect";
-import { PerfectCorpAnalysisReport } from "./PerfectCorpAnalysisReport";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
@@ -157,23 +155,6 @@ export const ResultsSection = ({
           </div>
         </div>
 
-        {/* EFECTO WOW: Age Reveal Effect */}
-        {perfectCorpAnalysis && (
-          <AgeRevealEffect 
-            currentAge={perfectCorpAnalysis.age || 32}
-            estimatedYouthfulness={perfectCorpAnalysis.estimatedYouthfulness || 6}
-          />
-        )}
-
-        {/* Perfect Corp Analysis Report */}
-        {perfectCorpAnalysis && (
-          <div className="mb-8">
-            <h2 className="text-2xl md:text-3xl font-heading font-bold mb-6 text-center">
-              Análisis Profesional de Nivel Mundial
-            </h2>
-            <PerfectCorpAnalysisReport analysis={perfectCorpAnalysis} />
-          </div>
-        )}
 
         {/* Selector de modo de vista */}
         {facialAnalysis && (

@@ -15,13 +15,17 @@ interface FacialAnalysis3DProps {
   };
 }
 
+type ViewAngle = 'front' | 'left' | 'right';
+
 // Componente que renderiza la cara como un plano 3D con textura
-function FaceModel({ imageUrl, facialAnalysis, showLines }: { 
+function FaceModel({ imageUrl, facialAnalysis, showLines, viewAngle }: { 
   imageUrl: string; 
   facialAnalysis: FacialAnalysis3DProps['facialAnalysis'];
   showLines: boolean;
+  viewAngle: ViewAngle;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const texture = useLoader(THREE.TextureLoader, imageUrl);
   
   // Animación sutil de respiración
@@ -31,12 +35,50 @@ function FaceModel({ imageUrl, facialAnalysis, showLines }: {
     }
   });
 
+  // Rotar automáticamente al ángulo seleccionado
+  useEffect(() => {
+    if (groupRef.current) {
+      let targetRotation = 0;
+      switch (viewAngle) {
+        case 'left':
+          targetRotation = Math.PI * 0.3; // 54 grados
+          break;
+        case 'right':
+          targetRotation = -Math.PI * 0.3; // -54 grados
+          break;
+        default:
+          targetRotation = 0;
+      }
+      
+      // Animación suave de rotación
+      const duration = 1000;
+      const startRotation = groupRef.current.rotation.y;
+      const startTime = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        
+        if (groupRef.current) {
+          groupRef.current.rotation.y = startRotation + (targetRotation - startRotation) * eased;
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+      
+      animate();
+    }
+  }, [viewAngle]);
+
   const aspect = texture.image ? texture.image.width / texture.image.height : 1;
   const width = 4;
   const height = width / aspect;
 
   return (
-    <group>
+    <group ref={groupRef}>
       {/* Plano principal con la imagen */}
       <mesh ref={meshRef} position={[0, 0, 0]}>
         <planeGeometry args={[width, height, 32, 32]} />
@@ -49,7 +91,7 @@ function FaceModel({ imageUrl, facialAnalysis, showLines }: {
       </mesh>
 
       {/* Líneas del Golden Ratio en 3D */}
-      {showLines && facialAnalysis.horizontal_ratio && (
+      {showLines && facialAnalysis.horizontal_ratio && viewAngle === 'front' && (
         <group position={[0, 0, 0.1]}>
           {/* Línea superior */}
           <Line
@@ -184,7 +226,8 @@ function LoadingFallback() {
 export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3DProps) => {
   const [showLines, setShowLines] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(false);
+  const [viewAngle, setViewAngle] = useState<ViewAngle>('front');
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
@@ -211,7 +254,8 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
   const handleReset = () => {
     if (controlsRef.current) {
       controlsRef.current.reset();
-      setAutoRotate(true);
+      setAutoRotate(false);
+      setViewAngle('front');
     }
   };
 
@@ -230,20 +274,49 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           Vista 3D Interactiva
         </h2>
         <p className="text-muted-foreground mt-2">
-          Arrastra para rotar • Rueda del mouse para zoom
+          Explora tu análisis desde múltiples ángulos
         </p>
       </motion.div>
 
+      {/* Selector de ángulos de vista */}
+      <div className="relative z-10 flex justify-center gap-2 px-6 pb-4">
+        <Button
+          onClick={() => setViewAngle('left')}
+          variant={viewAngle === 'left' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-2"
+        >
+          Perfil Izquierdo
+        </Button>
+        <Button
+          onClick={() => setViewAngle('front')}
+          variant={viewAngle === 'front' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-2"
+        >
+          Frontal
+        </Button>
+        <Button
+          onClick={() => setViewAngle('right')}
+          variant={viewAngle === 'right' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-2"
+        >
+          Perfil Derecho
+        </Button>
+      </div>
+
       {/* Canvas 3D */}
-      <div className={`relative ${isFullscreen ? 'h-[calc(100vh-200px)]' : 'aspect-square'} bg-gradient-to-br from-background via-background/50 to-background`}>
+      <div className={`relative ${isFullscreen ? 'h-[calc(100vh-250px)]' : 'aspect-square'} bg-gradient-to-br from-background via-background/50 to-background`}>
         <Canvas shadows>
           <PerspectiveCamera makeDefault position={[0, 0, 6]} />
           
-          {/* Iluminación */}
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-          <pointLight position={[-10, -10, -5]} intensity={0.5} color="#a855f7" />
-          <spotLight position={[0, 5, 5]} angle={0.3} intensity={0.5} color="#fbbf24" />
+          {/* Iluminación mejorada */}
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[10, 10, 5]} intensity={1.2} castShadow />
+          <directionalLight position={[-10, 10, 5]} intensity={0.8} />
+          <pointLight position={[-10, -10, -5]} intensity={0.6} color="#a855f7" />
+          <spotLight position={[0, 5, 5]} angle={0.3} intensity={0.7} color="#fbbf24" />
 
           {/* Controles de órbita */}
           <OrbitControls
@@ -265,6 +338,7 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
               imageUrl={smileImage} 
               facialAnalysis={facialAnalysis}
               showLines={showLines}
+              viewAngle={viewAngle}
             />
           </Suspense>
 
@@ -332,6 +406,7 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
             <li>• Clic + Arrastrar = Rotar</li>
             <li>• Clic derecho + Arrastrar = Mover</li>
             <li>• Rueda = Zoom</li>
+            <li>• Usa los botones para cambiar vista</li>
           </ul>
         </motion.div>
 
@@ -357,6 +432,18 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
             </div>
           </motion.div>
         )}
+
+        {/* Indicador de ángulo actual */}
+        <motion.div
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-primary/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          key={viewAngle}
+        >
+          {viewAngle === 'front' && '👤 Vista Frontal'}
+          {viewAngle === 'left' && '◀️ Perfil Izquierdo'}
+          {viewAngle === 'right' && '▶️ Perfil Derecho'}
+        </motion.div>
       </div>
 
       {/* Footer con información de tercios */}
