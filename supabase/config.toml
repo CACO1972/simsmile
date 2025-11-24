@@ -1,10 +1,10 @@
 project_id = "qdbldrlzabqcuadlkyoy"
 
 [functions.simulate-smile]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-contact-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.perfect-corp-analysis]
 verify_jwt = false
