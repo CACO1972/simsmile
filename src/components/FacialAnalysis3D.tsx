@@ -354,46 +354,46 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
     <Card className={`relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10 border-2 border-primary/30 ${
       isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
     }`}>
-      {/* Header */}
+      {/* Header - Optimizado para móvil */}
       <motion.div 
-        className="relative z-10 p-6 text-center bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm"
+        className="relative z-10 p-4 md:p-6 text-center bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-3xl md:text-4xl font-heading font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+        <h2 className="text-xl md:text-3xl lg:text-4xl font-heading font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
           Modelo 3D Realista
         </h2>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-1 text-xs md:text-sm hidden md:block">
           Reconstrucción con profundidad y geometría avanzada
         </p>
       </motion.div>
 
-      {/* Selector de ángulos de vista */}
-      <div className="relative z-10 flex justify-center gap-2 px-6 pb-4">
+      {/* Selector de ángulos de vista - Compacto para móvil */}
+      <div className="relative z-10 flex justify-center gap-1.5 md:gap-2 px-4 md:px-6 pb-3 md:pb-4">
         <Button
           onClick={() => setViewAngle('left')}
           variant={viewAngle === 'left' ? 'default' : 'outline'}
           size="sm"
-          className="gap-2"
+          className="gap-1 text-xs md:text-sm px-2 md:px-4"
         >
-          ◀ Perfil Izquierdo
+          <span className="hidden md:inline">◀</span> Izq
         </Button>
         <Button
           onClick={() => setViewAngle('front')}
           variant={viewAngle === 'front' ? 'default' : 'outline'}
           size="sm"
-          className="gap-2"
+          className="gap-1 text-xs md:text-sm px-2 md:px-4"
         >
-          👤 Frontal
+          <span className="hidden md:inline">👤</span> Frontal
         </Button>
         <Button
           onClick={() => setViewAngle('right')}
           variant={viewAngle === 'right' ? 'default' : 'outline'}
           size="sm"
-          className="gap-2"
+          className="gap-1 text-xs md:text-sm px-2 md:px-4"
         >
-          Perfil Derecho ▶
+          Der <span className="hidden md:inline">▶</span>
         </Button>
       </div>
 
@@ -469,30 +469,31 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           />
         </Canvas>
 
-        {/* Controles flotantes */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/90 backdrop-blur-sm rounded-full p-2 border border-primary/30 shadow-xl">
+        {/* Controles flotantes - Minimalistas */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 md:gap-2 bg-black/90 backdrop-blur-sm rounded-full p-1.5 md:p-2 border border-primary/30 shadow-xl">
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-full text-white hover:text-primary hover:bg-white/10 text-xs"
+            className="rounded-full text-white hover:text-primary hover:bg-white/10 text-[10px] md:text-xs px-2 md:px-3 h-7 md:h-8"
             onClick={() => setShowLines(!showLines)}
           >
-            {showLines ? 'Ocultar Líneas' : 'Mostrar Líneas'}
+            <span className="hidden md:inline">{showLines ? 'Ocultar Líneas' : 'Mostrar Líneas'}</span>
+            <span className="md:hidden">{showLines ? 'Ocultar' : 'Líneas'}</span>
           </Button>
           
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-full text-white hover:text-primary hover:bg-white/10"
+            className="rounded-full text-white hover:text-primary hover:bg-white/10 h-7 md:h-8 w-7 md:w-8 p-0"
             onClick={handleReset}
           >
-            <RotateCw className="h-4 w-4" />
+            <RotateCw className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
 
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-full text-white hover:text-primary hover:bg-white/10"
+            className="rounded-full text-white hover:text-primary hover:bg-white/10 h-7 md:h-8 w-7 md:w-8 p-0 hidden md:flex"
             onClick={handleZoomIn}
           >
             <ZoomIn className="h-4 w-4" />
@@ -501,7 +502,7 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-full text-white hover:text-primary hover:bg-white/10"
+            className="rounded-full text-white hover:text-primary hover:bg-white/10 h-7 md:h-8 w-7 md:w-8 p-0 hidden md:flex"
             onClick={handleZoomOut}
           >
             <ZoomOut className="h-4 w-4" />
@@ -510,36 +511,31 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
           <Button
             size="sm"
             variant="ghost"
-            className="rounded-full text-white hover:text-primary hover:bg-white/10"
+            className="rounded-full text-white hover:text-primary hover:bg-white/10 h-7 md:h-8 w-7 md:w-8 p-0"
             onClick={() => setIsFullscreen(!isFullscreen)}
           >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            {isFullscreen ? <Minimize2 className="h-3 w-3 md:h-4 md:w-4" /> : <Maximize2 className="h-3 w-3 md:h-4 md:w-4" />}
           </Button>
         </div>
 
-        {/* Instrucciones flotantes mejoradas */}
+        {/* Instrucciones flotantes - Solo desktop */}
         <motion.div
-          className="absolute top-4 left-4 bg-black/80 backdrop-blur-sm text-white px-4 py-3 rounded-xl text-sm max-w-xs border border-primary/30"
+          className="hidden lg:block absolute top-4 left-4 bg-black/80 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs max-w-[200px] border border-primary/30"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 1 }}
         >
-          <p className="font-semibold mb-2 text-primary">💡 Controles 3D:</p>
-          <ul className="text-xs space-y-1 text-muted-foreground">
-            <li>• Clic + Arrastrar = Rotar</li>
-            <li>• Clic derecho + Arrastrar = Mover</li>
+          <p className="font-semibold mb-1 text-primary text-[10px]">💡 Controles:</p>
+          <ul className="text-[10px] space-y-0.5 text-muted-foreground">
+            <li>• Arrastrar = Rotar</li>
             <li>• Rueda = Zoom</li>
-            <li>• Usa botones para vistas predefinidas</li>
           </ul>
-          <div className="mt-2 pt-2 border-t border-primary/20">
-            <p className="text-xs text-accent">✨ Con geometría deformable y efectos de profundidad</p>
-          </div>
         </motion.div>
 
-        {/* Badge de score flotante mejorado */}
+        {/* Badge de score flotante - Compacto para móvil */}
         {facialAnalysis.overall_golden_ratio_score !== undefined && (
           <motion.div
-            className="absolute top-4 right-4 bg-gradient-to-br from-primary/90 to-accent/90 backdrop-blur-sm border-2 border-white/20 rounded-2xl px-6 py-3 shadow-2xl"
+            className="absolute top-4 right-4 bg-gradient-to-br from-primary/90 to-accent/90 backdrop-blur-sm border-2 border-white/20 rounded-xl md:rounded-2xl px-3 py-2 md:px-6 md:py-3 shadow-2xl"
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ 
@@ -550,82 +546,84 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
             }}
           >
             <div className="text-center">
-              <div className="text-xs text-white/70 mb-1 font-semibold">Golden Score 3D</div>
-              <div className="text-3xl font-bold text-white">
+              <div className="text-[9px] md:text-xs text-white/70 mb-0.5 md:mb-1 font-semibold">Golden Score</div>
+              <div className="text-xl md:text-3xl font-bold text-white">
                 {facialAnalysis.overall_golden_ratio_score}
               </div>
-              <div className="text-xs text-white/70 mt-1">φ Realista</div>
+              <div className="text-[9px] md:text-xs text-white/70 mt-0.5 md:mt-1">φ</div>
             </div>
           </motion.div>
         )}
 
-        {/* Indicador de ángulo actual mejorado */}
+        {/* Indicador de ángulo actual - Simplificado */}
         <motion.div
-          className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-accent backdrop-blur-sm text-white px-5 py-2 rounded-full text-sm font-bold shadow-xl border border-white/20"
+          className="absolute bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-accent backdrop-blur-sm text-white px-3 py-1 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-xl border border-white/20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           key={viewAngle}
         >
-          {viewAngle === 'front' && '👤 Vista Frontal'}
-          {viewAngle === 'left' && '◀️ Perfil Izquierdo'}
-          {viewAngle === 'right' && '▶️ Perfil Derecho'}
+          {viewAngle === 'front' && <span className="md:hidden">Frontal</span>}
+          {viewAngle === 'front' && <span className="hidden md:inline">👤 Vista Frontal</span>}
+          {viewAngle === 'left' && <span className="md:hidden">Izquierdo</span>}
+          {viewAngle === 'left' && <span className="hidden md:inline">◀️ Perfil Izquierdo</span>}
+          {viewAngle === 'right' && <span className="md:hidden">Derecho</span>}
+          {viewAngle === 'right' && <span className="hidden md:inline">▶️ Perfil Derecho</span>}
         </motion.div>
 
-        {/* Badge de tecnología */}
+        {/* Badge de tecnología - Solo desktop */}
         <motion.div
-          className="absolute top-20 left-4 bg-black/80 backdrop-blur-sm border border-accent/30 rounded-lg px-3 py-2 text-xs"
+          className="hidden lg:block absolute top-20 left-4 bg-black/80 backdrop-blur-sm border border-accent/30 rounded-lg px-2 py-1.5 text-[10px]"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 1.5 }}
         >
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
-            <span className="text-accent font-semibold">WebGL + Shaders</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
+            <span className="text-accent font-semibold">WebGL</span>
           </div>
-          <div className="text-muted-foreground mt-1">Geometría deformable</div>
         </motion.div>
       </div>
 
-      {/* Footer con información de tercios mejorado */}
+      {/* Footer con información de tercios - Optimizado móvil */}
       {facialAnalysis.horizontal_ratio && (
-        <div className="p-6 grid grid-cols-3 gap-3 bg-gradient-to-t from-background/90 to-transparent backdrop-blur-sm">
+        <div className="p-3 md:p-6 grid grid-cols-3 gap-2 md:gap-3 bg-gradient-to-t from-background/90 to-transparent backdrop-blur-sm">
           <motion.div 
-            className="bg-gradient-to-br from-primary/20 to-primary/10 backdrop-blur-sm border-2 border-primary/40 rounded-xl p-4 text-center shadow-lg"
+            className="bg-gradient-to-br from-primary/20 to-primary/10 backdrop-blur-sm border border-primary/40 md:border-2 rounded-lg md:rounded-xl p-2 md:p-4 text-center shadow-lg"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="text-xs text-muted-foreground mb-1 font-semibold">Superior</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <div className="text-[9px] md:text-xs text-muted-foreground mb-0.5 md:mb-1 font-semibold">Superior</div>
+            <div className="text-base md:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {facialAnalysis.horizontal_ratio.upper.toFixed(1)}%
             </div>
-            <div className="text-xs text-muted-foreground mt-1">φ: 33.3%</div>
+            <div className="text-[8px] md:text-xs text-muted-foreground mt-0.5 md:mt-1 hidden md:block">φ: 33.3%</div>
           </motion.div>
           
           <motion.div 
-            className="bg-gradient-to-br from-accent/20 to-accent/10 backdrop-blur-sm border-2 border-accent/40 rounded-xl p-4 text-center shadow-lg"
+            className="bg-gradient-to-br from-accent/20 to-accent/10 backdrop-blur-sm border border-accent/40 md:border-2 rounded-lg md:rounded-xl p-2 md:p-4 text-center shadow-lg"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="text-xs text-muted-foreground mb-1 font-semibold">Medio</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+            <div className="text-[9px] md:text-xs text-muted-foreground mb-0.5 md:mb-1 font-semibold">Medio</div>
+            <div className="text-base md:text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
               {facialAnalysis.horizontal_ratio.middle.toFixed(1)}%
             </div>
-            <div className="text-xs text-muted-foreground mt-1">φ: 33.3%</div>
+            <div className="text-[8px] md:text-xs text-muted-foreground mt-0.5 md:mt-1 hidden md:block">φ: 33.3%</div>
           </motion.div>
           
           <motion.div 
-            className="bg-gradient-to-br from-primary/20 to-accent/10 backdrop-blur-sm border-2 border-primary/40 rounded-xl p-4 text-center shadow-lg"
+            className="bg-gradient-to-br from-primary/20 to-accent/10 backdrop-blur-sm border border-primary/40 md:border-2 rounded-lg md:rounded-xl p-2 md:p-4 text-center shadow-lg"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="text-xs text-muted-foreground mb-1 font-semibold">Inferior</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <div className="text-[9px] md:text-xs text-muted-foreground mb-0.5 md:mb-1 font-semibold">Inferior</div>
+            <div className="text-base md:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {facialAnalysis.horizontal_ratio.lower.toFixed(1)}%
             </div>
-            <div className="text-xs text-muted-foreground mt-1">φ: 33.3%</div>
+            <div className="text-[8px] md:text-xs text-muted-foreground mt-0.5 md:mt-1 hidden md:block">φ: 33.3%</div>
           </motion.div>
         </div>
       )}
