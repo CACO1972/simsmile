@@ -1,45 +1,48 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import CameraCapture from "./CameraCapture";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Upload } from "lucide-react";
 import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
 import guiaFotoRostroCompleto from "@/assets/guia-foto-rostro-completo-editada.jpg";
+import { toast } from "sonner";
 
 interface CaptureSectionProps {
-  onCapture: (restImage: string, smileImage: string) => void;
+  onCapture: (smileImage: string) => void;
 }
 
 export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
-  const [restImage, setRestImage] = useState<string>("");
   const [smileImage, setSmileImage] = useState<string>("");
-  const [step, setStep] = useState<"rest" | "rest-confirm" | "smile" | "smile-confirm">("rest");
+  const [step, setStep] = useState<"upload" | "confirm">("upload");
 
-  const handleRestCapture = (image: string) => {
-    setRestImage(image);
-    setStep("rest-confirm");
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Por favor sube una imagen válida");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("La imagen es muy grande. Máximo 10MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setSmileImage(result);
+      setStep("confirm");
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleRestConfirm = () => {
-    setStep("smile");
+  const handleConfirm = () => {
+    onCapture(smileImage);
   };
 
-  const handleRestRetake = () => {
-    setRestImage("");
-    setStep("rest");
-  };
-
-  const handleSmileCapture = (image: string) => {
-    setSmileImage(image);
-    setStep("smile-confirm");
-  };
-
-  const handleSmileConfirm = () => {
-    onCapture(restImage, smileImage);
-  };
-
-  const handleSmileRetake = () => {
+  const handleRetake = () => {
     setSmileImage("");
-    setStep("smile");
+    setStep("upload");
   };
 
   return (
@@ -57,66 +60,17 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
       </div>
 
       <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">
-        {step === "rest" && (
-          <div className="space-y-6">
-            {/* Image Reference */}
-            <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-2xl mx-auto">
-              <img 
-                src={guiaFotoRostroCompleto} 
-                alt="Guía para foto de rostro completo" 
-                className="w-full h-auto rounded-lg"
-              />
-            </div>
-            
-            <CameraCapture
-              onCapture={handleRestCapture}
-              title="Foto en Reposo"
-              description="Toma una foto de tu rostro con expresión neutral, labios cerrados"
-            />
-          </div>
-        )}
-        
-        {step === "rest-confirm" && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl font-heading font-bold text-center mb-2">
-                Foto en Reposo Capturada
-              </h3>
-              <p className="text-muted-foreground text-center">
-                Revisa tu foto y confirma si está bien para continuar
+        {step === "upload" && (
+          <div className="space-y-8">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-heading font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Sube tu foto sonriendo
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Elige una foto de tu rostro sonriendo naturalmente, mostrando tus dientes
               </p>
             </div>
 
-            <div className="relative group max-w-md mx-auto">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-              <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
-                <img src={restImage} alt="Foto en reposo" className="w-full h-auto" />
-              </div>
-            </div>
-
-            <div className="flex gap-4 max-w-md mx-auto">
-              <Button
-                onClick={handleRestRetake}
-                variant="outline"
-                size="lg"
-                className="flex-1 border-2 hover:border-accent/50 hover:bg-accent/5 transition-all hover:scale-105"
-              >
-                Tomar de Nuevo
-              </Button>
-              <Button
-                onClick={handleRestConfirm}
-                size="lg"
-                className="flex-1 gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105"
-              >
-                Continuar
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        )}
-        
-        {step === "smile" && (
-          <div className="space-y-6">
             {/* Image Reference */}
             <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-2xl mx-auto">
               <img 
@@ -126,55 +80,68 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
               />
             </div>
             
-            <CameraCapture
-              onCapture={handleSmileCapture}
-              title="Foto Sonriendo"
-              description="Ahora sonríe naturalmente mostrando tus dientes"
-              showGuide={false}
-            />
+            {/* Upload Area */}
+            <div className="max-w-md mx-auto">
+              <label htmlFor="file-upload" className="block">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
+                  <div className="relative bg-card/50 backdrop-blur-sm border-2 border-dashed border-border hover:border-primary/50 rounded-lg p-12 transition-all group-hover:scale-[1.02]">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold mb-1">
+                          Selecciona tu foto
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          JPG, PNG o WEBP (máx. 10MB)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="sr-only"
+                />
+              </label>
+            </div>
           </div>
         )}
 
-        {step === "smile-confirm" && (
+        {step === "confirm" && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-2xl font-heading font-bold text-center mb-2">
-                Foto Sonriendo Capturada
+              <h3 className="text-2xl md:text-3xl font-heading font-bold text-center mb-2">
+                Foto Cargada
               </h3>
               <p className="text-muted-foreground text-center">
                 Revisa tu foto y confirma para comenzar el análisis
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 transition duration-300" />
-                <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden p-4">
-                  <h4 className="text-lg font-heading font-bold mb-3 text-center">En Reposo</h4>
-                  <img src={restImage} alt="Foto en reposo" className="w-full h-auto rounded-lg" />
-                </div>
-              </div>
-
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-accent to-primary rounded-lg blur opacity-25 transition duration-300" />
-                <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden p-4">
-                  <h4 className="text-lg font-heading font-bold mb-3 text-center">Sonriendo</h4>
-                  <img src={smileImage} alt="Foto sonriendo" className="w-full h-auto rounded-lg" />
-                </div>
+            <div className="relative group max-w-md mx-auto">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
+              <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
+                <img src={smileImage} alt="Foto sonriendo" className="w-full h-auto" />
               </div>
             </div>
 
             <div className="flex gap-4 max-w-md mx-auto">
               <Button
-                onClick={handleSmileRetake}
+                onClick={handleRetake}
                 variant="outline"
                 size="lg"
                 className="flex-1 border-2 hover:border-accent/50 hover:bg-accent/5 transition-all hover:scale-105"
               >
-                Tomar de Nuevo
+                Elegir Otra Foto
               </Button>
               <Button
-                onClick={handleSmileConfirm}
+                onClick={handleConfirm}
                 size="lg"
                 className="flex-1 gap-2 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 transition-all hover:scale-105"
               >
