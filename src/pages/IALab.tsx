@@ -16,7 +16,6 @@ type Step = "hero" | "capture" | "loading" | "contact" | "results";
 
 const IALab = () => {
   const [step, setStep] = useState<Step>("hero");
-  const [restImage, setRestImage] = useState<string>("");
   const [smileImage, setSmileImage] = useState<string>("");
   const [idealImage, setIdealImage] = useState<string>("");
   const [analysis, setAnalysis] = useState<string>("");
@@ -64,8 +63,7 @@ const IALab = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [step]);
 
-  const handleCapture = async (rest: string, smile: string) => {
-    setRestImage(rest);
+  const handleCapture = async (smile: string) => {
     setSmileImage(smile);
     setStep("loading");
     track({ name: "photos_captured" });
@@ -106,32 +104,20 @@ const IALab = () => {
         smileImg.src = smile;
       });
 
-      const restImg = new Image();
-      await new Promise((resolve, reject) => {
-        restImg.onload = resolve;
-        restImg.onerror = reject;
-        restImg.src = rest;
-      });
-
       // Detectar landmarks REALES con MediaPipe
       const smileResults = faceLandmarkerRef.current.detect(smileImg);
-      const restResults = faceLandmarkerRef.current.detect(restImg);
 
       if (!smileResults.faceLandmarks || smileResults.faceLandmarks.length === 0) {
-        throw new Error("No se detectó rostro en la imagen de sonrisa");
-      }
-
-      if (!restResults.faceLandmarks || restResults.faceLandmarks.length === 0) {
-        throw new Error("No se detectó rostro en la imagen de reposo");
+        throw new Error("No se detectó rostro en la imagen");
       }
 
       // Convertir landmarks de MediaPipe al formato esperado
       const smileLandmarks = smileResults.faceLandmarks[0];
-      const restLandmarks = restResults.faceLandmarks[0];
       
-      // Calcular métricas REALES
+      // Calcular métricas REALES usando los mismos landmarks para rest y smile
+      // (ya que solo tenemos una foto sonriendo)
       const calculatedMetrics = computeMetrics({
-        restLm: restLandmarks,
+        restLm: smileLandmarks, // Usamos la misma imagen como referencia
         smileLm: smileLandmarks,
         imgW: smileImg.width,
         imgH: smileImg.height
@@ -237,7 +223,7 @@ const IALab = () => {
       
       {step === "results" && (
         <ResultsSection
-          restImage={restImage}
+          restImage={smileImage}
           smileImage={smileImage}
           idealImage={idealImage}
           analysis={analysis}
