@@ -12,6 +12,7 @@ import { track } from "@/lib/analytics";
 import { getSupabase } from "@/integrations/supabase/safeClient";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
+import { detectGender } from "@/lib/genderDetection";
 import type { Landmark } from "@/types/mediapipe";
 
 type Step = "hero" | "capture" | "loading" | "preview" | "results";
@@ -36,6 +37,7 @@ const IALab = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSkinUpsell, setShowSkinUpsell] = useState(false);
   const [skinAnalysisData, setSkinAnalysisData] = useState<any>(null);
+  const [detectedGender, setDetectedGender] = useState<'male' | 'female' | 'neutral'>('neutral');
   const [paymentLoading, setPaymentLoading] = useState(false);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
@@ -149,7 +151,15 @@ const IALab = () => {
     track({ name: "photos_captured" });
 
     try {
-      // 1. Perfect Corp API Analysis (World-Class)
+      // 1. Detectar género para personalizar upsell (en paralelo)
+      const genderPromise = detectGender(smile).then(gender => {
+        setDetectedGender(gender);
+        logger.log("🧑 Gender detected:", gender);
+      }).catch(() => {
+        setDetectedGender('neutral');
+      });
+
+      // 2. Perfect Corp API Analysis (World-Class)
       console.log('🌟 Calling Perfect Corp API for professional analysis...');
       const { data: perfectCorpData, error: perfectCorpError } = await getSupabase().functions.invoke("perfect-corp-analysis", {
         body: { imageBase64: smile }
@@ -167,6 +177,9 @@ const IALab = () => {
         setPerfectCorpAnalysis(perfectCorpData.data);
         logger.log("⚠️ Using Perfect Corp fallback data");
       }
+
+      // Esperar a que termine la detección de género
+      await genderPromise;
 
       // 2. Continue with existing MediaPipe + smile simulation
       if (!faceLandmarkerRef.current) {
@@ -336,6 +349,7 @@ const IALab = () => {
         onOpenChange={handleSkinUpsellClose}
         imageBase64={originalImage}
         userEmail={userEmail}
+        detectedGender={detectedGender}
         onComplete={handleSkinAnalysisComplete}
       />
 
