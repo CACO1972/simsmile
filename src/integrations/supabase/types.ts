@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      simulation_credits: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          credits_total: number
+          credits_used: number
+          currency: string
+          email: string
+          expires_at: string | null
+          flow_order_id: string | null
+          flow_payment_status: string | null
+          id: string
+          package_type: string
+          paid_at: string | null
+          phone: string | null
+        }
+        Insert: {
+          amount_paid?: number
+          created_at?: string
+          credits_total?: number
+          credits_used?: number
+          currency?: string
+          email: string
+          expires_at?: string | null
+          flow_order_id?: string | null
+          flow_payment_status?: string | null
+          id?: string
+          package_type?: string
+          paid_at?: string | null
+          phone?: string | null
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          credits_total?: number
+          credits_used?: number
+          currency?: string
+          email?: string
+          expires_at?: string | null
+          flow_order_id?: string | null
+          flow_payment_status?: string | null
+          id?: string
+          package_type?: string
+          paid_at?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
       smile_analyses: {
         Row: {
           analysis_text: string | null

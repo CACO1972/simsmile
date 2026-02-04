@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText } from "lucide-react";
+import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText, ShieldCheck } from "lucide-react";
 import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
@@ -28,9 +28,12 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           width="500"
           height="500"
         />
-        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-sm md:text-base font-semibold text-primary">
-            ¡Gratis por Tiempo Limitado!
+        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30">
+          <span className="text-sm md:text-base font-bold text-primary">
+            $5.990 CLP
+          </span>
+          <span className="text-xs md:text-sm text-muted-foreground">
+            • 3 simulaciones incluidas
           </span>
         </div>
       </nav>
@@ -52,7 +55,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            100% GRATIS | SIMULACIÓN | TECNOLOGÍA
+            SIMULACIÓN IA | ANÁLISIS FACIAL | TECNOLOGÍA PROFESIONAL
           </div>
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-foreground leading-tight tracking-tight">
@@ -65,7 +68,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </h1>
           
           <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
-            <span className="font-semibold text-primary">100% Gratis.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
+            <span className="font-semibold text-primary">Desde $5.990 CLP.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
           {/* Process Flow - Professional Version */}
@@ -120,18 +123,22 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
               </div>
             </div>
 
-            <div className="flex justify-center lg:justify-start">
+            <div className="flex flex-col items-center lg:items-start gap-4">
               <Button
                 size="lg"
                 onClick={onStart}
                 className="group relative bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white font-semibold rounded-2xl px-10 py-7 text-lg transition-all duration-500 hover:scale-[1.02] shadow-[0_8px_30px_rgb(168,85,247,0.3)] hover:shadow-[0_12px_40px_rgb(168,85,247,0.5)] border border-white/10"
               >
                 <span className="relative z-10 flex items-center gap-3">
-                  Empezar Ahora
+                  Comenzar por $5.990
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Button>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                <span>Pago seguro con Flow • Satisfacción garantizada</span>
+              </div>
             </div>
           </div>
         </div>

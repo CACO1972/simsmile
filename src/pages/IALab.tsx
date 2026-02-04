@@ -5,6 +5,8 @@ import { LoadingAnimation } from "@/components/LoadingAnimation";
 import { ContactSection } from "@/components/ContactSection";
 import { ResultsSection } from "@/components/ResultsSection";
 import { Footer } from "@/components/Footer";
+import { PaymentModal } from "@/components/PaymentModal";
+import { UpsellBanner } from "@/components/UpsellBanner";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { getSupabase } from "@/integrations/supabase/safeClient";
@@ -12,7 +14,7 @@ import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
-type Step = "hero" | "capture" | "loading" | "contact" | "results";
+type Step = "hero" | "payment" | "capture" | "loading" | "contact" | "results";
 
 const IALab = () => {
   const [step, setStep] = useState<Step>("hero");
@@ -28,6 +30,10 @@ const IALab = () => {
     warnings?: string[];
   } | null>(null);
   const [perfectCorpAnalysis, setPerfectCorpAnalysis] = useState<any>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [remainingCredits, setRemainingCredits] = useState<number>(0);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showUpsell, setShowUpsell] = useState(false);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
   // Initialize MediaPipe Face Landmarker
@@ -63,7 +69,84 @@ const IALab = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [step]);
 
+  // Check for payment success from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    const orderId = urlParams.get('order');
+
+    if (paymentStatus === 'success' && orderId) {
+      // Clear URL params
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      toast.success('¡Pago exitoso! Ya puedes comenzar tu simulación.');
+      // Recuperar email del localStorage si existe
+      const savedEmail = localStorage.getItem('simsmile_email');
+      if (savedEmail) {
+        setUserEmail(savedEmail);
+        checkCredits(savedEmail);
+      }
+      setStep("capture");
+    }
+  }, []);
+
+  const checkCredits = async (email: string) => {
+    try {
+      const { data, error } = await getSupabase().functions.invoke('flow-payment/check-credits', {
+        body: { email }
+      });
+      if (!error && data) {
+        setRemainingCredits(data.remainingCredits || 0);
+        setShowUpsell(data.remainingCredits <= 1);
+      }
+    } catch (e) {
+      console.error('Error checking credits:', e);
+    }
+  };
+
+  const useCredit = async (email: string): Promise<boolean> => {
+    try {
+      const { data, error } = await getSupabase().functions.invoke('flow-payment/use-credit', {
+        body: { email }
+      });
+      
+      if (error || data?.needsPayment) {
+        setShowPaymentModal(true);
+        return false;
+      }
+      
+      setRemainingCredits(data?.remainingCredits || 0);
+      if (data?.remainingCredits <= 1) {
+        setShowUpsell(true);
+      }
+      return true;
+    } catch (e) {
+      console.error('Error using credit:', e);
+      return false;
+    }
+  };
+
+  const handleStartFromHero = () => {
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (email: string) => {
+    setUserEmail(email);
+    localStorage.setItem('simsmile_email', email);
+    checkCredits(email);
+    setStep("capture");
+  };
+
   const handleCapture = async (smile: string) => {
+    // Verificar créditos antes de procesar
+    if (userEmail) {
+      const hasCredit = await useCredit(userEmail);
+      if (!hasCredit) {
+        toast.error('Necesitas créditos para realizar una simulación');
+        return;
+      }
+    }
+
     setSmileImage(smile);
     setStep("loading");
     track({ name: "photos_captured" });
@@ -213,7 +296,7 @@ const IALab = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {step === "hero" && <HeroSection onStart={() => setStep("capture")} />}
+      {step === "hero" && <HeroSection onStart={handleStartFromHero} />}
       
       {step === "capture" && <CaptureSection onCapture={handleCapture} />}
       
@@ -229,10 +312,25 @@ const IALab = () => {
           analysis={analysis}
           metrics={metrics}
           landmarks={landmarks}
-          contactEmail={(contactData?.email as string) || ""}
+          contactEmail={(contactData?.email as string) || userEmail}
           facialAnalysis={simulationData?.facialAnalysis}
           qualityScore={simulationData?.qualityScore}
           perfectCorpAnalysis={perfectCorpAnalysis}
+        />
+      )}
+
+      {/* Payment Modal */}
+      <PaymentModal
+        open={showPaymentModal}
+        onOpenChange={setShowPaymentModal}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      {/* Upsell Banner */}
+      {showUpsell && step !== "hero" && (
+        <UpsellBanner
+          remainingCredits={remainingCredits}
+          onUpgrade={() => setShowPaymentModal(true)}
         />
       )}
 
