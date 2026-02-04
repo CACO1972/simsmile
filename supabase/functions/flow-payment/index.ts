@@ -58,10 +58,11 @@ serve(async (req) => {
       }
 
       // Definir precios por paquete
-      const packages: Record<string, { amount: number; credits: number; name: string }> = {
+      const packages: Record<string, { amount: number; credits: number; name: string; includesSkinAnalysis?: boolean }> = {
         basic: { amount: 5990, credits: 3, name: 'Pack 3 Simulaciones' },
-        premium: { amount: 9990, credits: 10, name: 'Pack 10 Simulaciones + Análisis Detallado' },
-        unlimited: { amount: 14990, credits: 999, name: 'Pack Ilimitado (30 días)' },
+        bundle: { amount: 7990, credits: 3, name: 'Pack Completo: Simulación + Análisis de Piel', includesSkinAnalysis: true },
+        premium: { amount: 9990, credits: 10, name: 'Pack 10 Simulaciones + Análisis de Piel', includesSkinAnalysis: true },
+        unlimited: { amount: 14990, credits: 999, name: 'Pack Ilimitado (30 días)', includesSkinAnalysis: true },
         skin_analysis: { amount: 2990, credits: 0, name: 'Análisis de Piel Premium' }
       };
 
