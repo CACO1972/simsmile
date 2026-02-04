@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { HeroSection } from "@/components/HeroSection";
 import { CaptureSection } from "@/components/CaptureSection";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
-import { ContactSection } from "@/components/ContactSection";
 import { ResultsSection } from "@/components/ResultsSection";
 import { Footer } from "@/components/Footer";
 import { PaymentModal } from "@/components/PaymentModal";
@@ -15,7 +14,7 @@ import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
-type Step = "hero" | "capture" | "loading" | "preview" | "contact" | "results";
+type Step = "hero" | "capture" | "loading" | "preview" | "results";
 
 const IALab = () => {
   const [step, setStep] = useState<Step>("hero");
@@ -25,7 +24,7 @@ const IALab = () => {
   const [analysis, setAnalysis] = useState<string>("");
   const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
   const [landmarks, setLandmarks] = useState<Landmark[] | null>(null);
-  const [contactData, setContactData] = useState<Record<string, unknown> | null>(null);
+  
   const [simulationData, setSimulationData] = useState<{
     facialAnalysis?: Record<string, unknown>;
     qualityScore?: number;
@@ -98,8 +97,8 @@ const IALab = () => {
           setUserEmail(savedEmail);
           checkCredits(savedEmail);
         }
-        // Go to contact/results with unlocked simulation
-        setStep("contact");
+        // Go directly to results with unlocked simulation
+        setStep("results");
         // Show skin upsell after payment
         setTimeout(() => {
           setShowSkinUpsell(true);
@@ -135,7 +134,7 @@ const IALab = () => {
     localStorage.setItem('simsmile_email', email);
     checkCredits(email);
     setShowPaymentModal(false);
-    setStep("contact");
+    setStep("results");
     
     // Mostrar upsell de skin después del pago exitoso
     setTimeout(() => {
@@ -284,12 +283,6 @@ const IALab = () => {
     }
   };
 
-  const handleContactSubmit = async (data: any) => {
-    setContactData(data);
-    setStep("results");
-    track({ name: "contact_submitted", data: { email: data.email } });
-    toast.success("¡Análisis completado!");
-  };
 
   const handleSkinAnalysisComplete = (skinData: any) => {
     setSkinAnalysisData(skinData);
@@ -313,8 +306,6 @@ const IALab = () => {
         />
       )}
       
-      {step === "contact" && <ContactSection onSubmit={handleContactSubmit} />}
-      
       {step === "results" && (
         <ResultsSection
           restImage={originalImage}
@@ -323,7 +314,7 @@ const IALab = () => {
           analysis={analysis}
           metrics={metrics}
           landmarks={landmarks}
-          contactEmail={(contactData?.email as string) || userEmail}
+          contactEmail={userEmail}
           facialAnalysis={simulationData?.facialAnalysis}
           qualityScore={simulationData?.qualityScore}
           perfectCorpAnalysis={perfectCorpAnalysis}
