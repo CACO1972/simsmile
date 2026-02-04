@@ -33,6 +33,7 @@ interface SkinAnalysisUpsellProps {
   onOpenChange: (open: boolean) => void;
   imageBase64?: string;
   userEmail: string;
+  detectedGender?: 'male' | 'female' | 'neutral';
   onComplete?: (skinData: SkinAnalysisResult) => void;
 }
 
@@ -51,26 +52,49 @@ interface SkinAnalysisResult {
   }[];
 }
 
-// Datos de preview tentadores (parcialmente revelados)
+// Datos de preview tentadores (parcialmente revelados) por género
 const PREVIEW_DATA = {
   skinAge: "2?",
   hydration: 7,
   elasticity: 8,
   teaser: {
     male: [
-      "Detectamos signos de fatiga en tu piel",
-      "Tu barba podría estar irritando tu piel",
-      "Nivel de hidratación por debajo del óptimo"
+      "Tu piel muestra signos de fatiga y estrés",
+      "Detectamos irritación en la zona de la barba",
+      "Los poros en tu zona T necesitan atención",
+      "El afeitado puede estar afectando tu piel"
     ],
     female: [
-      "Tu piel muestra potencial de luminosidad",
-      "Detectamos zonas que necesitan hidratación",
-      "Hay oportunidad de mejorar la textura"
+      "Tu piel tiene un gran potencial de luminosidad",
+      "Detectamos zonas que necesitan más hidratación",
+      "Hay oportunidad de mejorar la textura y firmeza",
+      "Las líneas de expresión pueden reducirse"
     ],
     neutral: [
-      "Tu piel tiene características únicas",
-      "Detectamos áreas de oportunidad",
-      "Hay factores que están afectando tu piel"
+      "Tu piel tiene características únicas por descubrir",
+      "Detectamos áreas con potencial de mejora",
+      "Hay factores externos afectando tu piel",
+      "Tu hidratación podría optimizarse"
+    ]
+  },
+  benefits: {
+    male: [
+      { icon: "pores", text: "Análisis de poros y textura" },
+      { icon: "hydration", text: "Nivel de hidratación real" },
+      { icon: "age", text: "Edad biológica de tu piel" },
+      { icon: "beard", text: "Impacto del afeitado en tu piel" }
+    ],
+    female: [
+      { icon: "glow", text: "Análisis de luminosidad y tono" },
+      { icon: "wrinkles", text: "Evaluación de líneas finas" },
+      { icon: "age", text: "Edad real de tu piel" },
+      { icon: "hydration", text: "Mapa de hidratación facial" }
+    ],
+    neutral: [
+      { icon: "age", text: "Edad biológica de tu piel" },
+      { icon: "hydration", text: "Nivel de hidratación" },
+      { icon: "pores", text: "Análisis de poros y textura" },
+      { icon: "recommendations", text: "Recomendaciones personalizadas" }
     ]
   }
 };
@@ -80,8 +104,12 @@ export const SkinAnalysisUpsell = ({
   onOpenChange,
   imageBase64,
   userEmail,
+  detectedGender = 'neutral',
   onComplete,
 }: SkinAnalysisUpsellProps) => {
+  const gender = detectedGender || 'neutral';
+  const teaserMessages = PREVIEW_DATA.teaser[gender];
+  const benefitsList = PREVIEW_DATA.benefits[gender];
   const [step, setStep] = useState<"teaser" | "offer" | "analyzing" | "results">("teaser");
   const [loading, setLoading] = useState(false);
   const [skinData, setSkinData] = useState<SkinAnalysisResult | null>(null);
@@ -332,7 +360,7 @@ export const SkinAnalysisUpsell = ({
                       </div>
                     </div>
 
-                    {/* Hallazgos tentadores */}
+                    {/* Hallazgos tentadores - personalizados por género */}
                     <Card className="border-amber-500/30 bg-amber-500/5">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
@@ -341,10 +369,12 @@ export const SkinAnalysisUpsell = ({
                           </div>
                           <div>
                             <h4 className="font-semibold text-foreground mb-2">
-                              Detectamos oportunidades
+                              {gender === 'male' ? '🧔 Detectamos en tu piel:' : 
+                               gender === 'female' ? '✨ Descubrimos sobre tu piel:' : 
+                               '🔍 Detectamos oportunidades:'}
                             </h4>
                             <ul className="space-y-1.5">
-                              {PREVIEW_DATA.teaser.neutral.map((item, idx) => (
+                              {teaserMessages.map((item, idx) => (
                                 <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
                                   <span className="text-amber-500">•</span>
                                   <span>{item}</span>
