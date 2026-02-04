@@ -99,10 +99,6 @@ const IALab = () => {
         }
         // Go directly to results with unlocked simulation
         setStep("results");
-        // Show skin upsell after payment
-        setTimeout(() => {
-          setShowSkinUpsell(true);
-        }, 1500);
       }
     }
   }, []);
@@ -126,7 +122,16 @@ const IALab = () => {
   };
 
   const handleUnlockSimulation = async () => {
-    setShowPaymentModal(true);
+    // Mostrar primero el upsell de piel como "dulce" antes del pago
+    setShowSkinUpsell(true);
+  };
+
+  const handleSkinUpsellClose = (open: boolean) => {
+    setShowSkinUpsell(open);
+    // Cuando cierre el upsell de piel, mostrar modal de pago
+    if (!open) {
+      setShowPaymentModal(true);
+    }
   };
 
   const handlePaymentSuccess = (email: string) => {
@@ -135,11 +140,6 @@ const IALab = () => {
     checkCredits(email);
     setShowPaymentModal(false);
     setStep("results");
-    
-    // Mostrar upsell de skin después del pago exitoso
-    setTimeout(() => {
-      setShowSkinUpsell(true);
-    }, 1000);
   };
 
   const handleCapture = async (smile: string) => {
@@ -330,10 +330,10 @@ const IALab = () => {
         defaultPackage="basic"
       />
 
-      {/* Skin Analysis Upsell - Post Payment */}
+      {/* Skin Analysis Upsell - ANTES del pago como "dulce" */}
       <SkinAnalysisUpsell
         open={showSkinUpsell}
-        onOpenChange={setShowSkinUpsell}
+        onOpenChange={handleSkinUpsellClose}
         imageBase64={originalImage}
         userEmail={userEmail}
         onComplete={handleSkinAnalysisComplete}
