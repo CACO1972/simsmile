@@ -319,11 +319,12 @@ const IALab = () => {
         />
       )}
 
-      {/* Payment Modal */}
+      {/* Payment Modal - defaultPackage="basic" para ir directo a $5.990 */}
       <PaymentModal
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
         onPaymentSuccess={handlePaymentSuccess}
+        defaultPackage="basic"
       />
 
       {/* Upsell Banner */}
