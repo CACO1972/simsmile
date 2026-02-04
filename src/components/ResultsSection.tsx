@@ -24,6 +24,7 @@ interface ResultsSectionProps {
   facialAnalysis?: Record<string, unknown>;
   qualityScore?: number;
   perfectCorpAnalysis?: any;
+  skinAnalysisData?: any;
 }
 
 export const ResultsSection = ({
@@ -37,6 +38,7 @@ export const ResultsSection = ({
   facialAnalysis,
   qualityScore,
   perfectCorpAnalysis,
+  skinAnalysisData,
 }: ResultsSectionProps) => {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [customizedImage, setCustomizedImage] = useState<string | null>(null);
