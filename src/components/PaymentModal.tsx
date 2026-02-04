@@ -18,14 +18,16 @@ interface PaymentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPaymentSuccess?: (email: string) => void;
+  defaultPackage?: string; // 'basic' para ir directo al pago de 5990
 }
 
-export const PaymentModal = ({ open, onOpenChange, onPaymentSuccess }: PaymentModalProps) => {
+export const PaymentModal = ({ open, onOpenChange, onPaymentSuccess, defaultPackage }: PaymentModalProps) => {
   const [step, setStep] = useState<'email' | 'packages'>('email');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [directPayment, setDirectPayment] = useState(!!defaultPackage);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,10 +52,19 @@ export const PaymentModal = ({ open, onOpenChange, onPaymentSuccess }: PaymentMo
         return;
       }
 
-      setStep('packages');
+      // Si hay paquete predefinido, ir directo al pago
+      if (defaultPackage) {
+        await handleSelectPackage(defaultPackage);
+      } else {
+        setStep('packages');
+      }
     } catch (error) {
       console.error('Error checking credits:', error);
-      setStep('packages');
+      if (defaultPackage) {
+        await handleSelectPackage(defaultPackage);
+      } else {
+        setStep('packages');
+      }
     } finally {
       setLoading(false);
     }
