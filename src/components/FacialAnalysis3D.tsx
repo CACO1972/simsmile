@@ -1,11 +1,12 @@
-import { useRef, useState, useEffect, Suspense, useMemo } from "react";
+import { useRef, useState, useEffect, Suspense, useMemo, useCallback } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Text, Line, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RotateCw, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
-import { motion } from "framer-motion";
+import { RotateCw, Maximize2, Minimize2, ZoomIn, ZoomOut, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FacialAnalysis3DProps {
   smileImage: string;
@@ -320,7 +321,48 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [viewAngle, setViewAngle] = useState<ViewAngle>('front');
+  const [immersiveMode, setImmersiveMode] = useState(false);
+  const [showControls, setShowControls] = useState(true);
   const controlsRef = useRef<any>(null);
+  const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMobile = useIsMobile();
+
+  // Auto-hide controls en modo inmersivo
+  useEffect(() => {
+    if (immersiveMode && showControls) {
+      hideControlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+    return () => {
+      if (hideControlsTimeoutRef.current) {
+        clearTimeout(hideControlsTimeoutRef.current);
+      }
+    };
+  }, [immersiveMode, showControls]);
+
+  // Toggle controles con tap en modo inmersivo
+  const handleCanvasTap = useCallback(() => {
+    if (immersiveMode) {
+      setShowControls(prev => !prev);
+    }
+  }, [immersiveMode]);
+
+  // Entrar/salir modo inmersivo
+  const toggleImmersiveMode = useCallback(() => {
+    setImmersiveMode(prev => !prev);
+    setShowControls(true);
+    if (!immersiveMode) {
+      setIsFullscreen(true);
+    }
+  }, [immersiveMode]);
+
+  // Salir modo inmersivo
+  const exitImmersiveMode = useCallback(() => {
+    setImmersiveMode(false);
+    setIsFullscreen(false);
+    setShowControls(true);
+  }, []);
 
   useEffect(() => {
     if (controlsRef.current) {
@@ -350,20 +392,214 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
     }
   };
 
+  // Modo inmersivo fullscreen para móvil
+  if (immersiveMode) {
+    return (
+      <div 
+        className="fixed inset-0 z-[100] bg-black"
+        onClick={handleCanvasTap}
+      >
+        {/* Canvas 3D fullscreen */}
+        <div className="absolute inset-0">
+          <Canvas shadows gl={{ antialias: true, alpha: true }}>
+            <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+            
+            <ambientLight intensity={0.4} />
+            <directionalLight 
+              position={[5, 5, 5]} 
+              intensity={1.5} 
+              castShadow
+              shadow-mapSize-width={2048}
+              shadow-mapSize-height={2048}
+            />
+            <directionalLight position={[-3, 3, 2]} intensity={0.6} />
+            <pointLight position={[-5, 0, -3]} intensity={0.8} color="#a855f7" />
+            <pointLight position={[5, 0, -3]} intensity={0.8} color="#60a5fa" />
+            <spotLight 
+              position={[0, 3, -3]} 
+              angle={0.4} 
+              intensity={0.7} 
+              color="#fbbf24"
+              castShadow
+            />
+            <Environment preset="studio" />
+            <fog attach="fog" args={['#000000', 8, 15]} />
+
+            <OrbitControls
+              ref={controlsRef}
+              enableDamping
+              dampingFactor={0.05}
+              rotateSpeed={0.5}
+              zoomSpeed={0.5}
+              minDistance={2}
+              maxDistance={12}
+              autoRotate={autoRotate}
+              autoRotateSpeed={2}
+              onStart={() => setAutoRotate(false)}
+            />
+
+            <Suspense fallback={<LoadingFallback />}>
+              <FaceModel 
+                imageUrl={smileImage} 
+                facialAnalysis={facialAnalysis}
+                showLines={showLines}
+                viewAngle={viewAngle}
+              />
+            </Suspense>
+          </Canvas>
+        </div>
+
+        {/* Controles que aparecen/desaparecen con tap */}
+        <AnimatePresence>
+          {showControls && (
+            <>
+              {/* Botón cerrar */}
+              <motion.button
+                className="absolute top-4 right-4 z-10 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20"
+                onClick={(e) => { e.stopPropagation(); exitImmersiveMode(); }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <X className="w-6 h-6 text-white" />
+              </motion.button>
+
+              {/* Score badge */}
+              {facialAnalysis.overall_golden_ratio_score !== undefined && (
+                <motion.div
+                  className="absolute top-4 left-4 z-10 bg-gradient-to-br from-primary/90 to-accent/90 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="text-center">
+                    <div className="text-[10px] text-white/70 font-semibold">Score</div>
+                    <div className="text-2xl font-bold text-white">
+                      {facialAnalysis.overall_golden_ratio_score}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Selector de ángulos */}
+              <motion.div
+                className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2 bg-black/50 backdrop-blur-md rounded-full p-1.5 border border-white/10"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {(['left', 'front', 'right'] as ViewAngle[]).map((angle) => (
+                  <button
+                    key={angle}
+                    onClick={(e) => { e.stopPropagation(); setViewAngle(angle); }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      viewAngle === angle 
+                        ? 'bg-white text-black' 
+                        : 'text-white/70 hover:text-white'
+                    }`}
+                  >
+                    {angle === 'left' ? '◀' : angle === 'right' ? '▶' : '●'}
+                  </button>
+                ))}
+              </motion.div>
+
+              {/* Controles inferiores */}
+              <motion.div
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3 bg-black/50 backdrop-blur-md rounded-full p-2 border border-white/10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowLines(!showLines); }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    showLines ? 'bg-primary text-white' : 'bg-white/10 text-white/70'
+                  }`}
+                >
+                  <span className="text-lg">φ</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setAutoRotate(!autoRotate); }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    autoRotate ? 'bg-primary text-white' : 'bg-white/10 text-white/70'
+                  }`}
+                >
+                  <RotateCw className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleReset(); }}
+                  className="w-10 h-10 rounded-full bg-white/10 text-white/70 flex items-center justify-center"
+                >
+                  <Minimize2 className="w-5 h-5" />
+                </button>
+              </motion.div>
+
+              {/* Indicador de tap */}
+              <motion.div
+                className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 text-white/50 text-xs"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                Toca para ocultar controles
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Indicador cuando están ocultos */}
+        <AnimatePresence>
+          {!showControls && (
+            <motion.div
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-white/30 text-xs"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Toca para mostrar controles
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
   return (
     <Card className={`relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10 border-2 border-primary/30 ${
       isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
     }`}>
       {/* Header - Optimizado para móvil */}
       <motion.div 
-        className="relative z-10 p-4 md:p-6 text-center bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm"
+        className="relative z-10 p-3 md:p-6 text-center bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-xl md:text-3xl lg:text-4xl font-heading font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-          Modelo 3D Realista
-        </h2>
+        <div className="flex items-center justify-between">
+          <div className="flex-1" />
+          <h2 className="text-lg md:text-3xl lg:text-4xl font-heading font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            Modelo 3D
+          </h2>
+          <div className="flex-1 flex justify-end">
+            {/* Botón modo inmersivo - Solo móvil */}
+            {isMobile && (
+              <Button
+                onClick={toggleImmersiveMode}
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs text-primary"
+              >
+                <Maximize2 className="w-4 h-4" />
+                <span className="sr-only">Modo inmersivo</span>
+              </Button>
+            )}
+          </div>
+        </div>
         <p className="text-muted-foreground mt-1 text-xs md:text-sm hidden md:block">
           Reconstrucción con profundidad y geometría avanzada
         </p>
@@ -395,6 +631,19 @@ export const FacialAnalysis3D = ({ smileImage, facialAnalysis }: FacialAnalysis3
         >
           Der <span className="hidden md:inline">▶</span>
         </Button>
+        
+        {/* Botón modo inmersivo - Solo móvil, alternativo */}
+        {isMobile && (
+          <Button
+            onClick={toggleImmersiveMode}
+            variant="outline"
+            size="sm"
+            className="gap-1 text-xs px-3 ml-2 border-primary/50 text-primary"
+          >
+            <Maximize2 className="w-3 h-3" />
+            Full
+          </Button>
+        )}
       </div>
 
       {/* Canvas 3D */}
