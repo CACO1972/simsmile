@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Zap, Crown } from "lucide-react";
+import { Check, Sparkles, Zap, Crown, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PricingPackage {
@@ -12,7 +12,9 @@ interface PricingPackage {
   credits: number;
   features: string[];
   popular?: boolean;
+  bundle?: boolean;
   icon: React.ReactNode;
+  savings?: string;
 }
 
 const packages: PricingPackage[] = [
@@ -30,6 +32,25 @@ const packages: PricingPackage[] = [
     icon: <Sparkles className="w-6 h-6" />
   },
   {
+    id: 'bundle',
+    name: 'Pack Completo',
+    price: 7990,
+    originalPrice: 8980,
+    credits: 3,
+    features: [
+      '3 simulaciones de sonrisa',
+      '✨ Análisis de piel premium',
+      'Edad real de tu piel',
+      'Mapa de hidratación',
+      'Recomendaciones personalizadas',
+      'Modelo 3D + Reporte'
+    ],
+    popular: true,
+    bundle: true,
+    icon: <Gift className="w-6 h-6" />,
+    savings: 'Ahorras $990'
+  },
+  {
     id: 'premium',
     name: 'Pack Premium',
     price: 9990,
@@ -37,29 +58,13 @@ const packages: PricingPackage[] = [
     credits: 10,
     features: [
       '10 simulaciones de sonrisa',
-      'Análisis facial avanzado',
+      '✨ Análisis de piel incluido',
       'Comparación antes/después',
       'Modelo 3D con múltiples ángulos',
       'Recomendaciones personalizadas',
       'Soporte prioritario'
     ],
-    popular: true,
     icon: <Zap className="w-6 h-6" />
-  },
-  {
-    id: 'unlimited',
-    name: 'Pack Ilimitado',
-    price: 14990,
-    originalPrice: 29990,
-    credits: 999,
-    features: [
-      'Simulaciones ilimitadas (30 días)',
-      'Todos los beneficios Premium',
-      'Acceso a nuevas funciones',
-      'Consulta virtual incluida',
-      'Garantía de satisfacción'
-    ],
-    icon: <Crown className="w-6 h-6" />
   }
 ];
 
@@ -92,8 +97,14 @@ export const PricingCard = ({ onSelectPackage, loading, selectedPackage }: Prici
         >
           {pkg.popular && (
             <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-accent text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
-              MÁS POPULAR
+              {pkg.bundle ? '🎁 MEJOR VALOR' : 'MÁS POPULAR'}
             </div>
+          )}
+          
+          {pkg.savings && (
+            <Badge className="absolute top-0 left-0 bg-green-500 text-white text-xs rounded-br-lg rounded-tl-lg">
+              {pkg.savings}
+            </Badge>
           )}
           
           <CardHeader className="text-center pb-4">

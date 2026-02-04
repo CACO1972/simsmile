@@ -22,7 +22,8 @@ import {
   Eye,
   TrendingUp,
   Clock,
-  Star
+  Star,
+  Gift
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSupabase } from "@/integrations/supabase/safeClient";
@@ -158,6 +159,29 @@ export const SkinAnalysisUpsell = ({
       console.error("Payment error:", error);
       toast.error("Error al procesar el pago");
       startAnalysis();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBundlePurchase = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await getSupabase().functions.invoke("flow-payment/flow-payment", {
+        body: { 
+          email: userEmail, 
+          packageType: "bundle" 
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      }
+    } catch (error) {
+      console.error("Bundle payment error:", error);
+      toast.error("Error al procesar el pago del bundle");
     } finally {
       setLoading(false);
     }
@@ -477,20 +501,61 @@ export const SkinAnalysisUpsell = ({
                   </Card>
                 </div>
 
-                {/* Precio con descuento */}
-                <div className="bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 rounded-xl p-4 text-center border border-primary/20">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className="text-lg line-through text-muted-foreground">
-                      $4.990
-                    </span>
-                    <Badge className="bg-gradient-to-r from-pink-500 to-purple-600 text-white border-0">
-                      -40% HOY
+                {/* Opciones de precio: Bundle destacado vs Solo piel */}
+                <div className="space-y-3">
+                  {/* BUNDLE - Opción destacada */}
+                  <div className="relative bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 rounded-xl p-4 border-2 border-green-500/50">
+                    <Badge className="absolute -top-2 left-4 bg-green-500 text-white text-xs">
+                      🎁 MEJOR VALOR
                     </Badge>
+                    <div className="flex items-center justify-between mt-2">
+                      <div>
+                        <p className="font-semibold text-foreground">Pack Completo</p>
+                        <p className="text-xs text-muted-foreground">Simulación + Análisis de Piel</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm line-through text-muted-foreground">$8.980</span>
+                          <Badge variant="secondary" className="bg-green-500/20 text-green-600 text-xs">-11%</Badge>
+                        </div>
+                        <p className="text-2xl font-bold text-foreground">$7.990</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handleBundlePurchase()}
+                      disabled={loading}
+                      className="w-full mt-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white"
+                    >
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Gift className="w-4 h-4 mr-2" />
+                      )}
+                      Obtener Pack Completo
+                    </Button>
                   </div>
-                  <div className="text-3xl font-bold text-foreground">$2.990</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Precio especial por comprar hoy
-                  </p>
+
+                  {/* Solo análisis de piel */}
+                  <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground text-sm">Solo Análisis de Piel</p>
+                        <p className="text-xs text-muted-foreground">Sin simulación de sonrisa</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm line-through text-muted-foreground">$4.990</span>
+                        <p className="text-lg font-bold text-foreground">$2.990</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handlePurchase}
+                      disabled={loading}
+                      variant="outline"
+                      className="w-full mt-3"
+                    >
+                      Solo Análisis de Piel
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Garantía */}
@@ -499,24 +564,10 @@ export const SkinAnalysisUpsell = ({
                   <span>Garantía de satisfacción 100%</span>
                 </div>
 
-                {/* Botones */}
-                <div className="flex flex-col gap-2">
-                  <Button
-                    onClick={handlePurchase}
-                    disabled={loading}
-                    className="w-full h-12 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90"
-                  >
-                    {loading ? (
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    ) : (
-                      <Zap className="w-5 h-5 mr-2" />
-                    )}
-                    Desbloquear por $2.990
-                  </Button>
-                  <Button variant="ghost" onClick={handleSkip} className="text-muted-foreground">
-                    No gracias, quizás después
-                  </Button>
-                </div>
+                {/* Skip */}
+                <Button variant="ghost" onClick={handleSkip} className="w-full text-muted-foreground">
+                  No gracias, solo quiero la simulación
+                </Button>
               </div>
             </motion.div>
           )}
