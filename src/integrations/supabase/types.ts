@@ -31,7 +31,6 @@ export type Database = {
           simulated_image_url: string | null
           smile_image_url: string
           status: string | null
-          user_id: string | null
         }
         Insert: {
           analysis_text?: string | null
@@ -49,7 +48,6 @@ export type Database = {
           simulated_image_url?: string | null
           smile_image_url: string
           status?: string | null
-          user_id?: string | null
         }
         Update: {
           analysis_text?: string | null
@@ -67,7 +65,6 @@ export type Database = {
           simulated_image_url?: string | null
           smile_image_url?: string
           status?: string | null
-          user_id?: string | null
         }
         Relationships: []
       }

@@ -11,13 +11,10 @@ import { getSupabase } from "@/integrations/supabase/safeClient";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
-import { useAuth } from "@/contexts/AuthContext";
-import UserMenu from "@/components/UserMenu";
 
 type Step = "hero" | "capture" | "loading" | "contact" | "results";
 
 const IALab = () => {
-  const { user } = useAuth();
   const [step, setStep] = useState<Step>("hero");
   const [smileImage, setSmileImage] = useState<string>("");
   const [idealImage, setIdealImage] = useState<string>("");
@@ -144,9 +141,6 @@ const IALab = () => {
           metrics: calculatedMetrics,
           faceAnalysis,
           recommendations
-        },
-        headers: {
-          Authorization: `Bearer ${(await getSupabase().auth.getSession()).data.session?.access_token}`
         }
       });
 
@@ -212,36 +206,6 @@ const IALab = () => {
 
   const handleContactSubmit = async (data: any) => {
     setContactData(data);
-    
-    // Save to database with user_id
-    try {
-      const analysisData = {
-        user_id: user?.id,
-        rest_image_url: smileImage,
-        smile_image_url: smileImage,
-        simulated_image_url: idealImage,
-        ideal_image_url: idealImage,
-        analysis_text: analysis,
-        metrics: metrics || {},
-        contact_name: data.name,
-        contact_email: data.email,
-        contact_phone: data.phone,
-        contact_submitted: true,
-        status: 'completed'
-      } as any; // Type assertion until database types refresh
-
-      const { error: dbError } = await getSupabase()
-        .from('smile_analyses')
-        .insert(analysisData);
-
-      if (dbError) {
-        logger.error("Error saving to database:", dbError);
-        toast.error("Error al guardar el análisis");
-      }
-    } catch (error) {
-      logger.error("Database error:", error);
-    }
-
     setStep("results");
     track({ name: "contact_submitted", data: { email: data.email } });
     toast.success("¡Análisis completado!");
@@ -249,12 +213,6 @@ const IALab = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {step !== "hero" && (
-        <div className="fixed top-4 right-4 z-50">
-          <UserMenu />
-        </div>
-      )}
-      
       {step === "hero" && <HeroSection onStart={() => setStep("capture")} />}
       
       {step === "capture" && <CaptureSection onCapture={handleCapture} />}
