@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.perfect-corp-analysis]
 verify_jwt = false
+
+[functions.flow-payment]
+verify_jwt = false
+
+[functions.flow-webhook]
+verify_jwt = false
