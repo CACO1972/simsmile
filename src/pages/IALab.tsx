@@ -6,7 +6,8 @@ import { ContactSection } from "@/components/ContactSection";
 import { ResultsSection } from "@/components/ResultsSection";
 import { Footer } from "@/components/Footer";
 import { PaymentModal } from "@/components/PaymentModal";
-import { UpsellBanner } from "@/components/UpsellBanner";
+import { BlurredSimulation } from "@/components/BlurredSimulation";
+import { SkinAnalysisUpsell } from "@/components/SkinAnalysisUpsell";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { getSupabase } from "@/integrations/supabase/safeClient";
@@ -14,11 +15,12 @@ import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
-type Step = "hero" | "payment" | "capture" | "loading" | "contact" | "results";
+type Step = "hero" | "capture" | "loading" | "preview" | "contact" | "results";
 
 const IALab = () => {
   const [step, setStep] = useState<Step>("hero");
   const [smileImage, setSmileImage] = useState<string>("");
+  const [originalImage, setOriginalImage] = useState<string>("");
   const [idealImage, setIdealImage] = useState<string>("");
   const [analysis, setAnalysis] = useState<string>("");
   const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
@@ -33,7 +35,9 @@ const IALab = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showUpsell, setShowUpsell] = useState(false);
+  const [showSkinUpsell, setShowSkinUpsell] = useState(false);
+  const [skinAnalysisData, setSkinAnalysisData] = useState<any>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
 
   // Initialize MediaPipe Face Landmarker
@@ -74,19 +78,33 @@ const IALab = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
     const orderId = urlParams.get('order');
+    const packageType = urlParams.get('package');
 
     if (paymentStatus === 'success' && orderId) {
       // Clear URL params
       window.history.replaceState({}, document.title, window.location.pathname);
       
-      toast.success('¡Pago exitoso! Ya puedes comenzar tu simulación.');
-      // Recuperar email del localStorage si existe
       const savedEmail = localStorage.getItem('simsmile_email');
-      if (savedEmail) {
-        setUserEmail(savedEmail);
-        checkCredits(savedEmail);
+      
+      if (packageType === 'skin_analysis') {
+        toast.success('¡Análisis de piel desbloqueado!');
+        // Trigger skin analysis
+        if (savedEmail) {
+          setUserEmail(savedEmail);
+        }
+      } else {
+        toast.success('¡Pago exitoso! Tu simulación ha sido desbloqueada.');
+        if (savedEmail) {
+          setUserEmail(savedEmail);
+          checkCredits(savedEmail);
+        }
+        // Go to contact/results with unlocked simulation
+        setStep("contact");
+        // Show skin upsell after payment
+        setTimeout(() => {
+          setShowSkinUpsell(true);
+        }, 1500);
       }
-      setStep("capture");
     }
   }, []);
 
@@ -97,36 +115,18 @@ const IALab = () => {
       });
       if (!error && data) {
         setRemainingCredits(data.remainingCredits || 0);
-        setShowUpsell(data.remainingCredits <= 1);
       }
     } catch (e) {
       console.error('Error checking credits:', e);
     }
   };
 
-  const useCredit = async (email: string): Promise<boolean> => {
-    try {
-      const { data, error } = await getSupabase().functions.invoke('flow-payment/use-credit', {
-        body: { email }
-      });
-      
-      if (error || data?.needsPayment) {
-        setShowPaymentModal(true);
-        return false;
-      }
-      
-      setRemainingCredits(data?.remainingCredits || 0);
-      if (data?.remainingCredits <= 1) {
-        setShowUpsell(true);
-      }
-      return true;
-    } catch (e) {
-      console.error('Error using credit:', e);
-      return false;
-    }
+  const handleStartFromHero = () => {
+    // Ir directo a captura, sin pago previo
+    setStep("capture");
   };
 
-  const handleStartFromHero = () => {
+  const handleUnlockSimulation = async () => {
     setShowPaymentModal(true);
   };
 
@@ -134,19 +134,17 @@ const IALab = () => {
     setUserEmail(email);
     localStorage.setItem('simsmile_email', email);
     checkCredits(email);
-    setStep("capture");
+    setShowPaymentModal(false);
+    setStep("contact");
+    
+    // Mostrar upsell de skin después del pago exitoso
+    setTimeout(() => {
+      setShowSkinUpsell(true);
+    }, 1000);
   };
 
   const handleCapture = async (smile: string) => {
-    // Verificar créditos antes de procesar
-    if (userEmail) {
-      const hasCredit = await useCredit(userEmail);
-      if (!hasCredit) {
-        toast.error('Necesitas créditos para realizar una simulación');
-        return;
-      }
-    }
-
+    setOriginalImage(smile);
     setSmileImage(smile);
     setStep("loading");
     track({ name: "photos_captured" });
@@ -198,9 +196,8 @@ const IALab = () => {
       const smileLandmarks = smileResults.faceLandmarks[0];
       
       // Calcular métricas REALES usando los mismos landmarks para rest y smile
-      // (ya que solo tenemos una foto sonriendo)
       const calculatedMetrics = computeMetrics({
-        restLm: smileLandmarks, // Usamos la misma imagen como referencia
+        restLm: smileLandmarks,
         smileLm: smileLandmarks,
         imgW: smileImg.width,
         imgH: smileImg.height
@@ -241,11 +238,11 @@ const IALab = () => {
           setMetrics(calculatedMetrics);
           setLandmarks(smileLandmarks);
           setSimulationData({ warnings: ["low_quality"] });
-          setStep("contact");
+          setStep("preview"); // Ir a preview con blur
           return;
         }
 
-        // Para otros errores, mostrar mensaje y NO devolver a capture
+        // Para otros errores, mostrar mensaje y continuar
         logger.error("Simulación falló pero continuamos con foto original:", msg);
         toast.info("No pudimos generar la simulación ideal, pero continuaremos con tu análisis facial.", { duration: 5000 });
         setSmileImage(smile);
@@ -254,7 +251,7 @@ const IALab = () => {
         setMetrics(calculatedMetrics);
         setLandmarks(smileLandmarks);
         setSimulationData({ warnings: ["simulation_error"] });
-        setStep("contact");
+        setStep("preview");
         return;
       }
 
@@ -267,18 +264,18 @@ const IALab = () => {
         setMetrics(calculatedMetrics);
         setLandmarks(smileLandmarks);
         setSimulationData({ warnings: ["no_simulation"] });
-        setStep("contact");
+        setStep("preview");
         return;
       }
 
       // Actualizar con las imágenes simuladas, métricas y landmarks
       setSmileImage(data.simulatedImage);
-      setIdealImage(data.idealImage);
+      setIdealImage(data.idealImage || data.simulatedImage);
       setAnalysis(analysisText);
       setMetrics(calculatedMetrics);
       setLandmarks(smileLandmarks);
       setSimulationData(data);
-      setStep("contact");
+      setStep("preview"); // Ir a preview con blur para pedir pago
       
     } catch (error) {
       logger.error("Error processing smile:", error);
@@ -294,19 +291,33 @@ const IALab = () => {
     toast.success("¡Análisis completado!");
   };
 
+  const handleSkinAnalysisComplete = (skinData: any) => {
+    setSkinAnalysisData(skinData);
+    setShowSkinUpsell(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {step === "hero" && <HeroSection onStart={handleStartFromHero} />}
       
       {step === "capture" && <CaptureSection onCapture={handleCapture} />}
       
-      {step === "loading" && <LoadingAnimation userImage={smileImage} />}
+      {step === "loading" && <LoadingAnimation userImage={originalImage} />}
+      
+      {step === "preview" && (
+        <BlurredSimulation
+          originalImage={originalImage}
+          simulatedImage={smileImage}
+          onUnlock={handleUnlockSimulation}
+          loading={paymentLoading}
+        />
+      )}
       
       {step === "contact" && <ContactSection onSubmit={handleContactSubmit} />}
       
       {step === "results" && (
         <ResultsSection
-          restImage={smileImage}
+          restImage={originalImage}
           smileImage={smileImage}
           idealImage={idealImage}
           analysis={analysis}
@@ -316,10 +327,11 @@ const IALab = () => {
           facialAnalysis={simulationData?.facialAnalysis}
           qualityScore={simulationData?.qualityScore}
           perfectCorpAnalysis={perfectCorpAnalysis}
+          skinAnalysisData={skinAnalysisData}
         />
       )}
 
-      {/* Payment Modal - defaultPackage="basic" para ir directo a $5.990 */}
+      {/* Payment Modal */}
       <PaymentModal
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
@@ -327,13 +339,14 @@ const IALab = () => {
         defaultPackage="basic"
       />
 
-      {/* Upsell Banner */}
-      {showUpsell && step !== "hero" && (
-        <UpsellBanner
-          remainingCredits={remainingCredits}
-          onUpgrade={() => setShowPaymentModal(true)}
-        />
-      )}
+      {/* Skin Analysis Upsell - Post Payment */}
+      <SkinAnalysisUpsell
+        open={showSkinUpsell}
+        onOpenChange={setShowSkinUpsell}
+        imageBase64={originalImage}
+        userEmail={userEmail}
+        onComplete={handleSkinAnalysisComplete}
+      />
 
       <Footer />
     </div>

@@ -61,7 +61,8 @@ serve(async (req) => {
       const packages: Record<string, { amount: number; credits: number; name: string }> = {
         basic: { amount: 5990, credits: 3, name: 'Pack 3 Simulaciones' },
         premium: { amount: 9990, credits: 10, name: 'Pack 10 Simulaciones + Análisis Detallado' },
-        unlimited: { amount: 14990, credits: 999, name: 'Pack Ilimitado (30 días)' }
+        unlimited: { amount: 14990, credits: 999, name: 'Pack Ilimitado (30 días)' },
+        skin_analysis: { amount: 2990, credits: 0, name: 'Análisis de Piel Premium' }
       };
 
       const selectedPackage = packages[packageType] || packages.basic;
