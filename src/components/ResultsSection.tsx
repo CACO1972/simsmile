@@ -192,6 +192,7 @@ export const ResultsSection = ({
               <FacialAnalysis3D
                 smileImage={customizedImage || smileImage}
                 facialAnalysis={facialAnalysis}
+                landmarks={landmarks}
               />
             )}
           </div>

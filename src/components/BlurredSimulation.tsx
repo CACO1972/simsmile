@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Lock, Sparkles, Eye, CreditCard } from "lucide-react";
+import { Lock, Sparkles, Eye, CreditCard, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface BlurredSimulationProps {
   originalImage: string;
   simulatedImage: string;
   onUnlock: () => void;
+  onRetake?: () => void;
   loading?: boolean;
 }
 
@@ -14,6 +15,7 @@ export const BlurredSimulation = ({
   originalImage,
   simulatedImage,
   onUnlock,
+  onRetake,
   loading = false,
 }: BlurredSimulationProps) => {
   const [showPreview, setShowPreview] = useState(false);
@@ -172,6 +174,18 @@ export const BlurredSimulation = ({
             <span>✓ Pago seguro</span>
             <span>✓ Satisfacción garantizada</span>
           </div>
+
+          {onRetake && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRetake}
+              className="mt-4 text-muted-foreground hover:text-foreground gap-2"
+            >
+              <Camera className="w-4 h-4" />
+              Tomar otra foto
+            </Button>
+          )}
         </motion.div>
       </motion.div>
     </div>

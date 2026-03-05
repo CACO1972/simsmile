@@ -84,14 +84,33 @@ const IALab = () => {
     if (paymentStatus === 'success' && orderId) {
       // Clear URL params
       window.history.replaceState({}, document.title, window.location.pathname);
-      
+
+      // Restore session data saved before Flow.cl redirect
+      const rawSession = sessionStorage.getItem('simsmile_session');
+      if (rawSession) {
+        try {
+          const s = JSON.parse(rawSession);
+          if (s.smileImage)          setSmileImage(s.smileImage);
+          if (s.originalImage)       setOriginalImage(s.originalImage);
+          if (s.idealImage)          setIdealImage(s.idealImage);
+          if (s.analysis)            setAnalysis(s.analysis);
+          if (s.metrics)             setMetrics(JSON.parse(s.metrics));
+          if (s.simulationData)      setSimulationData(JSON.parse(s.simulationData));
+          if (s.perfectCorpAnalysis) setPerfectCorpAnalysis(JSON.parse(s.perfectCorpAnalysis));
+          if (s.detectedGender)      setDetectedGender(s.detectedGender);
+          sessionStorage.removeItem('simsmile_session');
+        } catch (e) {
+          console.error('Error restoring session:', e);
+        }
+      }
+
       const savedEmail = localStorage.getItem('simsmile_email');
-      
+
       if (packageType === 'skin_analysis') {
         toast.success('¡Análisis de piel desbloqueado!');
-        // Trigger skin analysis
         if (savedEmail) {
           setUserEmail(savedEmail);
+          setShowSkinUpsell(true);
         }
       } else {
         toast.success('¡Pago exitoso! Tu simulación ha sido desbloqueada.');
@@ -99,7 +118,6 @@ const IALab = () => {
           setUserEmail(savedEmail);
           checkCredits(savedEmail);
         }
-        // Go directly to results with unlocked simulation
         setStep("results");
       }
     }
@@ -124,15 +142,15 @@ const IALab = () => {
   };
 
   const handleUnlockSimulation = async () => {
-    // Mostrar primero el upsell de piel como "dulce" antes del pago
-    setShowSkinUpsell(true);
+    setPaymentLoading(true);
+    setShowPaymentModal(true);
   };
 
   const handleSkinUpsellClose = (open: boolean) => {
     setShowSkinUpsell(open);
-    // Cuando cierre el upsell de piel, mostrar modal de pago
+    // When user dismisses skin upsell (post-payment), go to results
     if (!open) {
-      setShowPaymentModal(true);
+      setStep("results");
     }
   };
 
@@ -141,7 +159,9 @@ const IALab = () => {
     localStorage.setItem('simsmile_email', email);
     checkCredits(email);
     setShowPaymentModal(false);
-    setStep("results");
+    setPaymentLoading(false);
+    // Skin upsell AFTER payment — as a post-purchase gift
+    setShowSkinUpsell(true);
   };
 
   const handleCapture = async (smile: string) => {
@@ -287,6 +307,19 @@ const IALab = () => {
       setMetrics(calculatedMetrics);
       setLandmarks(smileLandmarks);
       setSimulationData(data);
+
+      // Persist session before potential Flow.cl redirect
+      sessionStorage.setItem('simsmile_session', JSON.stringify({
+        smileImage: data.simulatedImage,
+        originalImage: smile,
+        idealImage: data.idealImage || data.simulatedImage,
+        analysis: analysisText,
+        metrics: JSON.stringify(calculatedMetrics),
+        simulationData: JSON.stringify(data),
+        perfectCorpAnalysis: JSON.stringify(perfectCorpData?.data ?? null),
+        detectedGender: detectedGender
+      }));
+
       setStep("preview"); // Ir a preview con blur para pedir pago
       
     } catch (error) {
@@ -300,6 +333,7 @@ const IALab = () => {
   const handleSkinAnalysisComplete = (skinData: any) => {
     setSkinAnalysisData(skinData);
     setShowSkinUpsell(false);
+    setStep("results");
   };
 
   return (
@@ -315,6 +349,10 @@ const IALab = () => {
           originalImage={originalImage}
           simulatedImage={smileImage}
           onUnlock={handleUnlockSimulation}
+          onRetake={() => {
+            sessionStorage.removeItem('simsmile_session');
+            setStep("capture");
+          }}
           loading={paymentLoading}
         />
       )}

@@ -28,14 +28,6 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           width="500"
           height="500"
         />
-        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30">
-          <span className="text-sm md:text-base font-bold text-primary">
-            $5.990 CLP
-          </span>
-          <span className="text-xs md:text-sm text-muted-foreground">
-            • 3 simulaciones incluidas
-          </span>
-        </div>
       </nav>
 
       {/* Hero Section */}
@@ -68,7 +60,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           </h1>
           
           <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
-            <span className="font-semibold text-primary">Desde $5.990 CLP.</span> Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
+            Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
           </p>
 
           {/* Process Flow - Professional Version */}
@@ -130,7 +122,7 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
                 className="group relative bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] text-white font-semibold rounded-2xl px-10 py-7 text-lg transition-all duration-500 hover:scale-[1.02] shadow-[0_8px_30px_rgb(168,85,247,0.3)] hover:shadow-[0_12px_40px_rgb(168,85,247,0.5)] border border-white/10"
               >
                 <span className="relative z-10 flex items-center gap-3">
-                  Comenzar por $5.990
+                  Simular mi sonrisa
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
