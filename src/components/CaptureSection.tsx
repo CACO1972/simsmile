@@ -1,155 +1,418 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Upload } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
-import guiaFotoRostroCompleto from "@/assets/guia-foto-rostro-completo-editada.jpg";
+import { ArrowRight, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface CaptureSectionProps {
   onCapture: (smileImage: string) => void;
 }
 
+type CameraState = "init" | "ready" | "detecting" | "countdown" | "captured" | "confirm" | "error";
+
+// Face position feedback
+type FeedbackType = "no_face" | "too_far" | "too_close" | "off_center" | "good";
+
+const FEEDBACK_MESSAGES: Record<FeedbackType, string> = {
+  no_face:    "Posiciona tu cara en el óvalo",
+  too_far:    "Acércate un poco más",
+  too_close:  "Aléjate un poco",
+  off_center: "Centra tu cara",
+  good:       "¡Perfecto! Mantén la posición",
+};
+
+const FEEDBACK_COLORS: Record<FeedbackType, string> = {
+  no_face:    "#666",
+  too_far:    "#F59E0B",
+  too_close:  "#F59E0B",
+  off_center: "#F59E0B",
+  good:       "#10B981",
+};
+
 export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
-  const [smileImage, setSmileImage] = useState<string>("");
-  const [step, setStep] = useState<"upload" | "confirm">("upload");
+  const videoRef    = useRef<HTMLVideoElement>(null);
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const detectorRef = useRef<FaceLandmarker | null>(null);
+  const streamRef   = useRef<MediaStream | null>(null);
+  const rafRef      = useRef<number>(0);
+  const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const goodFramesRef = useRef(0);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const [cameraState, setCameraState] = useState<CameraState>("init");
+  const [feedback, setFeedback]       = useState<FeedbackType>("no_face");
+  const [countdown, setCountdown]     = useState(3);
+  const [capturedImage, setCapturedImage] = useState<string>("");
+  const [camReady, setCamReady]       = useState(false);
 
-    if (!file.type.startsWith('image/')) {
-      toast.error("Por favor sube una imagen válida");
+  // ── Init MediaPipe detector (VIDEO mode) ──────────────────────────────────
+  const initDetector = useCallback(async () => {
+    try {
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+      );
+      detectorRef.current = await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+          delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        numFaces: 1,
+      });
+    } catch (e) {
+      console.error("MediaPipe init error:", e);
+      setCameraState("error");
+    }
+  }, []);
+
+  // ── Start camera ──────────────────────────────────────────────────────────
+  const startCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 640 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        setCamReady(true);
+        setCameraState("detecting");
+      }
+    } catch (e) {
+      console.error("Camera error:", e);
+      toast.error("No se pudo acceder a la cámara. Verifica los permisos.");
+      setCameraState("error");
+    }
+  }, []);
+
+  // ── Analyze face position ──────────────────────────────────────────────────
+  const analyzeFace = useCallback((landmarks: { x: number; y: number }[]): FeedbackType => {
+    if (!landmarks.length) return "no_face";
+
+    // Key landmarks: nose tip (1), left cheek (234), right cheek (454), chin (152), forehead (10)
+    const noseTip  = landmarks[1];
+    const leftEdge = landmarks[234];
+    const rightEdge= landmarks[454];
+    const chin     = landmarks[152];
+    const forehead = landmarks[10];
+
+    if (!noseTip || !leftEdge || !rightEdge || !chin || !forehead) return "no_face";
+
+    const faceWidth  = Math.abs(rightEdge.x - leftEdge.x);
+    const faceHeight = Math.abs(chin.y - forehead.y);
+    const faceCenterX = (leftEdge.x + rightEdge.x) / 2;
+    const faceCenterY = (chin.y + forehead.y) / 2;
+
+    // Size check (normalized coords 0-1)
+    if (faceWidth < 0.25 || faceHeight < 0.3) return "too_far";
+    if (faceWidth > 0.72 || faceHeight > 0.85) return "too_close";
+
+    // Center check
+    const offsetX = Math.abs(faceCenterX - 0.5);
+    const offsetY = Math.abs(faceCenterY - 0.5);
+    if (offsetX > 0.12 || offsetY > 0.12) return "off_center";
+
+    return "good";
+  }, []);
+
+  // ── Detection loop ────────────────────────────────────────────────────────
+  const detect = useCallback(() => {
+    const video    = videoRef.current;
+    const detector = detectorRef.current;
+    if (!video || !detector || video.readyState < 2) {
+      rafRef.current = requestAnimationFrame(detect);
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("La imagen es muy grande. Máximo 10MB");
-      return;
+    const results = detector.detectForVideo(video, performance.now());
+    const lm = results.faceLandmarks?.[0] ?? [];
+    const fb = analyzeFace(lm);
+    setFeedback(fb);
+
+    if (fb === "good") {
+      goodFramesRef.current += 1;
+    } else {
+      goodFramesRef.current = 0;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setSmileImage(result);
-      setStep("confirm");
+    // After 20 good frames (~0.5s) start countdown
+    if (goodFramesRef.current >= 20 && cameraState === "detecting") {
+      setCameraState("countdown");
+      return; // stop loop here — countdown takes over
+    }
+
+    rafRef.current = requestAnimationFrame(detect);
+  }, [analyzeFace, cameraState]);
+
+  // ── Countdown logic ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (cameraState !== "countdown") return;
+
+    setCountdown(3);
+    let count = 3;
+
+    const tick = () => {
+      count -= 1;
+      setCountdown(count);
+      if (count <= 0) {
+        capturePhoto();
+      } else {
+        countdownRef.current = setTimeout(tick, 1000);
+      }
     };
-    reader.readAsDataURL(file);
-  };
 
-  const handleConfirm = () => {
-    onCapture(smileImage);
-  };
+    countdownRef.current = setTimeout(tick, 1000);
+    return () => { if (countdownRef.current) clearTimeout(countdownRef.current); };
+  }, [cameraState]);
 
-  const handleRetake = () => {
-    setSmileImage("");
-    setStep("upload");
-  };
+  // ── Capture photo ─────────────────────────────────────────────────────────
+  const capturePhoto = useCallback(() => {
+    const video  = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const size = Math.min(video.videoWidth, video.videoHeight);
+    canvas.width  = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+
+    // Mirror + crop to square
+    ctx.save();
+    ctx.translate(size, 0);
+    ctx.scale(-1, 1);
+    const offsetX = (video.videoWidth - size) / 2;
+    const offsetY = (video.videoHeight - size) / 2;
+    ctx.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
+    ctx.restore();
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    setCapturedImage(dataUrl);
+    setCameraState("confirm");
+
+    // Stop camera
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  // ── Retry ─────────────────────────────────────────────────────────────────
+  const handleRetry = useCallback(async () => {
+    goodFramesRef.current = 0;
+    setCapturedImage("");
+    setCameraState("detecting");
+    setCamReady(false);
+    await startCamera();
+  }, [startCamera]);
+
+  // ── Boot sequence ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    initDetector().then(startCamera);
+    return () => {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      cancelAnimationFrame(rafRef.current);
+      if (countdownRef.current) clearTimeout(countdownRef.current);
+    };
+  }, []);
+
+  // ── Start detection loop when camera is ready ─────────────────────────────
+  useEffect(() => {
+    if (cameraState === "detecting" && camReady) {
+      rafRef.current = requestAnimationFrame(detect);
+    }
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [cameraState, camReady, detect]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const isLive = cameraState === "detecting" || cameraState === "countdown";
+  const ovalColor = feedback === "good" ? "#10B981" : feedback === "no_face" ? "rgba(255,255,255,0.4)" : "#F59E0B";
 
   return (
-    <div className="min-h-screen flex flex-col px-4 py-8 md:py-12 relative overflow-hidden bg-background">
-      {/* Animated gradient background effects */}
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden bg-background">
+      {/* Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
-        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-accent/15 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/15 rounded-full blur-[120px]" />
       </div>
 
-      {/* Logo at top */}
-      <div className="w-full mb-8 flex justify-center z-10">
-        <img src={simsmileLogo} alt="SimSmile" className="w-48 md:w-64 opacity-60 animate-fade-in" />
+      {/* Logo */}
+      <div className="mb-6 z-10">
+        <img src={simsmileLogo} alt="SimSmile" className="w-36 md:w-44 opacity-60" />
       </div>
 
-      <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center mt-4 md:mt-0 z-10">
-        {step === "upload" && (
-          <div className="space-y-8">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl md:text-4xl font-heading font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Sube tu foto sonriendo
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Elige una foto de tu rostro sonriendo naturalmente, mostrando tus dientes
-              </p>
-            </div>
+      <div className="z-10 w-full max-w-sm flex flex-col items-center gap-6">
 
-            {/* Image Reference */}
-            <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg p-4 max-w-2xl mx-auto">
-              <img 
-                src={guiaFotoRostroCompleto} 
-                alt="Guía para foto de rostro completo" 
-                className="w-full h-auto rounded-lg"
+        {/* Title */}
+        <div className="text-center">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
+            {cameraState === "confirm" ? "¿Usamos esta foto?" : "Posiciona tu rostro"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {cameraState === "confirm"
+              ? "Revisa que tu sonrisa se vea bien"
+              : "Centra tu cara en el óvalo y sonríe"}
+          </p>
+        </div>
+
+        {/* Camera / Confirm view */}
+        <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-black shadow-2xl shadow-primary/20 border-2 border-primary/20">
+
+          {/* Live video */}
+          <video
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              transform: "scaleX(-1)",
+              display: cameraState === "confirm" ? "none" : "block",
+            }}
+            playsInline
+            muted
+          />
+
+          {/* Captured image */}
+          {cameraState === "confirm" && capturedImage && (
+            <img src={capturedImage} alt="Captura" className="absolute inset-0 w-full h-full object-cover" />
+          )}
+
+          {/* Oval guide overlay */}
+          {isLive && (
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              {/* Dark mask outside oval */}
+              <defs>
+                <mask id="oval-mask">
+                  <rect width="100" height="100" fill="white" />
+                  <ellipse cx="50" cy="47" rx="33" ry="42" fill="black" />
+                </mask>
+              </defs>
+              <rect width="100" height="100" fill="rgba(0,0,0,0.45)" mask="url(#oval-mask)" />
+              {/* Oval border */}
+              <ellipse
+                cx="50" cy="47" rx="33" ry="42"
+                fill="none"
+                stroke={ovalColor}
+                strokeWidth="1.2"
+                style={{ transition: "stroke 0.3s ease" }}
               />
+              {/* Corner ticks */}
+              {[
+                [50, 5],   // top
+                [50, 89],  // bottom
+                [17, 47],  // left
+                [83, 47],  // right
+              ].map(([cx, cy], i) => (
+                <circle key={i} cx={cx} cy={cy} r="1.2" fill={ovalColor} style={{ transition: "fill 0.3s ease" }} />
+              ))}
+            </svg>
+          )}
+
+          {/* Feedback label */}
+          {isLive && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+              <motion.div
+                key={feedback}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md"
+                style={{
+                  background: "rgba(0,0,0,0.6)",
+                  color: FEEDBACK_COLORS[feedback],
+                  border: `1px solid ${FEEDBACK_COLORS[feedback]}40`,
+                }}
+              >
+                {FEEDBACK_MESSAGES[feedback]}
+              </motion.div>
             </div>
-            
-            {/* Upload Area */}
-            <div className="max-w-md mx-auto">
-              <label htmlFor="file-upload" className="block">
-                <div className="relative group cursor-pointer">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-                  <div className="relative bg-card/50 backdrop-blur-sm border-2 border-dashed border-border hover:border-primary/50 rounded-lg p-12 transition-all group-hover:scale-[1.02]">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Upload className="w-8 h-8 text-primary" />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-lg font-semibold mb-1">
-                          Selecciona tu foto
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          JPG, PNG o WEBP (máx. 10MB)
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="sr-only"
-                />
-              </label>
+          )}
+
+          {/* Countdown overlay */}
+          <AnimatePresence>
+            {cameraState === "countdown" && (
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center bg-black/30 z-20"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  key={countdown}
+                  initial={{ scale: 2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.5, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="text-8xl font-bold text-white drop-shadow-2xl"
+                  style={{ textShadow: "0 0 40px rgba(168,85,247,0.8)" }}
+                >
+                  {countdown}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Init loading */}
+          {cameraState === "init" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 gap-3">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-white/60 text-sm">Iniciando cámara…</p>
             </div>
-          </div>
+          )}
+
+          {/* Error state */}
+          {cameraState === "error" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 gap-3 p-6 text-center">
+              <p className="text-red-400 text-sm font-medium">No se pudo acceder a la cámara</p>
+              <p className="text-white/40 text-xs">Verifica que hayas dado permisos de cámara en tu navegador</p>
+            </div>
+          )}
+        </div>
+
+        {/* Hidden canvas for capture */}
+        <canvas ref={canvasRef} className="hidden" />
+
+        {/* Confirm buttons */}
+        {cameraState === "confirm" && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex gap-3 w-full"
+          >
+            <Button
+              onClick={handleRetry}
+              variant="outline"
+              size="lg"
+              className="flex-1 gap-2 border-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Repetir
+            </Button>
+            <Button
+              onClick={() => onCapture(capturedImage)}
+              size="lg"
+              className="flex-1 gap-2 bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/30"
+            >
+              Analizar
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </motion.div>
         )}
 
-        {step === "confirm" && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-heading font-bold text-center mb-2">
-                Foto Cargada
-              </h3>
-              <p className="text-muted-foreground text-center">
-                Revisa tu foto y confirma para comenzar el análisis
-              </p>
-            </div>
-
-            <div className="relative group max-w-md mx-auto">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300" />
-              <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
-                <img src={smileImage} alt="Foto sonriendo" className="w-full h-auto" />
-              </div>
-            </div>
-
-            <div className="flex gap-4 max-w-md mx-auto">
-              <Button
-                onClick={handleRetake}
-                variant="outline"
-                size="lg"
-                className="flex-1 border-2 hover:border-accent/50 hover:bg-accent/5 transition-all hover:scale-105"
-              >
-                Elegir Otra Foto
-              </Button>
-              <Button
-                onClick={handleConfirm}
-                size="lg"
-                className="flex-1 gap-2 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 transition-all hover:scale-105"
-              >
-                Analizar Sonrisa
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
+        {/* Tips */}
+        {isLive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="text-center text-xs text-muted-foreground space-y-1"
+          >
+            <p>💡 Buena iluminación frontal · Sonríe mostrando dientes · Fondo neutro</p>
+          </motion.div>
         )}
       </div>
     </div>
