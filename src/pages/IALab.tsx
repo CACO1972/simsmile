@@ -31,7 +31,6 @@ const IALab = () => {
     qualityScore?: number;
     warnings?: string[];
   } | null>(null);
-  const [perfectCorpAnalysis, setPerfectCorpAnalysis] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -96,7 +95,6 @@ const IALab = () => {
           if (s.analysis)            setAnalysis(s.analysis);
           if (s.metrics)             setMetrics(JSON.parse(s.metrics));
           if (s.simulationData)      setSimulationData(JSON.parse(s.simulationData));
-          if (s.perfectCorpAnalysis) setPerfectCorpAnalysis(JSON.parse(s.perfectCorpAnalysis));
           if (s.detectedGender)      setDetectedGender(s.detectedGender);
           sessionStorage.removeItem('simsmile_session');
         } catch (e) {
@@ -179,29 +177,10 @@ const IALab = () => {
         setDetectedGender('neutral');
       });
 
-      // 2. Perfect Corp API Analysis (World-Class)
-      console.log('🌟 Calling Perfect Corp API for professional analysis...');
-      const { data: perfectCorpData, error: perfectCorpError } = await getSupabase().functions.invoke("perfect-corp-analysis", {
-        body: { imageBase64: smile }
-      });
-      
-      console.log('Perfect Corp response:', { data: perfectCorpData, error: perfectCorpError });
-
-      if (perfectCorpError) {
-        logger.error("Perfect Corp API error:", perfectCorpError);
-        toast.info("Usando análisis estándar. Perfect Corp no disponible.", { duration: 3000 });
-      } else if (perfectCorpData?.success) {
-        setPerfectCorpAnalysis(perfectCorpData.data);
-        logger.log("✅ Perfect Corp analysis completed:", perfectCorpData.data);
-      } else if (perfectCorpData?.useFallback) {
-        setPerfectCorpAnalysis(perfectCorpData.data);
-        logger.log("⚠️ Using Perfect Corp fallback data");
-      }
-
       // Esperar a que termine la detección de género
       await genderPromise;
 
-      // 2. Continue with existing MediaPipe + smile simulation
+      // Continue with MediaPipe + smile simulation
       if (!faceLandmarkerRef.current) {
         throw new Error("Face Landmarker not initialized");
       }
@@ -316,7 +295,6 @@ const IALab = () => {
         analysis: analysisText,
         metrics: JSON.stringify(calculatedMetrics),
         simulationData: JSON.stringify(data),
-        perfectCorpAnalysis: JSON.stringify(perfectCorpData?.data ?? null),
         detectedGender: detectedGender
       }));
 
@@ -368,7 +346,6 @@ const IALab = () => {
           contactEmail={userEmail}
           facialAnalysis={simulationData?.facialAnalysis}
           qualityScore={simulationData?.qualityScore}
-          perfectCorpAnalysis={perfectCorpAnalysis}
           skinAnalysisData={skinAnalysisData}
         />
       )}

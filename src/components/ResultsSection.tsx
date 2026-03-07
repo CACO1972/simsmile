@@ -23,7 +23,6 @@ interface ResultsSectionProps {
   contactEmail: string;
   facialAnalysis?: Record<string, unknown>;
   qualityScore?: number;
-  perfectCorpAnalysis?: any;
   skinAnalysisData?: any;
 }
 
@@ -37,7 +36,6 @@ export const ResultsSection = ({
   contactEmail,
   facialAnalysis,
   qualityScore,
-  perfectCorpAnalysis,
   skinAnalysisData,
 }: ResultsSectionProps) => {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
