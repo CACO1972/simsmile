@@ -78,7 +78,7 @@ export const ConsentModal = ({ open, onAccept, onReject }: ConsentModalProps) =>
                   De conformidad con la <strong>Ley N° 19.628 sobre Protección de la Vida Privada</strong> de la República de Chile y sus modificaciones, SimSmile — operado por <strong>Clínica Miró SpA</strong> (Av. Nueva Providencia 2214 Of. 189, Providencia, Santiago) — informa:
                 </p>
                 <p>
-                  <strong>Responsable del tratamiento:</strong> Clínica Miró SpA · RUT: [RUT Clínica] · contacto@clinicamiro.cl
+                  <strong>Responsable del tratamiento:</strong> Clínica Miró SpA · RUT: 77.375.284-2 · contacto@clinicamiro.cl
                 </p>
                 <p>
                   <strong>Datos tratados:</strong> Imagen facial digitalizada y coordenadas biométricas de referencia (datos sensibles según Art. 2 letra g) de la Ley 19.628).
