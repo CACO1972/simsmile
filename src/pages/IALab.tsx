@@ -288,15 +288,42 @@ const IALab = () => {
       setSimulationData(data);
 
       // Persist session before potential Flow.cl redirect
-      sessionStorage.setItem('simsmile_session', JSON.stringify({
-        smileImage: data.simulatedImage,
-        originalImage: smile,
-        idealImage: data.idealImage || data.simulatedImage,
-        analysis: analysisText,
-        metrics: JSON.stringify(calculatedMetrics),
-        simulationData: JSON.stringify(data),
-        detectedGender: detectedGender
-      }));
+      // Compress images to avoid sessionStorage 5MB limit on iOS Safari
+      const compressImage = (dataUrl: string, quality = 0.4): Promise<string> =>
+        new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            // Cap at 600px to reduce size
+            const maxDim = 600;
+            const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+            canvas.width  = Math.round(img.width  * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = () => resolve(dataUrl); // fallback: use original
+          img.src = dataUrl;
+        });
+
+      try {
+        const [compressedSmile, compressedOriginal] = await Promise.all([
+          compressImage(data.simulatedImage),
+          compressImage(smile),
+        ]);
+        sessionStorage.setItem('simsmile_session', JSON.stringify({
+          smileImage:     compressedSmile,
+          originalImage:  compressedOriginal,
+          idealImage:     compressedSmile,
+          analysis:       analysisText,
+          metrics:        JSON.stringify(calculatedMetrics),
+          simulationData: JSON.stringify({ ...data, simulatedImage: undefined, idealImage: undefined }),
+          detectedGender: detectedGender
+        }));
+      } catch (e) {
+        // sessionStorage full or unavailable — non-critical, flow still works
+        console.warn('Could not persist session:', e);
+      }
 
       setStep("preview"); // Ir a preview con blur para pedir pago
       
