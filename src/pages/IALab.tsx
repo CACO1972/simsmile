@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { PaymentModal } from "@/components/PaymentModal";
 import { BlurredSimulation } from "@/components/BlurredSimulation";
 import { SkinAnalysisUpsell } from "@/components/SkinAnalysisUpsell";
+import { ConsentModal } from "@/components/ConsentModal";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { getSupabase } from "@/integrations/supabase/safeClient";
@@ -35,6 +36,7 @@ const IALab = () => {
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSkinUpsell, setShowSkinUpsell] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const [skinAnalysisData, setSkinAnalysisData] = useState<any>(null);
   const [detectedGender, setDetectedGender] = useState<'male' | 'female' | 'neutral'>('neutral');
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -135,8 +137,13 @@ const IALab = () => {
   };
 
   const handleStartFromHero = () => {
-    // Ir directo a captura, sin pago previo
-    setStep("capture");
+    // Check if already consented in this session
+    const existing = localStorage.getItem('simsmile_consent');
+    if (existing) {
+      setStep("capture");
+    } else {
+      setShowConsentModal(true);
+    }
   };
 
   const handleUnlockSimulation = async () => {
@@ -376,6 +383,13 @@ const IALab = () => {
           skinAnalysisData={skinAnalysisData}
         />
       )}
+
+      {/* Consent Modal — Ley 19.628 */}
+      <ConsentModal
+        open={showConsentModal}
+        onAccept={() => { setShowConsentModal(false); setStep("capture"); }}
+        onReject={() => setShowConsentModal(false)}
+      />
 
       {/* Payment Modal */}
       <PaymentModal
