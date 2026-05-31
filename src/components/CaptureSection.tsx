@@ -488,11 +488,13 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
           <button
             type="button"
             onClick={openFilePicker}
-            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 inline-flex items-center gap-1.5 self-center"
+            disabled={!accepted}
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 inline-flex items-center gap-1.5 self-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-muted-foreground"
           >
             <Upload className="w-3 h-3" />
-            Subir foto en su lugar
+            {accepted ? "Subir foto en su lugar" : "Acepta los términos para subir foto"}
           </button>
+
         )}
 
 
