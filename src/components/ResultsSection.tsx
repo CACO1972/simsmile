@@ -98,7 +98,7 @@ export const ResultsSection = ({
 
       {/* Logo */}
       <div className="w-full mb-6 flex justify-center z-10">
-        <img src={simsmileLogo} alt="SimSmile" className="w-40 md:w-56 opacity-70" />
+        <img src={simsmileLogo} alt="SimSmile by Clínica Miró" className="w-40 md:w-56 opacity-70" />
       </div>
 
       <div className="max-w-6xl mx-auto w-full z-10">
@@ -224,7 +224,7 @@ export const ResultsSection = ({
             >
               <img 
                 src={customizedImage || smileImage} 
-                alt="Sonrisa mejorada" 
+                alt="Simulación de sonrisa mejorada" 
                 className="w-full h-full object-cover"
               />
               {customizedImage && (
@@ -250,7 +250,7 @@ export const ResultsSection = ({
                 {/* Imagen Después */}
                 <img 
                   src={customizedImage || smileImage}
-                  alt="Después"
+                  alt="Foto después del tratamiento simulado"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 
@@ -261,7 +261,7 @@ export const ResultsSection = ({
                 >
                   <img 
                     src={restImage}
-                    alt="Antes"
+                    alt="Foto antes del tratamiento"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -386,6 +386,7 @@ export const ResultsSection = ({
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Cerrar vista ampliada"
             className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
             onClick={() => setShowFullscreen(false)}
           >
@@ -394,7 +395,7 @@ export const ResultsSection = ({
           <div className="w-full h-[95vh] flex items-center justify-center p-8">
             <img 
               src={customizedImage || smileImage}
-              alt="Sonrisa ampliada"
+              alt="Simulación de sonrisa en vista ampliada"
               className="max-w-full max-h-full object-contain"
             />
           </div>

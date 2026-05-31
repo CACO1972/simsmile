@@ -1,0 +1,7 @@
+# SimSmile
+
+> Simulador profesional de sonrisa con IA y análisis facial estético, desarrollado por Clínica Miró (Chile). Sube una foto sonriendo y obtén una visualización aproximada de tu nueva sonrisa más recomendaciones para coordinar una consulta.
+
+## Pages
+
+- [Inicio](/): Simulador de sonrisa con IA, análisis facial y contacto con Clínica Miró.
