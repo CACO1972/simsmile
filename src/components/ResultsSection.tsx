@@ -368,7 +368,7 @@ export const ResultsSection = ({
               </a>
             </Button>
             <Button size="lg" variant="outline" className="text-base md:text-lg px-8 py-6 border-2" asChild>
-              <a href="https://wa.me/56988085850?text=Quiero%20más%20información%20sobre%20SimSmile" target="_blank" rel="noopener noreferrer">
+              <a href={`https://wa.me/${CLINIC_WHATSAPP}?text=${encodeURIComponent('Quiero más información sobre SimSmile y agendar valoración en Clínica Miró')}`} target="_blank" rel="noopener noreferrer">
                 Hacer una Pregunta
               </a>
             </Button>
