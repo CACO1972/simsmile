@@ -45,7 +45,7 @@ export const ResultsSection = ({
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
   const [beforeAfterPosition, setBeforeAfterPosition] = useState(50);
-  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
+  
 
   // CTA flotante removido - demasiado invasivo
 
