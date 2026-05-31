@@ -211,17 +211,22 @@ Respond ONLY with a JSON object (no markdown, no extra text):
     
     console.log('✅ Quality check result:', qualityResult);
 
-    // Validación de calidad - rechazar si es menor a 50
+    // Validación de calidad - rechazar solo si es muy baja (< 30)
+    // Para puntajes 30-49 continuamos con simulación básica (warning)
     const qualityScore = Number(qualityResult.quality_score ?? 75);
     const safeQualityScore = Number.isNaN(qualityScore) ? 75 : qualityScore;
-    if (safeQualityScore < 50) {
+    if (safeQualityScore < 30) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Calidad de imagen insuficiente',
+        JSON.stringify({
+          simulatedImage: null,
+          idealImage: null,
+          qualityScore: safeQualityScore,
+          facialAnalysis: null,
+          warnings: ['low_quality'],
           quality: qualityResult,
-          message: `Tu fotografía no cumple con los estándares de calidad necesarios (puntaje: ${safeQualityScore}/100). ${qualityResult.recommendation || 'Por favor, toma nuevas fotos siguiendo estas recomendaciones:'}\n\n✓ Asegúrate de tener buena iluminación\n✓ Centra tu rostro en el encuadre\n✓ Mantén el rostro completo visible\n✓ Evita sombras en el rostro`
-        }), 
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          message: `Calidad de imagen baja (puntaje: ${safeQualityScore}/100). Continuamos con análisis básico.`
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
