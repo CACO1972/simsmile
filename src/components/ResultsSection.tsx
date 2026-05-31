@@ -98,7 +98,7 @@ export const ResultsSection = ({
 
       {/* Logo */}
       <div className="w-full mb-6 flex justify-center z-10">
-        <img src={simsmileLogo} alt="SimSmile" className="w-40 md:w-56 opacity-70" />
+        <img src={simsmileLogo} alt="SimSmile by Clínica Miró" className="w-40 md:w-56 opacity-70" />
       </div>
 
       <div className="max-w-6xl mx-auto w-full z-10">
