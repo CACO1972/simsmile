@@ -207,6 +207,46 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
     await startCamera();
   }, [startCamera]);
 
+  // ── Upload fallback (subir foto en su lugar) ──────────────────────────────
+  const handleFileSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor selecciona una imagen");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const size = Math.min(img.naturalWidth, img.naturalHeight);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d")!;
+        const offsetX = (img.naturalWidth - size) / 2;
+        const offsetY = (img.naturalHeight - size) / 2;
+        ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
+        const squareDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        // Stop camera if running
+        streamRef.current?.getTracks().forEach(t => t.stop());
+        cancelAnimationFrame(rafRef.current);
+        if (countdownRef.current) clearTimeout(countdownRef.current);
+        setCapturedImage(squareDataUrl);
+        setCameraState("confirm");
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+    // reset so same file can be reselected
+    e.target.value = "";
+  }, []);
+
+  const openFilePicker = useCallback(() => fileInputRef.current?.click(), []);
+
+
   // ── Boot sequence ─────────────────────────────────────────────────────────
   useEffect(() => {
     initDetector().then(startCamera);
