@@ -3,6 +3,7 @@ import { Sparkles, ArrowRight, Camera, Brain, Wand2, FileText, ShieldCheck } fro
 import logoSimSmile from "@/assets/simsmile-logo-transparent.png";
 import { SmileTransformationAnimation } from "@/components/SmileTransformationAnimation";
 import logoAnimation from "@/assets/simsmile-logo-animation.mp4";
+import { BookingBanner } from "@/components/BookingBanner";
 
 interface HeroSectionProps {
   onStart: () => void;
@@ -31,6 +32,11 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
           decoding="async"
         />
       </nav>
+
+      {/* Booking banner destacado */}
+      <div className="w-full z-10 mb-8 px-2">
+        <BookingBanner />
+      </div>
 
       {/* Hero Section */}
       <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-12 md:gap-16 text-center lg:text-left z-10 max-w-7xl w-full mb-20">
