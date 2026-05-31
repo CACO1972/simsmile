@@ -23,10 +23,12 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
       <nav className="w-full max-w-7xl mb-6 z-10 flex flex-col items-center justify-center gap-3">
         <img 
           src={logoSimSmile} 
-          alt="SimSmile" 
+          alt="SimSmile by Clínica Miró" 
           className="w-40 md:w-48 animate-fade-in"
           width="500"
           height="500"
+          fetchPriority="high"
+          decoding="async"
         />
       </nav>
 
