@@ -129,7 +129,7 @@ export const ResultsSection = ({
               className="w-full bg-[#25D366] hover:bg-[#20BA59] text-white gap-2 h-14 text-lg font-semibold shadow-lg hover:shadow-xl"
               asChild
             >
-              <a href="https://wa.me/56988085850?text=Hola,%20quiero%20agendar%20mi%20consulta%20de%20SimSmile" target="_blank" rel="noopener noreferrer">
+              <a href={`https://wa.me/${CLINIC_WHATSAPP}?text=${encodeURIComponent('Hola, vi mi simulación en SimSmile y quiero agendar una valoración en Clínica Miró')}`} target="_blank" rel="noopener noreferrer">
                 <Phone className="h-5 w-5" />
                 Agendar Consulta GRATIS
               </a>
