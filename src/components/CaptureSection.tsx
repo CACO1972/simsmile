@@ -275,7 +275,7 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
 
           {/* Captured image */}
           {cameraState === "confirm" && capturedImage && (
-            <img src={capturedImage} alt="Captura" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={capturedImage} alt="Foto de tu rostro capturada" className="absolute inset-0 w-full h-full object-cover" />
           )}
 
           {/* Oval guide overlay */}
