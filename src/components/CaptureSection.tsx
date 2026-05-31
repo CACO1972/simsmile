@@ -409,13 +409,43 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
           {cameraState === "error" && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 gap-3 p-6 text-center">
               <p className="text-red-400 text-sm font-medium">No se pudo acceder a la cámara</p>
-              <p className="text-white/40 text-xs">Verifica que hayas dado permisos de cámara en tu navegador</p>
+              <p className="text-white/40 text-xs">Verifica los permisos o sube una foto desde tu galería</p>
+              <Button
+                onClick={openFilePicker}
+                size="sm"
+                className="mt-2 gap-2 bg-gradient-to-r from-primary to-accent text-white"
+              >
+                <Upload className="w-4 h-4" />
+                Subir foto en su lugar
+              </Button>
             </div>
           )}
         </div>
 
         {/* Hidden canvas for capture */}
         <canvas ref={canvasRef} className="hidden" />
+
+        {/* Hidden file input for upload fallback */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
+
+        {/* Upload fallback button (visible while camera is live or initializing) */}
+        {cameraState !== "confirm" && cameraState !== "error" && (
+          <button
+            type="button"
+            onClick={openFilePicker}
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 inline-flex items-center gap-1.5 self-center"
+          >
+            <Upload className="w-3 h-3" />
+            Subir foto en su lugar
+          </button>
+        )}
+
 
         {/* Confirm buttons */}
         {cameraState === "confirm" && (
