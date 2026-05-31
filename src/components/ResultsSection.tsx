@@ -11,7 +11,7 @@ import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
 import { GoldenRatioReveal } from "./GoldenRatioReveal";
 
 import { WhatsAppCTA } from "./WhatsAppCTA";
-import { MONETIZATION_MODE, CLINIC_WHATSAPP } from "@/lib/monetization";
+import { MONETIZATION_MODE, CLINIC_WHATSAPP, CLINIC_BOOKING_URL } from "@/lib/monetization";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
@@ -126,14 +126,26 @@ export const ResultsSection = ({
           <div className="flex flex-col gap-4 max-w-lg mx-auto">
             <Button
               size="lg"
-              className="w-full bg-[#25D366] hover:bg-[#20BA59] text-white gap-2 h-14 text-lg font-semibold shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-primary to-accent text-white gap-2 h-14 text-lg font-semibold shadow-lg hover:shadow-xl"
+              asChild
+            >
+              <a href={CLINIC_BOOKING_URL} target="_blank" rel="noopener noreferrer">
+                <Phone className="h-5 w-5" />
+                Reservar hora online — GRATIS
+              </a>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full border-2 border-[#25D366]/40 bg-[#25D366]/10 text-[#1ebe5d] hover:bg-[#25D366]/20 hover:text-[#1ebe5d] gap-2 h-12 font-semibold"
               asChild
             >
               <a href={`https://wa.me/${CLINIC_WHATSAPP}?text=${encodeURIComponent('Hola, vi mi simulación en SimSmile y quiero agendar una valoración en Clínica Miró')}`} target="_blank" rel="noopener noreferrer">
-                <Phone className="h-5 w-5" />
-                Agendar Consulta GRATIS
+                <MessageCircle className="h-4 w-4" />
+                O contáctanos por WhatsApp
               </a>
             </Button>
+
             
             <div className="grid grid-cols-3 gap-3">
               <Button

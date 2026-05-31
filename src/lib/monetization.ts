@@ -13,3 +13,7 @@ export const CLINIC_WHATSAPP =
   (import.meta.env.VITE_CLINIC_WHATSAPP as string) || '56935572986';
 
 export const CLINIC_NAME = 'Clínica Dental Miró';
+
+export const CLINIC_BOOKING_URL =
+  (import.meta.env.VITE_CLINIC_BOOKING_URL as string) || 'https://ff.healthatom.io/41knMr';
+
