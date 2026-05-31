@@ -69,7 +69,7 @@ serve(async (req) => {
         const safeWa = escapeHtml(whatsapp);
         const waLink = `https://wa.me/${whatsapp.replace(/\D/g, '')}`;
 
-        await fetch("https://api.resend.com/emails", {
+        const resendRes = await fetch("https://api.resend.com/emails", {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -101,7 +101,14 @@ serve(async (req) => {
           }),
         });
 
-        await supabase.from('leads').update({ notified_at: new Date().toISOString() }).eq('id', lead.id);
+        const resendBody = await resendRes.text();
+        console.log('Resend response status:', resendRes.status, 'body:', resendBody);
+
+        if (resendRes.ok) {
+          await supabase.from('leads').update({ notified_at: new Date().toISOString() }).eq('id', lead.id);
+        } else {
+          console.error('Resend rejected email:', resendRes.status, resendBody);
+        }
       } catch (e) {
         console.warn('Notificación email falló (no bloqueante):', e);
       }
