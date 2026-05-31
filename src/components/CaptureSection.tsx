@@ -34,6 +34,7 @@ const FEEDBACK_COLORS: Record<FeedbackType, string> = {
 export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
   const videoRef    = useRef<HTMLVideoElement>(null);
   const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const detectorRef = useRef<FaceLandmarker | null>(null);
   const streamRef   = useRef<MediaStream | null>(null);
   const rafRef      = useRef<number>(0);
