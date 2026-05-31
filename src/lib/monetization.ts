@@ -10,6 +10,6 @@ export const MONETIZATION_MODE: MonetizationMode =
 
 // WhatsApp de la clínica para CTAs (formato internacional sin +)
 export const CLINIC_WHATSAPP =
-  (import.meta.env.VITE_CLINIC_WHATSAPP as string) || '56988085850';
+  (import.meta.env.VITE_CLINIC_WHATSAPP as string) || '56935572986';
 
 export const CLINIC_NAME = 'Clínica Dental Miró';
