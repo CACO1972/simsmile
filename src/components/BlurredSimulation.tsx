@@ -169,10 +169,11 @@ export const BlurredSimulation = ({
           </Button>
 
           <div className="flex items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
-            <span>✓ 3 simulaciones incluidas</span>
-            <span>✓ Pago seguro</span>
-            <span>✓ Satisfacción garantizada</span>
+            <span>✓ Sin costo</span>
+            <span>✓ Resultado al instante</span>
+            <span>✓ 100% privado</span>
           </div>
+
 
           {onRetake && (
             <Button
