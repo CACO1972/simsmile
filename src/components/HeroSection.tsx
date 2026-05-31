@@ -65,9 +65,9 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
 
           {/* Process Flow - Professional Version */}
           <div className="w-full max-w-2xl mt-8">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8 text-center lg:text-left">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8 text-center lg:text-left">
               Cómo Funciona
-            </h3>
+            </h2>
             
             <div className="grid grid-cols-4 gap-2 md:gap-4 mb-10">
               <div className="group relative">
