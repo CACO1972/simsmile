@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import simsmileLogo from "@/assets/simsmile-logo-white-bg.png";
-import { ArrowRight, RefreshCw } from "lucide-react";
+import { ArrowRight, RefreshCw, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,6 +34,7 @@ const FEEDBACK_COLORS: Record<FeedbackType, string> = {
 export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
   const videoRef    = useRef<HTMLVideoElement>(null);
   const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const detectorRef = useRef<FaceLandmarker | null>(null);
   const streamRef   = useRef<MediaStream | null>(null);
   const rafRef      = useRef<number>(0);
@@ -206,6 +207,46 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
     await startCamera();
   }, [startCamera]);
 
+  // ── Upload fallback (subir foto en su lugar) ──────────────────────────────
+  const handleFileSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor selecciona una imagen");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const size = Math.min(img.naturalWidth, img.naturalHeight);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d")!;
+        const offsetX = (img.naturalWidth - size) / 2;
+        const offsetY = (img.naturalHeight - size) / 2;
+        ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
+        const squareDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        // Stop camera if running
+        streamRef.current?.getTracks().forEach(t => t.stop());
+        cancelAnimationFrame(rafRef.current);
+        if (countdownRef.current) clearTimeout(countdownRef.current);
+        setCapturedImage(squareDataUrl);
+        setCameraState("confirm");
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+    // reset so same file can be reselected
+    e.target.value = "";
+  }, []);
+
+  const openFilePicker = useCallback(() => fileInputRef.current?.click(), []);
+
+
   // ── Boot sequence ─────────────────────────────────────────────────────────
   useEffect(() => {
     initDetector().then(startCamera);
@@ -368,13 +409,43 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
           {cameraState === "error" && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 gap-3 p-6 text-center">
               <p className="text-red-400 text-sm font-medium">No se pudo acceder a la cámara</p>
-              <p className="text-white/40 text-xs">Verifica que hayas dado permisos de cámara en tu navegador</p>
+              <p className="text-white/40 text-xs">Verifica los permisos o sube una foto desde tu galería</p>
+              <Button
+                onClick={openFilePicker}
+                size="sm"
+                className="mt-2 gap-2 bg-gradient-to-r from-primary to-accent text-white"
+              >
+                <Upload className="w-4 h-4" />
+                Subir foto en su lugar
+              </Button>
             </div>
           )}
         </div>
 
         {/* Hidden canvas for capture */}
         <canvas ref={canvasRef} className="hidden" />
+
+        {/* Hidden file input for upload fallback */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
+
+        {/* Upload fallback button (visible while camera is live or initializing) */}
+        {cameraState !== "confirm" && cameraState !== "error" && (
+          <button
+            type="button"
+            onClick={openFilePicker}
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 inline-flex items-center gap-1.5 self-center"
+          >
+            <Upload className="w-3 h-3" />
+            Subir foto en su lugar
+          </button>
+        )}
+
 
         {/* Confirm buttons */}
         {cameraState === "confirm" && (
