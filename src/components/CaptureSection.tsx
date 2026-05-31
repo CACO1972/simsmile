@@ -46,6 +46,10 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
   const [countdown, setCountdown]     = useState(3);
   const [capturedImage, setCapturedImage] = useState<string>("");
   const [camReady, setCamReady]       = useState(false);
+  const [accepted, setAccepted]       = useState(false);
+  const acceptedRef = useRef(false);
+  useEffect(() => { acceptedRef.current = accepted; }, [accepted]);
+
 
   // ── Init MediaPipe detector (VIDEO mode) ──────────────────────────────────
   const initDetector = useCallback(async () => {
