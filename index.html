@@ -32,6 +32,46 @@
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/favicon.png">
       <link rel="stylesheet" href="/humana-tokens.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://simsmile.lovable.app/#organization",
+          "name": "SimSmile by Clínica Miró",
+          "url": "https://simsmile.lovable.app/",
+          "logo": "https://simsmile.lovable.app/favicon.png"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://simsmile.lovable.app/#website",
+          "url": "https://simsmile.lovable.app/",
+          "name": "SimSmile",
+          "description": "Simulador profesional de sonrisa con IA y análisis facial avanzado.",
+          "inLanguage": "es",
+          "publisher": { "@id": "https://simsmile.lovable.app/#organization" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "SimSmile",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
+          "description": "Simulador de sonrisa con IA y análisis facial estético desarrollado por Clínica Miró.",
+          "url": "https://simsmile.lovable.app/",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CLP" }
+        },
+        {
+          "@type": "Dentist",
+          "name": "Clínica Miró",
+          "url": "https://clinicamiro.cl",
+          "areaServed": "CL",
+          "medicalSpecialty": "Dentistry"
+        }
+      ]
+    }
+    </script>
   </head>
 
   <body>
