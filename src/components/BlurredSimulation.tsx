@@ -140,16 +140,15 @@ export const BlurredSimulation = ({
             Desbloquea Tu Transformación
           </h3>
           <p className="text-muted-foreground mb-4 text-sm">
-            Accede a tu simulación en alta calidad + 2 simulaciones adicionales
+            Accede a tu simulación en alta calidad sin costo
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-4">
-            <div className="text-4xl font-bold text-foreground">$5.990</div>
-            <div className="text-sm text-muted-foreground">
-              <span className="line-through">$9.990</span>
-              <span className="ml-2 text-primary font-semibold">-40%</span>
+          <div className="flex flex-col items-center justify-center mb-4 gap-2">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wide">
+              ✨ Gratis por tiempo limitado
             </div>
           </div>
+
 
           <Button
             size="lg"
