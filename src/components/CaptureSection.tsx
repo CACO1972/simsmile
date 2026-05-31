@@ -249,7 +249,14 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
     e.target.value = "";
   }, []);
 
-  const openFilePicker = useCallback(() => fileInputRef.current?.click(), []);
+  const openFilePicker = useCallback(() => {
+    if (!acceptedRef.current) {
+      toast.error("Debes aceptar los términos para continuar");
+      return;
+    }
+    fileInputRef.current?.click();
+  }, []);
+
 
 
   // ── Boot sequence ─────────────────────────────────────────────────────────
