@@ -299,6 +299,19 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
           </p>
         </div>
 
+        {/* Legal disclaimer pre-captura */}
+        {cameraState !== "confirm" && (
+          <div className="w-full rounded-xl border border-border/50 bg-muted/30 px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
+            <p>
+              <strong className="text-foreground">Simulación estética, no diagnóstico médico.</strong>{" "}
+              Tu imagen se procesa para generar una previsualización referencial de tu sonrisa y no se almacena sin tu autorización.
+              Procesamiento conforme a la <strong className="text-foreground">Ley 19.628</strong> de Chile.
+              Resultados solo informativos; cualquier tratamiento requiere evaluación profesional en Clínica Miró.
+            </p>
+          </div>
+        )}
+
+
         {/* Camera / Confirm view */}
         <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-black shadow-2xl shadow-primary/20 border-2 border-primary/20">
 
