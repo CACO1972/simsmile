@@ -250,7 +250,7 @@ export const ResultsSection = ({
                 {/* Imagen Después */}
                 <img 
                   src={customizedImage || smileImage}
-                  alt="Después"
+                  alt="Foto después del tratamiento simulado"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 
