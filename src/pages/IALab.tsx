@@ -147,15 +147,16 @@ const IALab = () => {
   };
 
   const handleUnlockSimulation = async () => {
-    setPaymentLoading(true);
-    setShowPaymentModal(true);
+    // Upsell ANTES del pago: mostrar escaneo gratis de piel primero
+    setShowSkinUpsell(true);
   };
 
   const handleSkinUpsellClose = (open: boolean) => {
     setShowSkinUpsell(open);
-    // When user dismisses skin upsell (post-payment), go to results
+    // Cuando el usuario cierra el upsell sin comprar bundle/skin → ir al pago de simulación
     if (!open) {
-      setStep("results");
+      setPaymentLoading(true);
+      setShowPaymentModal(true);
     }
   };
 
@@ -165,8 +166,7 @@ const IALab = () => {
     checkCredits(email);
     setShowPaymentModal(false);
     setPaymentLoading(false);
-    // Skin upsell AFTER payment — as a post-purchase gift
-    setShowSkinUpsell(true);
+    setStep("results");
   };
 
   const handleCapture = async (smile: string) => {

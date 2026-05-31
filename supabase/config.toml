@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.skin-analysis]
 verify_jwt = false
+
+[functions.detect-gender]
+verify_jwt = false
