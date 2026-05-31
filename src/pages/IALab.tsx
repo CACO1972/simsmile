@@ -423,6 +423,16 @@ const IALab = () => {
         onComplete={handleSkinAnalysisComplete}
       />
 
+      {/* Lead Capture Modal — modo validación (sin pago) */}
+      <LeadCaptureModal
+        open={showLeadModal}
+        onOpenChange={setShowLeadModal}
+        detectedGender={detectedGender}
+        idealImage={idealImage || smileImage}
+        onSuccess={handleLeadSuccess}
+      />
+
+
       <Footer />
     </div>
   );
