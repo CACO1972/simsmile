@@ -76,7 +76,7 @@ serve(async (req) => {
             'Authorization': `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: 'SimSmile <onboarding@resend.dev>',
+            from: 'SimSmile <noreply@clinicamiro.cl>',
             to: ['administracion@clinicamiro.cl'],
             reply_to: email,
             subject: `🦷 Nuevo lead SimSmile - ${safeName}`,
