@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      leads: {
+        Row: {
+          created_at: string
+          detected_gender: string | null
+          email: string
+          has_simulation: boolean
+          has_skin_analysis: boolean
+          id: string
+          name: string
+          notified_at: string | null
+          source: string
+          whatsapp: string
+        }
+        Insert: {
+          created_at?: string
+          detected_gender?: string | null
+          email: string
+          has_simulation?: boolean
+          has_skin_analysis?: boolean
+          id?: string
+          name: string
+          notified_at?: string | null
+          source?: string
+          whatsapp: string
+        }
+        Update: {
+          created_at?: string
+          detected_gender?: string | null
+          email?: string
+          has_simulation?: boolean
+          has_skin_analysis?: boolean
+          id?: string
+          name?: string
+          notified_at?: string | null
+          source?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
+      qa_bypass_emails: {
+        Row: {
+          created_at: string
+          email: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
       simulation_credits: {
         Row: {
           amount_paid: number

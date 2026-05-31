@@ -10,6 +10,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
 import { GoldenRatioReveal } from "./GoldenRatioReveal";
 import { FacialAnalysis3D } from "./FacialAnalysis3D";
+import { WhatsAppCTA } from "./WhatsAppCTA";
+import { MONETIZATION_MODE } from "@/lib/monetization";
 import { logger } from "@/lib/logger";
 import type { Landmark } from "@/types/mediapipe";
 
@@ -112,6 +114,13 @@ export const ResultsSection = ({
           <p className="text-base md:text-lg text-muted-foreground mb-6">
             Resultado con correcciones aplicadas por IA
           </p>
+
+          {MONETIZATION_MODE === 'lead' && (
+            <div className="max-w-md mx-auto mb-6">
+              <WhatsAppCTA variant="card" />
+            </div>
+          )}
+          
           
           {/* Botones de acción principales */}
           <div className="flex flex-col gap-4 max-w-lg mx-auto">

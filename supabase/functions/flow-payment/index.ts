@@ -153,6 +153,20 @@ serve(async (req) => {
     if (req.method === 'POST' && path === 'check-credits') {
       const { email } = await req.json();
 
+      // QA bypass: emails en allowlist → créditos infinitos para revisar calidad
+      const { data: bypass } = await supabase
+        .from('qa_bypass_emails')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (bypass) {
+        return new Response(
+          JSON.stringify({ hasCredits: true, remainingCredits: 999, qaBypass: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { data: credits, error } = await supabase
         .from('simulation_credits')
         .select('*')
