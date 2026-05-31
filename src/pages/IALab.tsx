@@ -8,12 +8,14 @@ import { PaymentModal } from "@/components/PaymentModal";
 import { BlurredSimulation } from "@/components/BlurredSimulation";
 import { SkinAnalysisUpsell } from "@/components/SkinAnalysisUpsell";
 import { ConsentModal } from "@/components/ConsentModal";
+import { LeadCaptureModal } from "@/components/LeadCaptureModal";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { getSupabase } from "@/integrations/supabase/safeClient";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { logger } from "@/lib/logger";
 import { detectGender } from "@/lib/genderDetection";
+import { MONETIZATION_MODE } from "@/lib/monetization";
 import type { Landmark } from "@/types/mediapipe";
 
 type Step = "hero" | "capture" | "loading" | "preview" | "results";
@@ -37,6 +39,7 @@ const IALab = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSkinUpsell, setShowSkinUpsell] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [showLeadModal, setShowLeadModal] = useState(false);
   const [skinAnalysisData, setSkinAnalysisData] = useState<any>(null);
   const [detectedGender, setDetectedGender] = useState<'male' | 'female' | 'neutral'>('neutral');
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -147,14 +150,25 @@ const IALab = () => {
   };
 
   const handleUnlockSimulation = async () => {
-    // Upsell ANTES del pago: mostrar escaneo gratis de piel primero
+    if (MONETIZATION_MODE === 'lead') {
+      // Modo validación: pedir nombre/whatsapp/email y desbloquear
+      setShowLeadModal(true);
+      return;
+    }
+    // Modo pago: upsell ANTES del pago (escaneo de piel gratis como gancho)
     setShowSkinUpsell(true);
+  };
+
+  const handleLeadSuccess = (email: string) => {
+    setUserEmail(email);
+    track({ name: "lead_captured" });
+    setShowLeadModal(false);
+    setStep("results");
   };
 
   const handleSkinUpsellClose = (open: boolean) => {
     setShowSkinUpsell(open);
-    // Cuando el usuario cierra el upsell sin comprar bundle/skin → ir al pago de simulación
-    if (!open) {
+    if (!open && MONETIZATION_MODE === 'payment') {
       setPaymentLoading(true);
       setShowPaymentModal(true);
     }
