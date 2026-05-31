@@ -99,9 +99,9 @@ serve(async (req) => {
         throw new Error('Flow API credentials not configured');
       }
 
-      const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('//', '//') || '';
+      const baseUrl = Deno.env.get('SUPABASE_URL') || '';
       const urlConfirmation = `${baseUrl}/functions/v1/flow-webhook`;
-      const urlReturn = `https://simsmile.lovable.app/?payment=success&order=${commerceOrder}`;
+      const urlReturn = `https://simsmile.lovable.app/?payment=success&order=${commerceOrder}&package=${packageType}`;
 
       const params: Record<string, string> = {
         apiKey,
