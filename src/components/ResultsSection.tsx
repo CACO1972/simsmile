@@ -165,45 +165,18 @@ export const ResultsSection = ({
         </div>
 
 
-        {/* Selector de modo de vista */}
+        {/* GOLDEN RATIO REVEAL — efecto wow principal */}
         {facialAnalysis && (
-          <div className="mb-4 flex justify-center gap-2">
-            <Button
-              onClick={() => setViewMode('2d')}
-              variant={viewMode === '2d' ? 'default' : 'outline'}
-              className="gap-2"
-            >
-              Vista 2D
-            </Button>
-            <Button
-              onClick={() => setViewMode('3d')}
-              variant={viewMode === '3d' ? 'default' : 'outline'}
-              className="gap-2"
-            >
-              Vista 3D Interactiva
-            </Button>
+          <div className="mb-8">
+            <GoldenRatioReveal
+              smileImage={customizedImage || smileImage}
+              restImage={restImage}
+              facialAnalysis={facialAnalysis}
+              onFullscreen={() => setShowFullscreen(true)}
+            />
           </div>
         )}
 
-        {/* 1. GOLDEN RATIO REVEAL - EFECTO WOW PRINCIPAL */}
-        {facialAnalysis && (
-          <div className="mb-8">
-            {viewMode === '2d' ? (
-              <GoldenRatioReveal 
-                smileImage={customizedImage || smileImage}
-                restImage={restImage}
-                facialAnalysis={facialAnalysis}
-                onFullscreen={() => setShowFullscreen(true)}
-              />
-            ) : (
-              <FacialAnalysis3D
-                smileImage={customizedImage || smileImage}
-                facialAnalysis={facialAnalysis}
-                landmarks={landmarks}
-              />
-            )}
-          </div>
-        )}
 
         {/* 2. IMAGEN Y PERSONALIZACIÓN INTEGRADA */}
         <Card className="bg-gradient-to-br from-primary/5 to-card/50 backdrop-blur border-primary/30 p-6 md:p-8 mb-8">
