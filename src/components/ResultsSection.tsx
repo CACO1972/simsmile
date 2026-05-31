@@ -386,6 +386,7 @@ export const ResultsSection = ({
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Cerrar vista ampliada"
             className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
             onClick={() => setShowFullscreen(false)}
           >
