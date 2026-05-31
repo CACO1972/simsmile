@@ -9,7 +9,7 @@ import { SmileCustomizer } from "./SmileCustomizer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { FacialAnalysisOverlay } from "./FacialAnalysisOverlay";
 import { GoldenRatioReveal } from "./GoldenRatioReveal";
-import { FacialAnalysis3D } from "./FacialAnalysis3D";
+
 import { WhatsAppCTA } from "./WhatsAppCTA";
 import { MONETIZATION_MODE, CLINIC_WHATSAPP } from "@/lib/monetization";
 import { logger } from "@/lib/logger";
