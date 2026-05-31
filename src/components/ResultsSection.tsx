@@ -261,7 +261,7 @@ export const ResultsSection = ({
                 >
                   <img 
                     src={restImage}
-                    alt="Antes"
+                    alt="Foto antes del tratamiento"
                     className="w-full h-full object-cover"
                   />
                 </div>
