@@ -224,7 +224,7 @@ export const ResultsSection = ({
             >
               <img 
                 src={customizedImage || smileImage} 
-                alt="Sonrisa mejorada" 
+                alt="Simulación de sonrisa mejorada" 
                 className="w-full h-full object-cover"
               />
               {customizedImage && (
