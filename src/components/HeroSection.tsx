@@ -33,10 +33,6 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
         />
       </nav>
 
-      {/* Booking banner destacado */}
-      <div className="w-full z-10 mb-8 px-2">
-        <BookingBanner />
-      </div>
 
       {/* Hero Section */}
       <div className="flex flex-col lg:grid lg:grid-cols-2 items-center gap-12 md:gap-16 text-center lg:text-left z-10 max-w-7xl w-full mb-20">
@@ -66,6 +62,11 @@ export const HeroSection = ({ onStart }: HeroSectionProps) => {
             <br />
             de Sonrisa con IA
           </h1>
+
+          {/* Booking banner destacado */}
+          <div className="w-full">
+            <BookingBanner />
+          </div>
           
           <p className="text-base md:text-lg text-muted-foreground font-normal max-w-xl leading-relaxed">
             Tecnología de IA profesional para simular tu sonrisa perfecta + análisis facial estético completo. Visualiza tu transformación dental con precisión avanzada antes de cualquier tratamiento.
