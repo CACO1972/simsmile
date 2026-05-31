@@ -241,7 +241,7 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
 
       {/* Logo */}
       <div className="mb-6 z-10">
-        <img src={simsmileLogo} alt="SimSmile" className="w-36 md:w-44 opacity-60" />
+        <img src={simsmileLogo} alt="SimSmile by Clínica Miró" className="w-36 md:w-44 opacity-60" />
       </div>
 
       <div className="z-10 w-full max-w-sm flex flex-col items-center gap-6">
