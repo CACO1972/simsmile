@@ -395,7 +395,7 @@ export const ResultsSection = ({
           <div className="w-full h-[95vh] flex items-center justify-center p-8">
             <img 
               src={customizedImage || smileImage}
-              alt="Sonrisa ampliada"
+              alt="Simulación de sonrisa en vista ampliada"
               className="max-w-full max-h-full object-contain"
             />
           </div>
