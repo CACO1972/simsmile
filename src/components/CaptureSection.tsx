@@ -143,11 +143,12 @@ export const CaptureSection = ({ onCapture }: CaptureSectionProps) => {
       goodFramesRef.current = 0;
     }
 
-    // After 20 good frames (~0.5s) start countdown
-    if (goodFramesRef.current >= 20 && cameraState === "detecting") {
+    // After 20 good frames (~0.5s) start countdown — but only if user accepted disclaimers
+    if (goodFramesRef.current >= 20 && cameraState === "detecting" && acceptedRef.current) {
       setCameraState("countdown");
       return; // stop loop here — countdown takes over
     }
+
 
     rafRef.current = requestAnimationFrame(detect);
   }, [analyzeFace, cameraState]);
